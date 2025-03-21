@@ -1,0 +1,114 @@
+apiVersion: v1
+entries:
+  authup:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2025-03-21T14:33:28.3820887+01:00"
+    description: A Helm chart for Kubernetes
+    digest: 94641fc8f44b23a0bad89e59791ff51fad5d17eb7e3e11f9a2e0b57fa50af791
+    name: authup
+    type: application
+    urls:
+    - https://github.com/PrivateAIM/helm/releases/download/authup-0.1.0/authup-0.1.0.tgz
+    version: 0.1.0
+  hub:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2025-03-21T14:33:28.6136322+01:00"
+    dependencies:
+    - name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 11.1.15
+    - name: redis
+      repository: https://charts.bitnami.com/bitnami
+      version: 20.0.2
+    - name: rabbitmq
+      repository: https://charts.bitnami.com/bitnami
+      version: 14.6.6
+    - name: minio
+      repository: https://charts.bitnami.com/bitnami
+      version: 14.7.0
+    - name: vault
+      repository: https://helm.releases.hashicorp.com
+      version: 0.28.1
+    - name: authup
+      repository: file://../third-party/authup
+      version: 0.1.0
+    - name: hub-client-ui
+      repository: file://../hub-client-ui
+      version: 0.1.0
+    - name: hub-server-core
+      repository: file://../hub-server-core
+      version: 0.1.0
+    - name: hub-server-messenger
+      repository: file://../hub-server-messenger
+      version: 0.1.0
+    - name: hub-server-storage
+      repository: file://../hub-server-storage
+      version: 0.1.0
+    - name: hub-server-analysis-manager
+      repository: file://../hub-server-analysis-manager
+      version: 0.1.0
+    description: A Helm chart for Kubernetes
+    digest: 5f3fe39ce9811dfe6b51d2ebac001ea924c7cd7e2eb7fa62079647a6cec85ff5
+    name: hub
+    type: application
+    urls:
+    - https://github.com/PrivateAIM/helm/releases/download/hub-0.1.0/hub-0.1.0.tgz
+    version: 0.1.0
+  hub-client-ui:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2025-03-21T14:33:28.8257061+01:00"
+    description: A Helm chart for Kubernetes
+    digest: b5256facf84370636e46ea95357ca41559895075489fe899348aaf957a3d0100
+    name: hub-client-ui
+    type: application
+    urls:
+    - https://github.com/PrivateAIM/helm/releases/download/hub-client-ui-0.1.0/hub-client-ui-0.1.0.tgz
+    version: 0.1.0
+  hub-server-analysis-manager:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2025-03-21T14:33:29.017271+01:00"
+    description: A Helm chart for Kubernetes
+    digest: edbca722b21b020b63bd845f991bde965f8313c841ad3ca1417403fd7e03875b
+    name: hub-server-analysis-manager
+    type: application
+    urls:
+    - https://github.com/PrivateAIM/helm/releases/download/hub-server-analysis-manager-0.1.0/hub-server-analysis-manager-0.1.0.tgz
+    version: 0.1.0
+  hub-server-core:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2025-03-21T14:33:29.2590471+01:00"
+    description: A Helm chart for Kubernetes
+    digest: 19cbf1dbae49f888b1693471bc5f4b9fd6a273d61b2d19bbbb45657e8c856a1b
+    name: hub-server-core
+    type: application
+    urls:
+    - https://github.com/PrivateAIM/helm/releases/download/hub-server-core-0.1.0/hub-server-core-0.1.0.tgz
+    version: 0.1.0
+  hub-server-messenger:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2025-03-21T14:33:29.4728847+01:00"
+    description: A Helm chart for Kubernetes
+    digest: 3363c597cd3de8a6cb187f43c9a0a1ede12fdd99993431cd6bc21618d49cf0ac
+    name: hub-server-messenger
+    type: application
+    urls:
+    - https://github.com/PrivateAIM/helm/releases/download/hub-server-messenger-0.1.0/hub-server-messenger-0.1.0.tgz
+    version: 0.1.0
+  hub-server-storage:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2025-03-21T14:33:29.6627832+01:00"
+    description: A Helm chart for Kubernetes
+    digest: f03a273c7838b6fd4aad815eca98d30cdd749ecbd49918ca135324de4fbfa67b
+    name: hub-server-storage
+    type: application
+    urls:
+    - https://github.com/PrivateAIM/helm/releases/download/hub-server-storage-0.1.0/hub-server-storage-0.1.0.tgz
+    version: 0.1.0
+generated: "2025-03-21T14:33:29.6627832+01:00"
