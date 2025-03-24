@@ -1,0 +1,47 @@
+# Default values for shared.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+db:
+  type: "mysql"
+
+  mysql:
+    # use external server?
+    useExternal: false
+
+    # db address
+    externalServer: 127.0.0.1
+
+    # db port
+    externalPort: 3306
+
+    # db username
+    username: root
+
+    # db password
+    password: start123
+
+    # db name
+    database: app
+  pgsql:
+    # use external server?
+    useExternal: false
+
+    # db address
+    externalServer: 127.0.0.1
+
+    # db port
+    externalPort: 3306
+
+    # db username
+    username: root
+
+    # db password
+    password: start123
+
+    # db name
+    database: app

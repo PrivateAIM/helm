@@ -1,0 +1,16 @@
+global:
+    redis:
+        password: "start123"
+
+ingress:
+    enabled: false
+    hostname: ""
+    path: ""
+    pathType: "Prefix"
+
+shared:
+    db:
+        mysql:
+            database: core
+        pgsql:
+            database: core

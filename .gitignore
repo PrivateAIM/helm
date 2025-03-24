@@ -1,1 +1,6 @@
 .idea
+*.lock
+*.tgz
+.helm-index
+.helm-packages
+node_modules
