@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.4](https://github.com/PrivateAIM/helm/compare/root-v0.0.3...root-v0.0.4) (2025-03-25)
+
+
+### Features
+
+* add node helm charts ([764756c](https://github.com/PrivateAIM/helm/commit/764756cfc248b8ed421c99d2e122795caff1dc9e))
+
 ## [0.0.3](https://github.com/PrivateAIM/helm/compare/root-v0.0.2...root-v0.0.3) (2025-03-25)
 
 
