@@ -1,0 +1,119 @@
+apiVersion: v1
+entries:
+  authup:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2025-03-25T11:29:21.778531+01:00"
+    description: A Helm chart for Kubernetes
+    digest: f560977f15113ff2b6aa1ab35a71fae7a1d9621c06ccaf26e8289d2995fcf64d
+    name: authup
+    type: application
+    urls:
+    - https://github.com/PrivateAIM/helm/releases/download/authup-0.0.3/authup-0.0.3.tgz
+    version: 0.0.3
+  flame-hub:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2025-03-25T11:29:22.024662+01:00"
+    dependencies:
+    - condition: services.mysql
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 11.1.15
+    - condition: services.redis
+      name: redis
+      repository: https://charts.bitnami.com/bitnami
+      version: 20.0.2
+    - condition: services.rabbitmq
+      name: rabbitmq
+      repository: https://charts.bitnami.com/bitnami
+      version: 14.6.6
+    - condition: services.minio
+      name: minio
+      repository: https://charts.bitnami.com/bitnami
+      version: 14.7.0
+    - condition: services.vault
+      name: vault
+      repository: https://helm.releases.hashicorp.com
+      version: 0.28.1
+    - name: authup
+      repository: file://../third-party/authup
+      version: 0.0.3
+    - name: flame-hub-client-ui
+      repository: file://../flame-hub-client-ui
+      version: 0.0.3
+    - name: flame-hub-server-core
+      repository: file://../flame-hub-server-core
+      version: 0.0.3
+    - name: flame-hub-server-messenger
+      repository: file://../flame-hub-server-messenger
+      version: 0.0.3
+    - name: flame-hub-server-storage
+      repository: file://../flame-hub-server-storage
+      version: 0.0.3
+    - name: flame-hub-server-analysis-manager
+      repository: file://../flame-hub-server-analysis-manager
+      version: 0.0.3
+    description: A Helm chart for Kubernetes
+    digest: 444b3964915e1563a82709fb2a5a74b39dfb6a0687588346776aba9772cdab95
+    name: flame-hub
+    type: application
+    urls:
+    - https://github.com/PrivateAIM/helm/releases/download/flame-hub-0.0.3/flame-hub-0.0.3.tgz
+    version: 0.0.3
+  flame-hub-client-ui:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2025-03-25T11:29:22.230068+01:00"
+    description: A Helm chart for Kubernetes
+    digest: 1858a5cd429b35d9766e857fc0fb16d9012a2f6ffcee8f16bb9e986f1911bd3b
+    name: flame-hub-client-ui
+    type: application
+    urls:
+    - https://github.com/PrivateAIM/helm/releases/download/flame-hub-client-ui-0.0.3/flame-hub-client-ui-0.0.3.tgz
+    version: 0.0.3
+  flame-hub-server-analysis-manager:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2025-03-25T11:29:22.431548+01:00"
+    description: A Helm chart for Kubernetes
+    digest: 59ca338bc48143941ca02c73c66613f9373f5455598eab7f368ccaa5f5e00e3b
+    name: flame-hub-server-analysis-manager
+    type: application
+    urls:
+    - https://github.com/PrivateAIM/helm/releases/download/flame-hub-server-analysis-manager-0.0.3/flame-hub-server-analysis-manager-0.0.3.tgz
+    version: 0.0.3
+  flame-hub-server-core:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2025-03-25T11:29:22.606421+01:00"
+    description: A Helm chart for Kubernetes
+    digest: f2b501e202dac20531714f082902495e022c92e946c41e47346721de52801ac7
+    name: flame-hub-server-core
+    type: application
+    urls:
+    - https://github.com/PrivateAIM/helm/releases/download/flame-hub-server-core-0.0.3/flame-hub-server-core-0.0.3.tgz
+    version: 0.0.3
+  flame-hub-server-messenger:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2025-03-25T11:29:22.827293+01:00"
+    description: A Helm chart for Kubernetes
+    digest: 2fe0f85c1fea9e1ef92a4daa3452d7d28d0daf3caabdec85d052b5678407f178
+    name: flame-hub-server-messenger
+    type: application
+    urls:
+    - https://github.com/PrivateAIM/helm/releases/download/flame-hub-server-messenger-0.0.3/flame-hub-server-messenger-0.0.3.tgz
+    version: 0.0.3
+  flame-hub-server-storage:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2025-03-25T11:29:23.030164+01:00"
+    description: A Helm chart for Kubernetes
+    digest: 95e0114db679bb47aee39c4f3922f47dff58a311e19d4ed4b66400d28d03d103
+    name: flame-hub-server-storage
+    type: application
+    urls:
+    - https://github.com/PrivateAIM/helm/releases/download/flame-hub-server-storage-0.0.3/flame-hub-server-storage-0.0.3.tgz
+    version: 0.0.3
+generated: "2025-03-25T11:29:23.030722+01:00"
