@@ -1,0 +1,62 @@
+global:
+    imagePullPolicy: "Always"
+
+    redis:
+        password: "start123"
+
+    hub:
+        hostname: "localhost"
+
+ingress:
+    enabled: true
+
+## services
+
+services:
+    vault: true
+    rabbitmq: true
+    minio: true
+    mysql: true
+    redis: true
+
+vault:
+    server:
+        enabled: true
+        dev:
+            enabled: true
+            devRootToken: start123
+
+rabbitmq:
+    nameOverride: "rabbitmq"
+    auth:
+        username: "root"
+        password: "start123"
+
+redis:
+    nameOverride: "redis"
+    auth:
+        enabled: true
+
+minio:
+    nameOverride: "minio"
+    auth:
+        rootUser: "admin"
+        rootPassword: "start123"
+
+mysql:
+    nameOverride: "mysql"
+    image:
+        pullPolicy: "Always"
+    auth:
+        rootPassword: "start123"
+        replicationPassword: "start123"
+    secondary:
+        persistence:
+            enabled: true
+            size: 8Gi
+        replicaCount: 2
+    primary:
+        persistence:
+            enabled: true
+            size: 8Gi
+    architecture: "replication"
