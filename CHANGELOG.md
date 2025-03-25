@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.3](https://github.com/PrivateAIM/helm/compare/root-v0.0.2...root-v0.0.3) (2025-03-25)
+
+
+### Features
+
+* checkout git & set default git details ([20d16e2](https://github.com/PrivateAIM/helm/commit/20d16e26ca489344841b4afd9abbeb47f0655ad5))
+
 ## [0.0.2](https://github.com/PrivateAIM/helm/compare/root-v0.0.1...root-v0.0.2) (2025-03-25)
 
 
