@@ -16,11 +16,8 @@ spec:
         version: {{ .Chart.AppVersion }}
         deployment-id: {{ .Release.Name }}
     spec:
-      #volumes:
-      #  - name: keys
-      #    hostPath:
-      #      path: {{ .Values.env.NODE_KEY}}
-      #      type: File
+      serviceAccountName: {{ .Release.Name }}-po-sa
+      #automountServiceAccountToken: false
       initContainers:
       - name: init-postgres
         image: busybox:1.37
@@ -29,11 +26,6 @@ spec:
       - name: po
         image: ghcr.io/privateaim/node-pod-orchestration:latest
         imagePullPolicy: Always
-        #image: po:latest
-        #imagePullPolicy: IfNotPresent
-        #VolumeMounts:
-        #  - mountPath: /config/keys
-        #    name: keys
         ports:
         - containerPort: 8080
         env:
