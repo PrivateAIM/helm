@@ -54,7 +54,7 @@ spec:
               ]
       containers:
         - name: "{{ .Release.Name }}-flame-hub-server-core"
-          image: "ghcr.io/privateaim/hub:latest"
+          image: "ghcr.io/privateaim/hub:{{ .Chart.AppVersion }}"
           imagePullPolicy: Always
           ports:
             - containerPort: 3000

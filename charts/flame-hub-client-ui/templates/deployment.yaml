@@ -18,7 +18,7 @@ spec:
       restartPolicy: Always
       containers:
         - name: "{{ .Release.Name }}-flame-hub-client-ui"
-          image: "ghcr.io/privateaim/hub:latest"
+          image: "ghcr.io/privateaim/hub:{{ .Chart.AppVersion }}"
           args: ["ui", "start"]
           imagePullPolicy: Always
           ports:
