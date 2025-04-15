@@ -8,6 +8,7 @@ metadata:
     app.kubernetes.io/part-of: flame
     app.kubernetes.io/version: {{ .Chart.AppVersion }}
 spec:
+  replicas: {{ .Values.replicaCount }}
   revisionHistoryLimit: 3
   selector:
     matchLabels:
@@ -17,21 +18,31 @@ spec:
       app.kubernetes.io/version: {{ .Chart.AppVersion }}
   template:
     metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       labels:
         app.kubernetes.io/name: {{ .Release.Name }}-node-message-broker
         app.kubernetes.io/component: server
         app.kubernetes.io/part-of: flame
         app.kubernetes.io/version: {{ .Chart.AppVersion }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
-      restartPolicy: "Always"
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
         - name: {{ .Release.Name }}-node-message-broker
-          image: ghcr.io/privateaim/node-message-broker:{{ .Chart.AppVersion }}
-          imagePullPolicy: "Always"
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           securityContext:
-            runAsNonRoot: true
-            runAsUser: 1000
-            allowPrivilegeEscalation: false
+            {{- toYaml .Values.securityContext | nindent 12 }}
           ports:
             - containerPort: 8080
           env:
@@ -61,23 +72,26 @@ spec:
             # DO NOT USE THIS IN PRODUCTION!!! This is just for internal testing purposes.
             - name: NODE_TLS_REJECT_UNAUTHORIZED
               value: "0"
+            {{- with .Values.env }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
           resources:
-            requests:
-              memory: "256Mi"
-            limits:
-              memory: "512Mi"
-              cpu: "500m"
+            {{- toYaml .Values.resources | nindent 12 }}
+          {{- with .Values.readinessProbe }}
           readinessProbe:
-            httpGet:
-              path: "/health"
-              port: 8080
-            initialDelaySeconds: 60
-            periodSeconds: 5
-            timeoutSeconds: 10
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.livenessProbe }}
           livenessProbe:
-            httpGet:
-              path: "/health"
-              port: 8080
-            initialDelaySeconds: 90
-            periodSeconds: 10
-            timeoutSeconds: 10
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            {{- toYaml .Values.volumeMounts | nindent 12 }}
+      volumes:
+        {{- toYaml .Values.volumes | nindent 8 }}
+      nodeSelector:
+        {{- toYaml .Values.nodeSelector | nindent 8 }}
+      affinity:
+        {{- toYaml .Values.affinity | nindent 8 }}
+      tolerations:
+        {{- toYaml .Values.tolerations | nindent 8 }}

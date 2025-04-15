@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: {{ .Release.Name }}-po
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
       component: po
@@ -11,85 +11,118 @@ spec:
       deployment-id:  {{ .Release.Name }}
   template:
     metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       labels:
         component: po
         version: {{ .Chart.AppVersion }}
         deployment-id: {{ .Release.Name }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
-      #volumes:
-      #  - name: keys
-      #    hostPath:
-      #      path: {{ .Values.env.NODE_KEY}}
-      #      type: File
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
       initContainers:
-      - name: init-postgres
-        image: busybox:1.37
-        command: ['sh', '-c', "until nslookup {{ include "po.postgres.endpoint" . }}.{{ .Release.Namespace }}.svc.cluster.local; do echo waiting for postgres; sleep 2; done"]
+        - name: init-postgres
+          securityContext:
+            {{- toYaml .Values.waitForPostgres.securityContext | nindent 12 }}
+          image: "{{ .Values.waitForPostgres.image.repository }}:{{ .Values.waitForPostgres.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.waitForPostgres.image.pullPolicy }}
+          command: ['sh', '-c', "until nc -vz {{ include "po.postgres.endpoint" . }}.{{ .Release.Namespace }}.svc {{ .Values.postgresql.primary.service.ports.postgresql }}; do echo waiting for postgres; sleep 2; done"]
+          {{- with .Values.waitForPostgres.env }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.waitForPostgres.resources | nindent 12 }}
       containers:
-      - name: po
-        image: ghcr.io/privateaim/node-pod-orchestration:latest
-        imagePullPolicy: Always
-        #image: po:latest
-        #imagePullPolicy: IfNotPresent
-        #VolumeMounts:
-        #  - mountPath: /config/keys
-        #    name: keys
-        ports:
-        - containerPort: 8080
-        env:
-        - name: MINIO_ENDPOINT
-          value: {{ .Values.env.MINIO_ENDPOINT}}
-        - name: MINIO_ACCESS_KEY
-          value: {{ .Values.env.MINIO_ACCESS_KEY}}
-        - name: MINIO_SECRET_KEY
-          value: {{ .Values.env.MINIO_SECRET_KEY}}
-        - name: POSTGRES_HOST
-          value: {{ include "po.postgres.endpoint" . }}
-        - name: POSTGRES_DB
-          value: {{ .Values.postgresql.database}}
-          ## TODO: add _helpers.tpl in case we want to use secret instead for postgres user/pwd
-        - name: POSTGRES_USER
-          value: {{ .Values.postgresql.auth.username}}
-        - name: POSTGRES_PASSWORD
-          value: {{ .Values.postgresql.auth.password}}
-        - name: RESULT_CLIENT_ID
-          value: {{ .Values.env.RESULT_CLIENT_ID}}
-        - name: RESULT_CLIENT_SECRET
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Release.Name }}-po-keycloak-secret
-              key: podOrcClientSecret
-        - name: KEYCLOAK_URL
-          value: {{ include "po.keycloak.endpoint" . }}
-        - name: KEYCLOAK_REALM
-          value: {{ .Values.env.KEYCLOAK_REALM}}
-        - name: HARBOR_URL
-          value: {{ .Values.env.HARBOR_URL}}
-        - name: HARBOR_USER
-          value: {{ .Values.env.HARBOR_USER}}
-        - name: HARBOR_PW
-          value: {{ .Values.env.HARBOR_PW}}
-        - name: HUB_URL_AUTH
-          value: {{ ( include "po.hub.authApi" .) | default "https://privateaim.net/core" | quote }}
-        - name: HUB_URL_CORE
-          value: {{ ( include "po.hub.coreApi" .) | default "https://privateaim.net/core" | quote }}
-        - name: HUB_ROBOT_USER
-          value:  {{ required "A  robot ID for the Hub is required." ( include "po.hub.robotUser" .) | quote }}
-        # TODO: change this to secrets
-        - name: HUB_ROBOT_SECRET
-          value:  {{ required "A  robot secret for the Hub is required." ( include "po.hub.robotSecret" .) | quote }}
-        - name: NODE_NAME
-          value: {{ .Values.env.NODE_NAME}}
-        - name: NODE_PW
-          value: {{ .Values.env.NODE_PW}}
-        - name: NODE_KEY_PW
-          value: {{ .Values.env.NODE_KEY_PW}}
-        livenessProbe:
-          httpGet:
-            path: /po/healthz
-            port: 8000
-          initialDelaySeconds: 15
-          periodSeconds: 20
-          failureThreshold: 1
-          timeoutSeconds: 5
----
+        - name: po
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          #image: po:latest
+          #imagePullPolicy: IfNotPresent
+          #VolumeMounts:
+          #  - mountPath: /config/keys
+          #    name: keys
+          ports:
+            - containerPort: 8080
+          env:
+            - name: MINIO_ENDPOINT
+              value: {{ .Values.minio.endpoint }}
+            - name: MINIO_ACCESS_KEY
+              value: {{ .Values.minio.accessKey }}
+            - name: MINIO_SECRET_KEY
+              value: {{ .Values.minio.secretKey }}
+            - name: POSTGRES_HOST
+              value: {{ include "po.postgres.endpoint" . }}
+            - name: POSTGRES_DB
+              value: {{ .Values.postgresql.auth.database}}
+              ## TODO: add _helpers.tpl in case we want to use secret instead for postgres user/pwd
+            - name: POSTGRES_USER
+              value: {{ .Values.postgresql.auth.username}}
+            - name: POSTGRES_PASSWORD
+              value: {{ .Values.postgresql.auth.password}}
+            - name: RESULT_CLIENT_ID
+              value: {{ .Values.env.RESULT_CLIENT_ID}}
+            - name: RESULT_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-po-keycloak-secret
+                  key: podOrcClientSecret
+            - name: KEYCLOAK_URL
+              value: {{ include "po.keycloak.endpoint" . }}
+            - name: KEYCLOAK_REALM
+              value: {{ .Values.env.KEYCLOAK_REALM}}
+            - name: HARBOR_URL
+              value: {{ .Values.env.HARBOR_URL}}
+            - name: HARBOR_USER
+              value: {{ .Values.env.HARBOR_USER}}
+            - name: HARBOR_PW
+              value: {{ .Values.env.HARBOR_PW}}
+            - name: HUB_URL_AUTH
+              value: {{ ( include "po.hub.authApi" .) | default "https://privateaim.net/core" | quote }}
+            - name: HUB_URL_CORE
+              value: {{ ( include "po.hub.coreApi" .) | default "https://privateaim.net/core" | quote }}
+            - name: HUB_ROBOT_USER
+              value:  {{ required "A  robot ID for the Hub is required." ( include "po.hub.robotUser" .) | quote }}
+            # TODO: change this to secrets
+            - name: HUB_ROBOT_SECRET
+              value:  {{ required "A  robot secret for the Hub is required." ( include "po.hub.robotSecret" .) | quote }}
+            - name: NODE_NAME
+              value: {{ .Values.env.NODE_NAME}}
+            - name: NODE_PW
+              value: {{ .Values.env.NODE_PW}}
+            - name: NODE_KEY_PW
+              value: {{ .Values.env.NODE_KEY_PW}}
+            {{- with .Values.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- with .Values.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            {{- toYaml .Values.volumeMounts | nindent 12 }}
+      volumes:
+        {{- toYaml .Values.volumes | nindent 8 }}
+      nodeSelector:
+        {{- toYaml .Values.nodeSelector | nindent 8 }}
+      affinity:
+        {{- toYaml .Values.affinity | nindent 8 }}
+      tolerations:
+        {{- toYaml .Values.tolerations | nindent 8 }}

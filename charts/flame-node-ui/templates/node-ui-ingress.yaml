@@ -3,13 +3,20 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ .Release.Name }}-node-ui-ingress
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   labels:
     component: node-ui-service
     version: {{ .Chart.AppVersion }}
     deployment-id:  {{ .Release.Name }}
 spec:
+  {{- with .Values.ingress.className }}
+  ingressClassName: {{ . }}
+  {{- end }}
   rules:
-    - host: {{ regexReplaceAll "^https?://(.*)" (include "ui.ingress.hostname" .) "${1}" }}
+    - host: &host {{ regexReplaceAll "^https?://(.*)" (include "ui.ingress.hostname" .) "${1}" }}
       http:
         paths:
           - path: {{ .Values.ingress.path }}
@@ -19,4 +26,9 @@ spec:
                 name: {{ .Release.Name }}-node-ui-service
                 port:
                   number: 3000
+  {{- with .Values.ingress.tlsSecretName }}
+  tls:
+    - hosts: [*host]
+      secretName: {{ . }}
+  {{- end }}
 {{- end }}

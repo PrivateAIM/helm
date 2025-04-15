@@ -9,32 +9,40 @@ metadata:
     app.kubernetes.io/version: {{ .Chart.AppVersion }}
 spec:
   serviceName: {{ .Release.Name }}-node-message-broker-db
-  updateStrategy:
-    rollingUpdate:
-      maxUnavailable: 0
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ .Release.Name }}-node-message-broker
       app.kubernetes.io/component: database
       app.kubernetes.io/part-of: flame
       app.kubernetes.io/version: {{ .Chart.AppVersion }}
-  replicas: 1
+  replicas: {{ .Values.db.replicaCount }}
   template:
     metadata:
+      {{- with .Values.db.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       labels:
         app.kubernetes.io/name: {{ .Release.Name }}-node-message-broker
         app.kubernetes.io/component: database
         app.kubernetes.io/part-of: flame
         app.kubernetes.io/version: {{ .Chart.AppVersion }}
+        {{- with .Values.db.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
-      restartPolicy: "Always"
+      {{- with .Values.db.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.db.podSecurityContext | nindent 8 }}
       containers:
         - name: {{ .Release.Name }}-node-message-broker-db
-          image: mongo:7.0.5@sha256:fcde2d71bf00b592c9cabab1d7d01defde37d69b3d788c53c3bc7431b6b15de8
           securityContext:
-            runAsNonRoot: true
-            runAsUser: 1000
-            allowPrivilegeEscalation: false
+            {{- toYaml .Values.db.securityContext | nindent 12 }}
+          image: "{{ .Values.db.image.repository }}:{{ .Values.db.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.db.image.pullPolicy }}
           ports:
             - containerPort: 27017
           env:
@@ -42,47 +50,42 @@ spec:
               value: "message-broker"
             - name: TZ
               value: {{ .Values.common.timezone | default "Europe/Berlin" | quote }}
-          resources:
-            requests:
-              memory: "256Mi"
-            limits:
-              memory: "1Gi"
-              cpu: "1"
-          readinessProbe:
-            exec:
-              command:
-                - mongosh
-                - --eval
-                - 'db.runCommand("ping").ok'
-                - --quiet
-            failureThreshold: 3
-            periodSeconds: 10
-            successThreshold: 1
-            timeoutSeconds: 15
-            initialDelaySeconds: 30
+            {{- with .Values.db.env }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- with .Values.db.livenessProbe }}
           livenessProbe:
-            exec:
-              command:
-                - mongosh
-                - --eval
-                - 'db.runCommand("ping").ok'
-                - --quiet
-            failureThreshold: 3
-            periodSeconds: 10
-            successThreshold: 1
-            timeoutSeconds: 15
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.db.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.db.resources | nindent 12 }}
           volumeMounts:
             - name: storage
               mountPath: /data/db
+            {{- with .Values.db.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+      volumes:
+        {{- toYaml .Values.db.volumes | nindent 8 }}
+      nodeSelector:
+        {{- toYaml .Values.db.nodeSelector | nindent 8 }}
+      affinity:
+        {{- toYaml .Values.db.affinity | nindent 8 }}
+      tolerations:
+        {{- toYaml .Values.db.tolerations | nindent 8 }}
   volumeClaimTemplates:
     - metadata:
         name: storage
       spec:
-        accessModes: ["ReadWriteMany"]
-        {{- if .Values.common.storageClassName }}
-        # Only use this if a storage class name is defined. Otherwise, use the default one within the cluster.
-        storageClassName: {{ .Values.common.storageClassName | quote }}
+        accessModes:
+          {{- toYaml .Values.db.persistence.accessModes | nindent 10 }}
+        {{- with .Values.db.persistence.storageClass }}
+        storageClassName: {{ . }}
         {{- end }}
         resources:
           requests:
-            storage: {{ (.Values.broker_db).storageSizeMi | default 100 }}Mi
+            storage: {{ .Values.db.persistence.size }}

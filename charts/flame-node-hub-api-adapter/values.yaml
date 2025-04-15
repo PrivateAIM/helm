@@ -34,6 +34,11 @@ ingress:
   ##
   hostname: ""
 
+  annotations: {}
+  className: ""
+  # Specify a tls secret to enable TLS for the given hostname
+  tlsSecretName: ""
+
 ## Keycloak related information
 idp:
   ## @param idp.debug If true, the clientId and clientSecret will use pre-defined values
@@ -75,3 +80,78 @@ hub:
     existingSecret: ""
     robotUser: ""
     robotSecret: ""
+
+# This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
+replicaCount: 1
+
+# This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+image:
+  repository: ghcr.io/privateaim/node-hub-api-adapter
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: latest
+  # This sets the pull policy for images.
+  pullPolicy: Always
+
+# This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+imagePullSecrets: []
+
+# This is for setting Kubernetes Annotations to a Pod.
+# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+podAnnotations: {}
+# This is for setting Kubernetes Labels to a Pod.
+# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+podLabels: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext:
+  runAsNonRoot: true
+  privileged: false
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop: [ALL]
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+# This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+livenessProbe: &probe
+  httpGet:
+    path: /healthz
+    port: healthcp
+  failureThreshold: 3
+  periodSeconds: 60
+  initialDelaySeconds: 60
+readinessProbe: *probe
+
+# Additional environment variables on the output Deployment definition.
+env: []
+# - name: FOO
+#   value: bar
+
+# Additional volumes on the output Deployment definition.
+volumes: []
+# - name: foo
+#   secret:
+#     secretName: mysecret
+#     optional: false
+
+# Additional volumeMounts on the output Deployment definition.
+volumeMounts: []
+# - name: foo
+#   mountPath: "/etc/foo"
+#   readOnly: true
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

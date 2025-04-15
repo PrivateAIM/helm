@@ -3,19 +3,34 @@ kind: Deployment
 metadata:
   name: {{ .Release.Name }}-node-result-deployment
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
       app: {{ .Release.Name }}-node-result
   template:
     metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       labels:
         app: {{ .Release.Name }}-node-result
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
         - name: results-service
-          image: ghcr.io/privateaim/node-result-service:sha-68e442f
-          imagePullPolicy: Always
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - containerPort: 8080
               name: http-result-srv
@@ -23,6 +38,9 @@ spec:
             - name: crypto
               mountPath: /etc/crypto
               readOnly: true
+            {{- with .Values.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
           env:
             - name: CRYPTO__PROVIDER
               value: file
@@ -74,20 +92,29 @@ spec:
             # ignored. You will still need to set this variable for the service to start up correctly.
             - name: OIDC__SKIP_JWT_VALIDATION
               value: "0"
+            {{- with .Values.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- with .Values.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
       volumes:
         - name: crypto
           secret:
             secretName: ecdh-private-key-secret
-
-#           startupProbe:
-#             httpGet:
-#               path: /healthz
-#               port: http-result-srv
-#             failureThreshold: 5
-#             periodSeconds: 5
-#           livenessProbe:
-#             httpGet:
-#               path: /healthz
-#               port: http-result-srv
-#             failureThreshold: 3
-#             periodSeconds: 10
+        {{- with .Values.volumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      nodeSelector:
+        {{- toYaml .Values.nodeSelector | nindent 8 }}
+      affinity:
+        {{- toYaml .Values.affinity | nindent 8 }}
+      tolerations:
+        {{- toYaml .Values.tolerations | nindent 8 }}

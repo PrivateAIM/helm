@@ -1,0 +1,167 @@
+api:
+  version: 0.1.0
+  domain: localhost
+idp:
+  debug: false
+env:
+    NODE_NAME: "" #TODO
+    NODE_KEY: "" #TODO
+    NODE_KEY_PW: "" #TODO
+
+    HARBOR_URL: dev-harbor.personalhealthtrain.de
+    HARBOR_PW: test
+    HARBOR_USER: test
+
+    KEYCLOAK_URL: ""
+    KEYCLOAK_REALM: flame
+
+    RESULT_CLIENT_ID: service1
+    RESULT_CLIENT_SECRET: ""
+
+    POSTGRES_HOST: ""
+minio:
+  endpoint: ""
+  accessKey: ""
+  secretKey: ""
+
+hub:
+  ## @param hub.coreApi Hub core API endpoint
+  coreApi: https://auth.privateaim.dev
+  ## @param hub.authApi Hub auth API endpoint
+  authApi: https://core.privateaim.dev
+
+  ## Credentials used for retrieving a valid token from the hub using a robot account
+  auth:
+    robotUser: ""
+    robotSecret: ""
+
+# This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
+replicaCount: 1
+
+# This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+image:
+  repository: ghcr.io/privateaim/node-pod-orchestration
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: latest
+  # This sets the pull policy for images.
+  pullPolicy: Always
+
+# This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+imagePullSecrets: []
+
+# This is for setting Kubernetes Annotations to a Pod.
+# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+podAnnotations: {}
+# This is for setting Kubernetes Labels to a Pod.
+# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+podLabels: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext:
+  runAsNonRoot: true
+  privileged: false
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop: [ALL]
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+# This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+livenessProbe: &probe
+  httpGet:
+    path: /po/healthz
+    port: 8000
+  initialDelaySeconds: 15
+  periodSeconds: 20
+  failureThreshold: 1
+  timeoutSeconds: 5
+readinessProbe: *probe
+
+# Additional environment variables on the output Deployment definition.
+extraEnv: []
+# - name: FOO
+#   value: bar
+
+# Additional volumes on the output Deployment definition.
+volumes: []
+# - name: foo
+#   secret:
+#     secretName: mysecret
+#     optional: false
+
+# Additional volumeMounts on the output Deployment definition.
+volumeMounts: []
+# - name: foo
+#   mountPath: "/etc/foo"
+#   readOnly: true
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+waitForPostgres:
+  # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+  image:
+    repository: busybox
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: 1.37
+    # This sets the pull policy for images.
+    pullPolicy: Always
+
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 30854
+    privileged: false
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: [ALL]
+
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      memory: 128Mi
+
+  # Additional environment variables on the output initContainer definition.
+  env: []
+  # - name: FOO
+  #   value: bar
+
+postgresql:
+  nameOverride: ""
+  fullnameOverride: ""
+  auth:
+    ## @param auth.enablePostgresUser Assign a password to the "postgres" admin user. Otherwise, remote access will be blocked for this user
+    ##
+    enablePostgresUser: true
+    ## @param auth.postgresPassword Password for the "postgres" admin user. Ignored if `auth.existingSecret` is provided
+    ##
+    postgresPassword: ""
+    username: "admin"
+    password: "admin"
+    database: ""
+    existingSecret: ""
+    ## @param auth.secretKeys.adminPasswordKey Name of key in existing secret to use for PostgreSQL credentials. Only used when `auth.existingSecret` is set.
+    ## @param auth.secretKeys.userPasswordKey Name of key in existing secret to use for PostgreSQL credentials. Only used when `auth.existingSecret` is set.
+    ## @param auth.secretKeys.replicationPasswordKey Name of key in existing secret to use for PostgreSQL credentials. Only used when `auth.existingSecret` is set.
+    ##
+    secretKeys:
+      adminPasswordKey: postgres-password
+      userPasswordKey: password
+      replicationPasswordKey: replication-password
+    ## @param auth.usePasswordFiles Mount credentials as a files instead of using an environment variable
+    ##
+    usePasswordFiles: false

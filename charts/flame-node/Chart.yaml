@@ -45,6 +45,7 @@ dependencies:
   - name: keycloak
     repository: file://../third-party/keycloak
     version: 24.4.10
+    condition: keycloak.enabled
   - name: flame-node-data-store
     repository: file://../flame-node-data-store
     version: 0.1.0
