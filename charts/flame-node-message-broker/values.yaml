@@ -20,6 +20,10 @@ common:
   timezone: Europe/Berlin
 broker:
   AUTH_JWKS_URL: ""
+  HUB_BASE_URL: https://api.privateaim.dev/
+  HUB_AUTH_BASE_URL: https://auth.privateaim.dev/
+  HUB_MESSENGER_BASE_URL: "https://messenger.privateaim.dev/"
+  HUB_AUTH_ROBOT_ID: ""
   HUB_AUTH_ROBOT_SECRET: ""
 
 # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
@@ -64,15 +68,15 @@ resources:
 # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
 livenessProbe:
   httpGet:
-    path: /health
-    port: 8080
+    path: /actuator/health
+    port: 8090
   initialDelaySeconds: 90
   periodSeconds: 10
   timeoutSeconds: 10
 readinessProbe:
   httpGet:
-    path: /health
-    port: 8080
+    path: /actuator/health
+    port: 8090
   initialDelaySeconds: 60
   periodSeconds: 5
   timeoutSeconds: 10
