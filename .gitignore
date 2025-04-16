@@ -1,6 +1,5 @@
 .idea
 *.lock
-*.tgz
 .hevi
 node_modules
 values_*
