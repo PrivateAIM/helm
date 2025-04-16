@@ -81,6 +81,6 @@ spec:
           -   name: "{{ .Release.Name }}-flame-hub-analysis-manager-docker-volume"
               hostPath:
                   path: "/var/run/docker.sock"
-                  type: "File"
+                  type: "Socket"
 
 
