@@ -7,3 +7,4 @@ Chart.lock
 .monokle
 *.tgz
 !charts/flame-node-*/*.tgz
+*.pem
