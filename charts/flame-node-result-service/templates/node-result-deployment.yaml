@@ -9,10 +9,10 @@ spec:
       app: {{ .Release.Name }}-node-result
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
       annotations:
+        {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
-      {{- end }}
+        {{- end }}
       labels:
         app: {{ .Release.Name }}-node-result
         {{- with .Values.podLabels }}
