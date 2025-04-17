@@ -11,10 +11,10 @@ spec:
       deployment-id:  {{ .Release.Name }}
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
       annotations:
+        {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
-      {{- end }}
+        {{- end }}
       labels:
         component: po
         version: {{ .Chart.AppVersion }}

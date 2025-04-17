@@ -11,10 +11,11 @@ spec:
   replicas: {{ .Values.replicaCount }}
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
       annotations:
+        checksum/secrets: {{ include (print $.Template.BasePath "/node-ui-secret.yaml") . | sha256sum }}
+        {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
-      {{- end }}
+        {{- end }}
       labels:
         component: node-ui-service
         version: {{ .Chart.AppVersion }}
