@@ -49,4 +49,4 @@ dependencies:
   - name: flame-node-data-store
     repository: file://../flame-node-data-store
     version: 0.1.0
-    condition: node-data-store.enabled
+    condition: flame-node-data-store.enabled
