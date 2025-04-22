@@ -93,10 +93,12 @@ spec:
             - name: HUB_URL_CORE
               value: {{ ( include "po.hub.coreApi" .) | default "https://privateaim.net/core" | quote }}
             - name: HUB_ROBOT_USER
-              value:  {{ required "A  robot ID for the Hub is required." ( include "po.hub.robotUser" .) | quote }}
-            # TODO: change this to secrets
+              value:  {{ required "A robot ID for the Hub is required." ( include "po.hub.robotUser" .) | quote }}
             - name: HUB_ROBOT_SECRET
-              value:  {{ required "A  robot secret for the Hub is required." ( include "po.hub.robotSecret" .) | quote }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "po.hub.secretName" . }}
+                  key: robotSecret
             - name: NODE_NAME
               value: {{ .Values.env.NODE_NAME}}
             - name: NODE_PW
