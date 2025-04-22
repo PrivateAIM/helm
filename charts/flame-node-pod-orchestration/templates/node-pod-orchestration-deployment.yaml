@@ -12,6 +12,7 @@ spec:
   template:
     metadata:
       annotations:
+        checksum/secrets: {{ include (print $.Template.BasePath "/node-pod-orchestration-secret.yaml") . | sha256sum }}
         {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
@@ -89,9 +90,9 @@ spec:
             - name: HARBOR_PW
               value: {{ .Values.env.HARBOR_PW}}
             - name: HUB_URL_AUTH
-              value: {{ ( include "po.hub.authApi" .) | default "https://privateaim.net/core" | quote }}
+              value: {{ ( include "po.hub.authApi" .) | default "https://auth.privateaim.net" | quote }}
             - name: HUB_URL_CORE
-              value: {{ ( include "po.hub.coreApi" .) | default "https://privateaim.net/core" | quote }}
+              value: {{ ( include "po.hub.coreApi" .) | default "https://core.privateaim.net" | quote }}
             - name: HUB_ROBOT_USER
               value:  {{ required "A robot ID for the Hub is required." ( include "po.hub.robotUser" .) | quote }}
             - name: HUB_ROBOT_SECRET
