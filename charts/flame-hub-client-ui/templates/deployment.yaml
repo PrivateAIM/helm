@@ -25,22 +25,22 @@ spec:
             - containerPort: 3000
               protocol: TCP
           env:
-            {{- with .Values.env.cookieDomain }}
+            {{- with .Values.cookieDomain }}
               -   name: NUXT_PUBLIC_COOKIE_DOMAIN
-                  value: {{- toString . | quote }}
+                  value: "{{- toString . | trim }}"
             {{- end }}
               -   name: NUXT_STORAGE_URL
                   value: "http://{{ .Release.Name }}-flame-hub-server-storage:3000/"
               -   name: NUXT_PUBLIC_STORAGE_URL
-                  value: {{ include "storage.publicURL" . | quote }}
+                  value: {{ include "storage.publicURL" . | trim | quote }}
               -   name: NUXT_CORE_URL
                   value: "http://{{ .Release.Name }}-flame-hub-server-core:3000/"
               -   name: NUXT_PUBLIC_CORE_URL
-                  value: {{ include "core.publicURL" . | quote }}
+                  value: {{ include "core.publicURL" . | trim | quote }}
               -   name: NUXT_AUTHUP_URL
                   value: "http://{{ .Release.Name }}-authup-server-core:3000/"
               -   name: NUXT_PUBLIC_AUTHUP_URL
-                  value: {{ include "authup.publicURL" . | quote }}
+                  value: {{ include "authup.publicURL" . | trim | quote }}
           resources:
               requests:
                   memory: "512Mi"
