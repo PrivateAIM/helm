@@ -7,3 +7,6 @@ ingress:
     hostname: ""
     path: "/"
     pathType: "Prefix"
+
+env:
+    masterImagesBranch: ""
