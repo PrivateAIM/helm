@@ -25,6 +25,10 @@ spec:
             - containerPort: 3000
               protocol: TCP
           env:
+            {{- with .Values.env.cookieDomain }}
+              -    name: NUXT_PUBLIC_COOKIE_DOMAIN
+                   value: {{- toString . | quote }}
+            {{- end }}
               -   name: NUXT_STORAGE_URL
                   value: "http://{{ .Release.Name }}-flame-hub-server-storage:3000/"
               -   name: NUXT_PUBLIC_STORAGE_URL

@@ -24,3 +24,6 @@ messenger:
 storage:
     hostname: ""
     ssl: false
+
+env:
+    cookieDomain: ""
