@@ -7,3 +7,5 @@ ingress:
     hostname: ""
     path: "/"
     pathType: "Prefix"
+
+cookieDomain: ""
