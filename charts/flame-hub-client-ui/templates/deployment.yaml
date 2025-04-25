@@ -5,22 +5,37 @@ metadata:
   labels:
     app: "{{ .Release.Name }}-flame-hub-client-ui"
 spec:
-  replicas: 3
   selector:
     matchLabels:
       app: "{{ .Release.Name }}-flame-hub-client-ui"
+      version: {{ .Chart.AppVersion }}
+      deployment-id: {{ .Release.Name }}
+  replicas: {{ .Values.replicaCount }}
   template:
     metadata:
       name: "{{ .Release.Name }}-flame-hub-client-ui"
+      annotations:
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       labels:
         app: "{{ .Release.Name }}-flame-hub-client-ui"
+        version: {{ .Chart.AppVersion }}
+        deployment-id: {{ .Release.Name }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       restartPolicy: Always
       containers:
         - name: "{{ .Release.Name }}-flame-hub-client-ui"
-          image: "ghcr.io/privateaim/hub:{{ .Chart.AppVersion }}"
+          image: "{{ .Values.image.repository }}:{{ .Chart.AppVersion }}"
           args: ["ui", "start"]
-          imagePullPolicy: Always
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - containerPort: 3000
               protocol: TCP
@@ -40,24 +55,28 @@ spec:
               -   name: NUXT_AUTHUP_URL
                   value: "http://{{ .Release.Name }}-authup-server-core:3000/"
               -   name: NUXT_PUBLIC_AUTHUP_URL
-                  value: {{ include "authup.publicURL" . | trim | quote }}
-          resources:
-              requests:
-                  memory: "512Mi"
-              limits:
-                  memory: "2048Mi"
-          readinessProbe:
-              httpGet:
-                  path: "/"
-                  port: 3000
-              initialDelaySeconds: 60
-              periodSeconds: 5
-              timeoutSeconds: 10
+                  value: {{ include "authup.publicURL" . |  trim | quote }}
+              {{- with .Values.env }}
+              {{- toYaml . | nindent 12 }}
+              {{- end }}
+          {{- with .Values.livenessProbe }}
           livenessProbe:
-              httpGet:
-                  path: "/"
-                  port: 3000
-              periodSeconds: 10
-              timeoutSeconds: 10
-
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            {{- toYaml .Values.volumeMounts | nindent 12 }}
+      volumes:
+        {{- toYaml .Values.volumes | nindent 8 }}
+      nodeSelector:
+        {{- toYaml .Values.nodeSelector | nindent 8 }}
+      affinity:
+        {{- toYaml .Values.affinity | nindent 8 }}
+      tolerations:
+        {{- toYaml .Values.tolerations | nindent 8 }}
 
