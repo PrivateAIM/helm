@@ -26,6 +26,12 @@ To install the <chart-name> chart:
 helm install <release-name> flame/<chart-name>
 ```
 
+To install the <chart-name> chart with values file:
+
+```shell
+helm install <release-name> -f <values-file> flame/<chart-name>
+```
+
 To uninstall the chart:
 ```shell
 helm delete <release-name>
