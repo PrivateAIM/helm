@@ -13,20 +13,23 @@ global:
       robotUser:
       ## @param global.hub.auth.robotSecret Robot secret. Overrides env.HUB_PASSWORD if provided
       robotSecret:
+      ## @param global.hub.auth.existingSecret Valid robot secret encoded in a k8s secret. Overrides hub.auth.existingSecret if provided
+      existingSecret:
 
 ## Hub services and data
 hub:
-  ## @param hub.coreApi Hub core API endpoint
-  coreURL: https://core.privateaim.dev
-  ## @param hub.authURL Hub auth API endpoint
-  authURL: https://auth.privateaim.dev
-  ## @param hub.storageURL Hub storage API endpoint
-  storageURL: https://storage.privateaim.dev
+  endpoints:
+    ## @param hub.coreApi Hub core API endpoint
+    core: https://core.privateaim.dev
+    ## @param hub.authURL Hub auth API endpoint
+    auth: https://auth.privateaim.dev
+    ## @param hub.storageURL Hub storage API endpoint
+    storage: https://storage.privateaim.dev
   ## Credentials used for retrieving a valid robot token from the hub
   auth:
-    existingSecret:
     robotUser:
     robotSecret:
+    existingSecret:
 
 env:
   MINIO_USE_SSL: false

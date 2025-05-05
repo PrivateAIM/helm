@@ -67,8 +67,8 @@ spec:
             - name: HUB_AUTH_ROBOT_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-node-message-broker-hub-auth
-                  key: robot-secret
+                  name: {{ include "broker.hub.secretName" . }}
+                  key: robotSecret
             # DO NOT USE THIS IN PRODUCTION!!! This is just for internal testing purposes.
             - name: NODE_TLS_REJECT_UNAUTHORIZED
               value: "0"

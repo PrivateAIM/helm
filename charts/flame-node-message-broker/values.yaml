@@ -6,22 +6,20 @@ global:
       auth: https://auth.privateaim.dev
       ## @param global.hub.endpoints.core Hub Core API endpoint. Overrides broker.HUB_BASE_URL if provided
       core: https://core.privateaim.dev
+      ## @param global.hub.endpoints.core Hub Core API endpoint. Overrides broker.HUB_BASE_URL if provided
+      messenger: https://messenger.privateaim.dev
     auth:
-      ## TODO: does this need to be set? if not, remove it, otherwise, set it to the correct value
-      ## @param global.hub.auth.realmId Realm ID. Overrides broker.HUB_AUTH_REALM_ID
-      # realmId: ""
       ## @param global.hub.auth.robotUser Robot user ID. Overrides broker.HUB_AUTH_ROBOT_ID if provided
       robotUser: ""
       ## @param global.hub.auth.robotSecret Robot secret. Overrides broker.HUB_AUTH_ROBOT_SECRET if provided
       robotSecret: ""
+      ## @param global.hub.auth.existingSecret Valid robot secret encoded in a k8s secret. Overrides hub.auth.existingSecret if provided
+      existingSecret: ""
 
 common:
   timezone: Europe/Berlin
 broker:
   AUTH_JWKS_URL: ""
-  HUB_BASE_URL: https://api.privateaim.net/
-  HUB_AUTH_BASE_URL: https://auth.privateaim.net/
-  HUB_AUTH_ROBOT_ID: ""
   HUB_AUTH_ROBOT_SECRET: ""
 
 # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
@@ -100,6 +98,22 @@ volumeMounts: []
 nodeSelector: {}
 tolerations: []
 affinity: {}
+
+hub:
+  endpoints:
+    ## @param global.hub.endpoints.auth Hub Auth API endpoint. Overrides broker.HUB_AUTH_BASE_URL if provided
+    auth: https://auth.privateaim.dev
+    ## @param global.hub.endpoints.core Hub Core API endpoint. Overrides broker.HUB_BASE_URL if provided
+    core: https://core.privateaim.dev
+    ## @param global.hub.endpoints.core Hub Core API endpoint. Overrides broker.HUB_BASE_URL if provided
+    messenger: https://messenger.privateaim.dev
+  auth:
+    ## @param global.hub.auth.robotUser Robot user ID. Overrides broker.HUB_AUTH_ROBOT_ID if provided
+    robotUser: ""
+    ## @param global.hub.auth.robotSecret Robot secret. Overrides broker.HUB_AUTH_ROBOT_SECRET if provided
+    robotSecret: ""
+    ## @param global.hub.auth.existingSecret Valid robot secret encoded in a k8s secret. Overrides hub.auth.existingSecret if provided
+    existingSecret:
 
 db:
   persistence:

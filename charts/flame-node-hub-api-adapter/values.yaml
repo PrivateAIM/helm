@@ -11,6 +11,8 @@ global:
       robotUser: ""
       ## @param global.hub.auth.robotSecret Robot secret. Overrides hub.auth.robotSecret if provided
       robotSecret: ""
+      ## @param global.hub.auth.existingSecret Valid robot secret encoded in a k8s secret. Overrides hub.auth.existingSecret if provided
+      existingSecret: ""
   node:
     ingress:
       ## @param global.node.ingress.enabled Toggle whether ingress should be enabled
@@ -71,15 +73,16 @@ node:
 
 ## Hub services and data
 hub:
-  ## @param hub.coreApi Hub core API endpoint
-  coreApi: https://privateaim.net/core
-  ## @param hub.authApi Hub auth API endpoint
-  authApi: https://privateaim.net/auth
+  endpoints:
+    ## @param hub.coreApi Hub core API endpoint
+    core: https://privateaim.net/core
+    ## @param hub.authApi Hub auth API endpoint
+    auth: https://privateaim.net/auth
   ## Credentials used for retrieving a valid robot token from the hub
   auth:
-    existingSecret: ""
     robotUser: ""
     robotSecret: ""
+    existingSecret: ""
 
 # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
 replicaCount: 1

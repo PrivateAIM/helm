@@ -1,3 +1,19 @@
+## Global variables
+global:
+  hub:
+    endpoints:
+      ## @param global.hub.endpoints.auth Hub Auth API endpoint. Overrides hub.authApi if provided
+      auth: https://auth.privateaim.dev
+      ## @param global.hub.endpoints.core Hub Core API endpoint. Overrides hub.coreApi if provided
+      core: https://core.privateaim.dev
+    auth:
+      ## @param global.hub.auth.robotUser Robot user ID. Overrides hub.auth.robotUser if provided
+      robotUser: ""
+      ## @param global.hub.auth.robotSecret Robot secret. Overrides hub.auth.robotSecret if provided
+      robotSecret: ""
+      ## @param global.hub.auth.existingSecret Valid robot secret encoded in a k8s secret. Overrides hub.auth.existingSecret if provided
+      existingSecret: ""
+
 api:
   version: 0.1.0
   domain: localhost
@@ -25,15 +41,17 @@ minio:
   secretKey: ""
 
 hub:
-  ## @param hub.coreApi Hub core API endpoint
-  coreApi: https://auth.privateaim.dev
-  ## @param hub.authApi Hub auth API endpoint
-  authApi: https://core.privateaim.dev
+  endpoints:
+    ## @param hub.coreApi Hub core API endpoint
+    core: https://auth.privateaim.dev
+    ## @param hub.authApi Hub auth API endpoint
+    auth: https://core.privateaim.dev
 
   ## Credentials used for retrieving a valid token from the hub using a robot account
   auth:
     robotUser: ""
     robotSecret: ""
+    existingSecret: ""
 
 # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
 replicaCount: 1

@@ -20,7 +20,7 @@ Return hub auth API endpoint
 {{- if .Values.global.hub.endpoints.auth -}}
     {{- .Values.global.hub.endpoints.auth -}}
 {{- else -}}
-    {{- .Values.hub.authURL -}}
+    {{- .Values.hub.endpoints.auth -}}
 {{- end -}}
 {{- end -}}
 
@@ -31,7 +31,7 @@ Return hub core API endpoint
 {{- if .Values.global.hub.endpoints.core -}}
     {{- .Values.global.hub.endpoints.core -}}
 {{- else -}}
-    {{- .Values.hub.coreURL -}}
+    {{- .Values.hub.endpoints.core -}}
 {{- end -}}
 {{- end -}}
 
@@ -42,7 +42,7 @@ Return hub storage API endpoint
 {{- if .Values.global.hub.endpoints.storage -}}
     {{- .Values.global.hub.endpoints.storage -}}
 {{- else -}}
-    {{- .Values.hub.storageURL -}}
+    {{- .Values.hub.endpoints.storage -}}
 {{- end -}}
 {{- end -}}
 
@@ -50,8 +50,11 @@ Return hub storage API endpoint
 Return the secret containing the hub robot secret
 */}}
 {{- define "results.hub.secretName" -}}
+{{- $globalRobotSecretName := .Values.global.hub.auth.existingSecret -}}
 {{- $robotSecretName := .Values.hub.auth.existingSecret -}}
-{{- if $robotSecretName -}}
+{{- if $globalRobotSecretName -}}
+    {{- printf "%s" (tpl $globalRobotSecretName $) -}}
+{{- else if $robotSecretName -}}
     {{- printf "%s" (tpl $robotSecretName $) -}}
 {{- else -}}
     {{- printf "%s-results-robot-secret" .Release.Name -}}
