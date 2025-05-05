@@ -50,6 +50,10 @@ spec:
               -   name: COOKIE_DOMAIN
                   value: "{{- toString . | trim }}"
             {{- end }}
+            {{- with .Values.publicURL }}
+              -   name: PUBLIC_URL
+                  value: "{{- toString . | trim }}"
+            {{- end }}
               -   name: VAULT
                   value: "start123@http://{{ .Release.Name }}-vault:8200/v1/"
               -   name: REDIS
