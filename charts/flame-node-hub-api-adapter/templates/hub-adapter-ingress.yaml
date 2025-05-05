@@ -4,7 +4,6 @@ kind: Ingress
 metadata:
   name: {{ .Release.Name }}-hub-adapter-ingress
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
     {{- with .Values.ingress.annotations }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
@@ -20,7 +19,7 @@ spec:
     - host: &host {{ regexReplaceAll "^https?://(.*)" (include "adapter.ingress.hostname" .) "${1}" }}
       http:
         paths:
-          - path: {{ (include "adapter.root.path" .) }}(/|$)(.*)
+          - path: {{ (include "adapter.root.path" .) }}
             pathType: {{ .Values.ingress.pathType }}
             backend:
               service:
