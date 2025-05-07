@@ -5,8 +5,7 @@ metadata:
 spec:
   ports:
   - name: api
-    port: 8000 # Selector to match the pods of your Python app deployment
+    port: 8000
   selector:
     component: po
-    #version: {{ .Chart.AppVersion }}
     deployment-id: {{ .Release.Name }}
