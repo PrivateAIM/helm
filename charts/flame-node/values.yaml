@@ -116,6 +116,18 @@ flame-node-result-service:
       existingSecret:
       robotUser:
       robotSecret:
+    crypto:
+      ## @param hub.crypto.privateKey Content of the private key to be added to the secret. Need to use the "|" scalar:
+      ## https://yaml.org/spec/1.2.2/#812-literal-style; https://helm.sh/docs/chart_template_guide/yaml_techniques/
+      ##
+      privateKey:
+      ## @param hub.crypto.existingSecret Existing secret containing the private key for the node
+      ## Create this secret following the steps below:
+      ## 1) Generate your public and private key pair using the "Crypto" tab in the Hub
+      ## 2) Save the private key as 'private_key.pem' (it must use this name)
+      ## 3) Run the command below where SECRET_NAME is the name of the secret you want to create:
+      ##       kubectl create secret generic SECRET_NAME --from-file=./private_key.pem
+      existingSecret:
 
   env:
     MINIO_USE_SSL: false
