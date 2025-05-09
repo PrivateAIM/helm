@@ -25,6 +25,7 @@ keycloak:
     adminPassword: admin
 
 flame-node-result-service:
+  hub:
     crypto:
       ## @param hub.crypto.privateKey Content of the private key to be added to the secret. Need to use the "|" scalar:
       ## https://yaml.org/spec/1.2.2/#812-literal-style; https://helm.sh/docs/chart_template_guide/yaml_techniques/
