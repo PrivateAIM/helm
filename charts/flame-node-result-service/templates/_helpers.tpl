@@ -93,3 +93,16 @@ Return the Keycloak certs endpoint
     {{- printf "http://%s-keycloak:80/realms/flame/protocol/openid-connect/certs" .Release.Name -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Return the secret containing private key
+*/}}
+{{- define "results.hub.crypto.privateKeySecretName" -}}
+{{- $secretName := .Values.hub.crypto.existingSecret -}}
+{{- if $secretName -}}
+    {{- printf "%s" (tpl $secretName $) -}}
+{{- else -}}
+    {{- print "node-ecdh-private-key-secret" -}}
+{{- end -}}
+{{- end -}}
+
