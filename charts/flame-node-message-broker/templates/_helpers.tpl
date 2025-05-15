@@ -75,6 +75,6 @@ Return the Keycloak certs endpoint
 {{- if .Values.broker.AUTH_JWKS_URL -}}
     {{- .Values.broker.AUTH_JWKS_URL -}}
 {{- else -}}
-    {{- printf "http://%s-keycloak:80/realms/flame/protocol/openid-connect/certs" .Release.Name -}}
+    {{- printf "http://%s-keycloak:80/keycloak/realms/flame/protocol/openid-connect/certs" .Release.Name -}}
 {{- end -}}
 {{- end -}}

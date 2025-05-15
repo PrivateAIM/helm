@@ -140,7 +140,7 @@ Return the Keycloak endpoint
 {{- else if .Values.idp.host -}}
     {{- .Values.idp.host -}}
 {{- else -}}
-    {{- printf "http://%s-keycloak:80" .Release.Name -}}
+    {{- printf "http://%s-keycloak:80%s" .Release.Name .Values.idp.httpRelativePath -}}
 {{- end -}}
 {{- end -}}
 

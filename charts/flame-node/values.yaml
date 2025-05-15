@@ -330,6 +330,8 @@ flame-node-hub-adapter:
     ## @param idp.host URL to keycloak service
     ## Will be inferred using the Release.Name if not defined
     host:
+    ## @param idp.httpRelativePath Set the path relative to '/' for IDP resources (e.g. /auth)
+    httpRelativePath: "/keycloak"
 
   ## Downstream node services
   node:
