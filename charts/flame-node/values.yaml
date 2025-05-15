@@ -259,6 +259,10 @@ keycloak:
   ## @param keycloak.enabled Whether to deploy the bundled Keycloak instance
   enabled: true
 
+  ## @param keycloak.httpRelativePath [string] Default (sub)path for the ingress record (evaluated as template)
+  ##
+  httpRelativePath: "/keycloak/"
+
   auth:
     adminUser: admin
     adminPassword: admin
@@ -270,9 +274,6 @@ keycloak:
     ## @param keycloak.ingress.hostname Default host for the ingress record
     ##
     hostname: ""
-    ## @param keycloak.ingress.httpRelativePath [string] Default (sub)path for the ingress record (evaluated as template)
-    ##
-    httpRelativePath: "/keycloak/"
 
   ## @param keycloak.proxyHeaders Set Keycloak proxy headers to "forwarded" or "xforwarded"
   ## If you are using a reverse proxy for anything other than https passthrough, then this needs to be set else 403

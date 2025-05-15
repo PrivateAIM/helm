@@ -1,0 +1,35 @@
+httpRelativePath: "/keycloak/"
+ingress:
+  ## @param ingress.enabled Enable ingress record generation for Keycloak
+  ##
+  enabled: true
+  ## @param ingress.hostname Default host for the ingress record
+  ##
+  hostname: "foobar.semplitude.com"
+  # pathType: Prefix
+
+## @param keycloak.proxyHeaders Set Keycloak proxy headers to "forwarded" or "xforwarded"
+## If you are using a reverse proxy for anything other than https passthrough, then this needs to be set else 403
+proxyHeaders: "forwarded"
+# extraEnvVars:
+#   - name: KEYCLOAK_FRONTEND_URL
+#     value: "https://foobar.semplitude.com/keycloak"
+#   - name: KEYCLOAK_PROXY_ADDRESS_FORWARDING
+#     value: "true"
+#   - name:  KEYCLOAK_ADMIN_URL
+#     value: "https://leipzig.semplitude.com/keycloak"
+
+postgresql:
+  enabled: true
+  nameOverride: keycloak-postgresql
+  auth:
+    postgresPassword: # Not needed since secret is provided
+    username: keycloak # custom user
+    password: keycloak # custom user pwd
+    database: keycloak
+    # existingSecret: kc-password-secret # admin password, requires "password" key in secret
+  architecture: standalone
+
+auth:
+  adminUser: admin
+  adminPassword: admin
