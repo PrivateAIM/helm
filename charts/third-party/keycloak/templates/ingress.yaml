@@ -18,9 +18,6 @@ metadata:
   {{- $annotations := include "common.tplvalues.merge" ( dict "values" ( list .Values.ingress.annotations .Values.commonAnnotations ) "context" . ) }}
   {{- include "common.tplvalues.render" ( dict "value" $annotations "context" $) | nindent 4 }}
   {{- end }}
-  {{- if not $explicitKeycloakHost}}
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
-  {{- end }}
 spec:
   {{- if and .Values.ingress.ingressClassName (eq "true" (include "common.ingress.supportsIngressClassname" .)) }}
   ingressClassName: {{ .Values.ingress.ingressClassName | quote }}
@@ -33,11 +30,7 @@ spec:
           {{- if .Values.ingress.extraPaths }}
           {{- toYaml .Values.ingress.extraPaths | nindent 10 }}
           {{- end }}
-          {{- if $explicitKeycloakHost }}
           - path: {{ include "common.tplvalues.render" ( dict "value" .Values.ingress.path "context" $) }}
-          {{- else }}
-          - path: /keycloak(/|$)(.*)
-          {{- end }}
             {{- if eq "true" (include "common.ingress.supportsPathType" .) }}
             pathType: {{ .Values.ingress.pathType }}
             {{- end }}

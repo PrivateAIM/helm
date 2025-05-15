@@ -264,12 +264,15 @@ keycloak:
     adminPassword: admin
 
   ingress:
-    ## @param ingress.enabled Enable ingress record generation for Keycloak
+    ## @param keycloak.ingress.enabled Enable ingress record generation for Keycloak
     ##
     enabled: false
-    ## @param ingress.hostname Default host for the ingress record
+    ## @param keycloak.ingress.hostname Default host for the ingress record
     ##
     hostname: ""
+    ## @param keycloak.ingress.httpRelativePath [string] Default (sub)path for the ingress record (evaluated as template)
+    ##
+    httpRelativePath: "/keycloak/"
 
   ## @param keycloak.proxyHeaders Set Keycloak proxy headers to "forwarded" or "xforwarded"
   ## If you are using a reverse proxy for anything other than https passthrough, then this needs to be set else 403
