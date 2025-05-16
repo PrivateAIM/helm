@@ -132,15 +132,15 @@ Generate a random clientSecret value for the hub-adapter client in keycloak if n
 {{- end -}}
 
 {{/*
-Return the Keycloak endpoint
+Return user IDP endpoint
 */}}
-{{- define "adapter.keycloak.endpoint" -}}
-{{- if .Values.global.keycloak.hostname -}}
-    {{- print .Values.global.keycloak.hostname -}}
+{{- define "adapter.userIdp.endpoint" -}}
+{{- if .Values.global.userIdp.hostname -}}
+    {{- print .Values.global.userIdp.hostname -}}
 {{- else if .Values.idp.host -}}
     {{- .Values.idp.host -}}
 {{- else -}}
-    {{- printf "http://%s-keycloak:80%s" .Release.Name .Values.idp.httpRelativePath -}}
+    {{- printf "http://%s-keycloak:80%s/realms/flame" .Release.Name .Values.idp.httpRelativePath -}}
 {{- end -}}
 {{- end -}}
 
