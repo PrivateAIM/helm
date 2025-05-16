@@ -2,10 +2,10 @@
 Copyright Broadcom, Inc. All Rights Reserved.
 SPDX-License-Identifier: APACHE-2.0
 */}}
-{{- $keycloakHostnameEmpty := empty (or .Values.ingress.hostname .Values.global.keycloak.hostname)}}
-{{- $parsedHostname := splitList "://" (or .Values.ingress.hostname .Values.global.keycloak.hostname .Values.global.node.ingress.hostname) | last }}
-{{- $parsedAdminHostname := splitList "://" (or .Values.adminIngress.hostname .Values.global.keycloak.hostname .Values.global.node.ingress.hostname) | last }}
-{{- $predictedProxyHeader := ternary "forwarded" "" (hasPrefix "https" (or .Values.global.keycloak.hostname .Values.global.node.ingress.hostname)) }}
+{{- $keycloakHostnameEmpty := empty .Values.ingress.hostname }}
+{{- $parsedHostname := splitList "://" (or .Values.ingress.hostname .Values.global.node.ingress.hostname) | last }}
+{{- $parsedAdminHostname := splitList "://" (or .Values.adminIngress.hostname .Values.global.node.ingress.hostname) | last }}
+{{- $predictedProxyHeader := ternary "forwarded" "" (hasPrefix "https" .Values.global.node.ingress.hostname) }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -39,7 +39,7 @@ data:
       {{- include "common.tplvalues.render" (dict "value" $path "context" $) }}
     {{- end }}
   {{- end }}
-  {{- if and (or .Values.global.node.ingress.enabled .Values.ingress.enabled) (or .Values.ingress.hostname .Values.global.keycloak.hostname .Values.global.node.ingress.hostname) }}
+  {{- if and (or .Values.global.node.ingress.enabled .Values.ingress.enabled) (or .Values.ingress.hostname .Values.global.node.ingress.hostname) }}
   KEYCLOAK_HOSTNAME: |-
     {{ ternary "https://" "http://" ( or .Values.ingress.tls (eq .Values.proxy "edge") (not (empty .Values.proxyHeaders)) (not (empty $predictedProxyHeader)) ) -}}    {{- include "common.tplvalues.render" (dict "value" $parsedHostname "context" $) -}}
     {{- if eq .Values.ingress.controller "default" }}

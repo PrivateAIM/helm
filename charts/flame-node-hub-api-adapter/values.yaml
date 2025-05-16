@@ -19,10 +19,10 @@ global:
       enabled: false
       ## @param global.node.ingress.enabled Host name to be assigned to the Node UI (/) and Hub Adapter API (/api)
       hostname: ""
-  keycloak:
-    ## @param global.keycloak.hostname Hostname for a separate instance of keycloak. Overrides the /keycloak subpath
+  userIdp:
+    ## @param global.userIdp.hostname Hostname for a separate IDP to manage users who can access the FLAME Node UI.
     ## Leave this blank unless you want to use your own IDP
-    hostname: ""
+    hostname:
 
 ## For defining ingress specific metadata
 ingress:
@@ -56,8 +56,6 @@ idp:
   existingSecret: ""
   ## @param idp.existingSecretKey Key where the Keycloak secret is being stored inside the existing k8s secret
   existingSecretKey: ""
-  ## @param idp.realm Keycloak realm that the client exists in
-  realm: flame
   ## @param idp.host URL to keycloak service
   ## Will be inferred using the Release.Name if not defined
   host: ""

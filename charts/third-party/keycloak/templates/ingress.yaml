@@ -3,7 +3,6 @@ Copyright Broadcom, Inc. All Rights Reserved.
 SPDX-License-Identifier: APACHE-2.0
 */}}
 
-{{- $explicitKeycloakHost := or .Values.ingress.hostname .Values.global.keycloak.hostname}}
 {{- if (or .Values.global.node.ingress.enabled .Values.ingress.enabled) }}
 apiVersion: {{ include "common.capabilities.ingress.apiVersion" . }}
 kind: Ingress
@@ -23,8 +22,8 @@ spec:
   ingressClassName: {{ .Values.ingress.ingressClassName | quote }}
   {{- end }}
   rules:
-    {{- if (or $explicitKeycloakHost .Values.global.node.ingress.hostname) }}
-    - host: {{ (tpl (splitList "://" (or .Values.ingress.hostname .Values.global.keycloak.hostname .Values.global.node.ingress.hostname) | last) .) | quote }}
+    {{- if (or .Values.ingress.hostname .Values.global.node.ingress.hostname) }}
+    - host: {{ (tpl (splitList "://" (or .Values.ingress.hostname .Values.global.node.ingress.hostname) | last) .) | quote }}
       http:
         paths:
           {{- if .Values.ingress.extraPaths }}
@@ -53,7 +52,7 @@ spec:
   tls:
   {{- if and .Values.ingress.tls (or (include "common.ingress.certManagerRequest" ( dict "annotations" .Values.ingress.annotations )) .Values.ingress.secrets .Values.ingress.selfSigned) }}
     - hosts:
-        - {{ (tpl (or .Values.ingress.hostname .Values.global.keycloak.hostname .Values.global.node.ingress.hostname) .) | quote }}
+        - {{ (tpl (or .Values.ingress.hostname .Values.global.node.ingress.hostname) .) | quote }}
       secretName: {{ printf "%s-tls" (tpl .Values.ingress.hostname .) }}
     {{- end }}
     {{- if .Values.ingress.extraTls }}
