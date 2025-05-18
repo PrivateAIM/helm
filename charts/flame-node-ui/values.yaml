@@ -12,6 +12,7 @@ global:
     hostname:
 
 env: production
+## @param offline Forces the UI to use the internal service endpoint for authentication
 offline: false
 
 ## For defining ingress specific metadata

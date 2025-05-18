@@ -330,6 +330,9 @@ flame-node-hub-adapter:
     ## @param idp.host URL to keycloak service
     ## Will be inferred using the Release.Name if not defined
     host:
+    ## @param idp.jwks JWKS URI to override the endpoints fetched from the IDP issuer
+    ## Meant for local testing where either no FQDN provided or using localhost and port-forwarding
+    jwks: ""
     ## @param idp.httpRelativePath Set the path relative to '/' for IDP resources (e.g. /auth)
     httpRelativePath: "/keycloak"
 
@@ -419,6 +422,8 @@ flame-node-message-broker:
     HUB_AUTH_ROBOT_SECRET:
 
 flame-node-ui:
+  ## @param offline Forces the UI to use the internal service endpoint for authentication
+  offline: false
   env: production
 
   ## For defining ingress specific metadata
