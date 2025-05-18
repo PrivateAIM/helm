@@ -115,7 +115,7 @@ Return the Keycloak service endpoint
 {{- if .Values.idp.service -}}
     {{- print .Values.idp.service -}}
 {{- else -}}
-    {{- printf "http://%s-keycloak:80%s/keycloak/realms/flame" .Release.Name -}}
+    {{- printf "http://%s-keycloak:80/keycloak/realms/flame" .Release.Name -}}
 {{- end -}}
 {{- end -}}
 
