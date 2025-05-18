@@ -35,7 +35,6 @@ ingress:
   ## @param ingress.hostname Default host for the ingress record (evaluated as template)
   ##
   hostname: ""
-
   annotations: {}
   className: ""
   # Specify a tls secret to enable TLS for the given hostname
@@ -59,6 +58,9 @@ idp:
   ## @param idp.host URL to keycloak service
   ## Will be inferred using the Release.Name if not defined
   host: ""
+  ## @param idp.jwks JWKS URI to override the endpoints fetched from the IDP issuer
+  ## Meant for local testing where either no FQDN provided or using localhost and port-forwarding
+  jwks: ""
   ## @param idp.httpRelativePath Set the path relative to '/' for IDP resources (e.g. /auth)
   httpRelativePath: ""
 

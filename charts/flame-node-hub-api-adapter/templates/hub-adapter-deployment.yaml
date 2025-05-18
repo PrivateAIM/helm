@@ -53,6 +53,8 @@ spec:
               value: {{ include "adapter.userIdp.endpoint" . }}
             - name: NODE_SVC_OIDC_URL
               value: {{ printf "http://%s-keycloak:80%s/realms/flame" .Release.Name .Values.idp.httpRelativePath }}
+            - name: OVERRIDE_JWKS
+              value: {{ .Values.idp.jwks | quote }}
             - name: RESULTS_SERVICE_URL
               value: {{ include "adapter.results.endpoint" . }}
             - name: PODORC_SERVICE_URL
