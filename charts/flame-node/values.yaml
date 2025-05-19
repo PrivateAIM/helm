@@ -20,8 +20,8 @@ global:
       enabled: false
       ## @param global.node.ingress.enabled Host name to be assigned to the Node UI (/) and Hub Adapter API (/api)
       hostname:
-  keycloak:
-    ## @param global.keycloak.hostname Hostname for a separate instance of keycloak. Overrides the /keycloak subpath
+  userIdp:
+    ## @param global.userIdp.hostname Hostname for a separate IDP to manage users who can access the FLAME Node UI.
     ## Leave this blank unless you want to use your own IDP
     hostname:
 
@@ -259,15 +259,19 @@ keycloak:
   ## @param keycloak.enabled Whether to deploy the bundled Keycloak instance
   enabled: true
 
+  ## @param keycloak.httpRelativePath [string] Default (sub)path for the ingress record (evaluated as template)
+  ##
+  httpRelativePath: "/keycloak/"
+
   auth:
     adminUser: admin
     adminPassword: admin
 
   ingress:
-    ## @param ingress.enabled Enable ingress record generation for Keycloak
+    ## @param keycloak.ingress.enabled Enable ingress record generation for Keycloak
     ##
     enabled: false
-    ## @param ingress.hostname Default host for the ingress record
+    ## @param keycloak.ingress.hostname Default host for the ingress record
     ##
     hostname: ""
 
@@ -294,6 +298,10 @@ keycloak:
 
 # hub-api-adapter Values
 flame-node-hub-adapter:
+  ## @param offline Forces the HA to use the internal service endpoint for authentication
+  ## Overrides idp.jwks
+  offline: false
+
   ## For defining ingress specific metadata
   ingress:
     ## @param ingress.enabled Enable ingress record generation for the Hub Adapter
@@ -326,6 +334,11 @@ flame-node-hub-adapter:
     ## @param idp.host URL to keycloak service
     ## Will be inferred using the Release.Name if not defined
     host:
+    ## @param idp.jwks JWKS URI to override the endpoints fetched from the IDP issuer
+    ## Meant for local testing where either no FQDN provided or using localhost and port-forwarding
+    jwks: ""
+    ## @param idp.httpRelativePath Set the path relative to '/' for IDP resources (e.g. /auth)
+    httpRelativePath: "/keycloak"
 
   ## Downstream node services
   node:
@@ -413,6 +426,8 @@ flame-node-message-broker:
     HUB_AUTH_ROBOT_SECRET:
 
 flame-node-ui:
+  ## @param offline Forces the UI to use the internal service endpoint for authentication
+  offline: false
   env: production
 
   ## For defining ingress specific metadata

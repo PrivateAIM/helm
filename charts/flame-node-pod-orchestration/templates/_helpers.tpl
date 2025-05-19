@@ -5,7 +5,7 @@ Return the Keycloak certs endpoint
 {{- if .Values.env.KEYCLOAK_URL -}}
     {{- .Values.env.KEYCLOAK_URL -}}
 {{- else -}}
-    {{- printf "http://%s-keycloak" .Release.Name -}}
+    {{- printf "http://%s-keycloak:80/keycloak" .Release.Name -}}
 {{- end -}}
 {{- end -}}
 
@@ -105,38 +105,5 @@ Return the secret containing the hub robot secret
     {{- printf "%s" (tpl $robotSecretName $) -}}
 {{- else -}}
     {{- printf "%s-po-robot-secret" .Release.Name -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Return node minio endpoint
-*/}}
-{{- define "po.minio.endpoint" -}}
-{{- if .Values.env.MINIO_URL -}}
-    {{- .Values.env.MINIO_URL -}}
-{{- else -}}
-    {{- printf "http://%s-minio" .Release.Name -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Return node minio access key
-*/}}
-{{- define "po.minio.accessKey" -}}
-{{- if (index .Values.global "flame-node-result-service").MINIO_ACCESS_KEY -}}
-    {{- .Values.env.MINIO_ACCESS_KEY -}}
-{{- else -}}
-    {{- .Values.minio.accessKey -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Return node minio secret key
-*/}}
-{{- define "po.minio.secretKey" -}}
-{{- if .Values.env.MINIO_SECRET_KEY -}}
-    {{- .Values.env.MINIO_SECRET_KEY -}}
-{{- else -}}
-    {{- .Values.minio.secretKey -}}
 {{- end -}}
 {{- end -}}

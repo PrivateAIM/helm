@@ -39,8 +39,7 @@ global:
     ingress:
       enabled: false
       hostname: ""
-  keycloak:
-    hostname: ""
+
 ## @section Common parameters
 ##
 

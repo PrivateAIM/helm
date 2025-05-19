@@ -19,10 +19,14 @@ global:
       enabled: false
       ## @param global.node.ingress.enabled Host name to be assigned to the Node UI (/) and Hub Adapter API (/api)
       hostname: ""
-  keycloak:
-    ## @param global.keycloak.hostname Hostname for a separate instance of keycloak. Overrides the /keycloak subpath
+  userIdp:
+    ## @param global.userIdp.hostname Hostname for a separate IDP to manage users who can access the FLAME Node UI.
     ## Leave this blank unless you want to use your own IDP
-    hostname: ""
+    hostname:
+
+## @param offline Forces the HA to use the internal service endpoint for authentication
+## Overrides idp.jwks
+offline: false
 
 ## For defining ingress specific metadata
 ingress:
@@ -35,7 +39,6 @@ ingress:
   ## @param ingress.hostname Default host for the ingress record (evaluated as template)
   ##
   hostname: ""
-
   annotations: {}
   className: ""
   # Specify a tls secret to enable TLS for the given hostname
@@ -56,11 +59,14 @@ idp:
   existingSecret: ""
   ## @param idp.existingSecretKey Key where the Keycloak secret is being stored inside the existing k8s secret
   existingSecretKey: ""
-  ## @param idp.realm Keycloak realm that the client exists in
-  realm: flame
   ## @param idp.host URL to keycloak service
   ## Will be inferred using the Release.Name if not defined
   host: ""
+  ## @param idp.jwks JWKS URI to override the endpoints fetched from the IDP issuer
+  ## Meant for local testing where either no FQDN provided or using localhost and port-forwarding
+  jwks: ""
+  ## @param idp.httpRelativePath Set the path relative to '/' for IDP resources (e.g. /auth)
+  httpRelativePath: ""
 
 ## Downstream node services
 node:
@@ -91,7 +97,7 @@ replicaCount: 1
 image:
   repository: ghcr.io/privateaim/node-hub-api-adapter
   # Overrides the image tag whose default is the chart appVersion.
-  tag: 0.2.4
+  tag: 0.2.5
   # This sets the pull policy for images.
   pullPolicy: Always
 

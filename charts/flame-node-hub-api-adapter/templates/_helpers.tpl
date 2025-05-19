@@ -132,15 +132,28 @@ Generate a random clientSecret value for the hub-adapter client in keycloak if n
 {{- end -}}
 
 {{/*
-Return the Keycloak endpoint
+Return user IDP endpoint
 */}}
-{{- define "adapter.keycloak.endpoint" -}}
-{{- if .Values.global.keycloak.hostname -}}
-    {{- print .Values.global.keycloak.hostname -}}
+{{- define "adapter.userIdp.endpoint" -}}
+{{- if .Values.global.userIdp.hostname -}}
+    {{- print .Values.global.userIdp.hostname -}}
 {{- else if .Values.idp.host -}}
     {{- .Values.idp.host -}}
 {{- else -}}
-    {{- printf "http://%s-keycloak:80" .Release.Name -}}
+    {{- printf "http://%s-keycloak:80%s/realms/flame" .Release.Name .Values.idp.httpRelativePath -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return the JWKS endpoint for user and client authentication which overrides what is fetched by the API.
+*/}}
+{{- define "adapter.jwks.endpoint" -}}
+{{- if .Values.offline -}}
+    {{- printf "http://%s-keycloak:80/keycloak/realms/flame/protocol/openid-connect/certs" .Release.Name -}}
+{{- else if .Values.idp.jwks -}}
+    {{- print .Values.idp.jwks -}}
+{{- else -}}
+    {{- print "" -}}
 {{- end -}}
 {{- end -}}
 

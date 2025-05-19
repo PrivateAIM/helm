@@ -96,15 +96,15 @@ Generate a random clientSecret value for the node-ui client in keycloak if none 
 {{- end -}}
 
 {{/*
-Return the Keycloak hostname
+Return the user IDP hostname
 */}}
-{{- define "ui.keycloak.hostname" -}}
-{{- if .Values.global.keycloak.hostname -}}
-    {{- print .Values.global.keycloak.hostname -}}
+{{- define "ui.userIdp.hostname" -}}
+{{- if .Values.global.userIdp.hostname -}}
+    {{- print .Values.global.userIdp.hostname -}}
 {{- else if .Values.idp.host -}}
     {{- print .Values.idp.host -}}
 {{- else if or .Values.global.node.ingress.enabled .Values.ingress.enabled -}}
-    {{- printf "%s/keycloak" (include "ui.ingress.hostname" .) -}}
+    {{- printf "%s/keycloak/realms/flame" (include "ui.ingress.hostname" .) -}}
 {{- end -}}
 {{- end -}}
 
@@ -112,26 +112,24 @@ Return the Keycloak hostname
 Return the Keycloak service endpoint
 */}}
 {{- define "ui.keycloak.service.endpoint" -}}
-{{- $realmSuffix := printf "/realms/%s" .Values.idp.realm -}}
 {{- if .Values.idp.service -}}
-    {{- printf "http://%s%s" .Values.idp.service $realmSuffix -}}
+    {{- print .Values.idp.service -}}
 {{- else -}}
-    {{- printf "http://%s-keycloak:80%s" .Release.Name $realmSuffix -}}
+    {{- printf "http://%s-keycloak:80/keycloak/realms/flame" .Release.Name -}}
 {{- end -}}
 {{- end -}}
 
 {{/*
 Return the Keycloak endpoint
 */}}
-{{- define "ui.keycloak.endpoint" -}}
-{{- $realmSuffix := printf "/realms/%s" .Values.idp.realm -}}
-{{- if (include "ui.keycloak.hostname" .) -}}
-    {{- if hasPrefix "http" (include "ui.keycloak.hostname" .) -}}
-        {{- printf "%s%s" (include "ui.keycloak.hostname" .) $realmSuffix -}}
+{{- define "ui.userIdp.endpoint" -}}
+{{- if (include "ui.userIdp.hostname" .) -}}
+    {{- if hasPrefix "http" (include "ui.userIdp.hostname" .) -}}
+        {{- print (include "ui.userIdp.hostname" .) -}}
     {{- else -}}
-        {{- printf "http://%s%s" (include "ui.keycloak.hostname" .) $realmSuffix -}}
+        {{- printf "http://%s" (include "ui.userIdp.hostname" .) -}}
     {{- end -}}
 {{- else -}}
-    {{- printf "http://localhost:8080%s" $realmSuffix -}}
+    {{- print "http://localhost:8080/keycloak/realms/flame" -}}
 {{- end -}}
 {{- end -}}

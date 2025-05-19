@@ -50,9 +50,11 @@ spec:
                   name: {{ include "adapter.keycloak.secretName" . }}
                   key: {{ include "adapter.keycloak.secretKey" . }}
             - name: IDP_URL
-              value: {{ include "adapter.keycloak.endpoint" . }}
-            - name: IDP_REALM
-              value: {{ .Values.idp.realm | default "flame" | quote }}  # To be replaced
+              value: {{ include "adapter.userIdp.endpoint" . }}
+            - name: NODE_SVC_OIDC_URL
+              value: {{ printf "http://%s-keycloak:80%s/realms/flame" .Release.Name .Values.idp.httpRelativePath }}
+            - name: OVERRIDE_JWKS
+              value: {{ include "adapter.jwks.endpoint" . }}
             - name: RESULTS_SERVICE_URL
               value: {{ include "adapter.results.endpoint" . }}
             - name: PODORC_SERVICE_URL

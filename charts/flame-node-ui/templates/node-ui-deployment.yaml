@@ -49,10 +49,10 @@ spec:
             - name: NUXT_PUBLIC_ORIGIN
               value: {{ printf "%s/flame/api/auth" (include "ui.ingress.hostname" .) }}
             - name: NUXT_PUBLIC_KEYCLOAK_BASE_URL
-              value: {{ include "ui.keycloak.endpoint" . }}
+              value: {{ include "ui.userIdp.endpoint" . }}
             - name: NUXT_KEYCLOAK_CLIENT_ID
               value: {{ .Values.idp.clientId | default "node-ui" | quote }}
-            {{ if contains "localhost" (include "ui.keycloak.endpoint" .) }}
+            {{ if or (contains "localhost" (include "ui.userIdp.endpoint" .)) .Values.offline }}
             - name: NUXT_K8S_KEYCLOAK_ENDPOINT
               value: {{ include "ui.keycloak.service.endpoint" . }}
             {{ end }}
