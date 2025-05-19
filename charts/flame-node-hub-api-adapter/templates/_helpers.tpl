@@ -145,6 +145,19 @@ Return user IDP endpoint
 {{- end -}}
 
 {{/*
+Return the JWKS endpoint for user and client authentication which overrides what is fetched by the API.
+*/}}
+{{- define "adapter.jwks.endpoint" -}}
+{{- if .Values.offline -}}
+    {{- printf "http://%s-keycloak:80/keycloak/realms/flame/protocol/openid-connect/certs" .Release.Name -}}
+{{- else if .Values.idp.jwks -}}
+    {{- print .Values.idp.jwks -}}
+{{- else -}}
+    {{- print "" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Return the Results service endpoint
 */}}
 {{- define "adapter.results.endpoint" -}}
