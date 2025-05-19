@@ -16,9 +16,9 @@ fullnameOverride: ""
 
 serviceAccount:
   # Specifies whether a service account should be created
-  create: true
+  create: false
   # Automatically mount a ServiceAccount's API credentials?
-  automount: true
+  automount: false
   # Annotations to add to the service account
   annotations: {}
   # The name of the service account to use.
@@ -87,6 +87,13 @@ autoscaling:
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
 
+persistence:
+  enabled: true
+  size: 5Gi
+  mountPath: /app/data
+  accessModes:
+    - ReadWriteOnce
+
 # Additional volumes on the output Deployment definition.
 volumes: []
 # - name: foo
@@ -109,7 +116,7 @@ affinity: {}
 # The following values are used to configure the data-populator-job
 dataPopulatorJob:
   # Enable the data-populator-job
-  enabled: true
+  enabled: false
   env:
     SYNTHEA_N_PATIENTS: 10
     SYNTHEA_SEED: 3256262546
