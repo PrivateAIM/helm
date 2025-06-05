@@ -42,17 +42,10 @@ Return the secret containing the hub robot secret
 {{- end -}}
 
 {{/*
-Return the http relative path for the internal keycloak instance e.g. "/keycloak"
-*/}}
-{{- define "keycloak.httpRelativePath" -}}
-{{- printf "/%s" (replace .Values.keycloak.httpRelativePath "/" "") -}}
-{{- end -}}
-
-{{/*
 Return the endpoint for the internal keycloak instance with the (cleaned) relative path e.g. "/keycloak"
 */}}
 {{- define "keycloak.base.endpoint" -}}
-{{- printf "http://%s-keycloak:80%s" .Release.Name (include "keycloak.httpRelativePath" .) -}}
+{{- printf "http://%s-keycloak:80%s" .Release.Name (trimSuffix "/" .Values.keycloak.httpRelativePath) -}}
 {{- end -}}
 
 {{/*

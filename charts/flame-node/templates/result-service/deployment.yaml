@@ -84,7 +84,7 @@ spec:
             - name: HUB__STORAGE_BASE_URL
               value: {{ .Values.hub.endpoints.storage | default "https://storage.privateaim.dev" | quote }}
             - name: OIDC__CERTS_URL
-              value: {{ coalesce .Values.resultService.env.OIDC_CERTS_URL "keycloak.jwks.endpoint" . }}
+              value: {{ coalesce .Values.resultService.env.OIDC_CERTS_URL (include "keycloak.jwks.endpoint" .) }}
             - name: OIDC__CLIENT_ID_CLAIM_NAME
               value: {{ .Values.resultService.env.OIDC_CLIENT_ID_CLAIM_NAME }}
             # Change this to "1" for testing purposes. This will cause the value of OIDC__CERTS_URL to be
