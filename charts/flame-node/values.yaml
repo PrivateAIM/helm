@@ -20,10 +20,46 @@ global:
       enabled: false
       ## @param global.node.ingress.enabled Host name to be assigned to the Node UI (/) and Hub Adapter API (/api)
       hostname:
-  userIdp:
-    ## @param global.userIdp.hostname Hostname for a separate IDP to manage users who can access the FLAME Node UI.
-    ## Leave this blank unless you want to use your own IDP
-    hostname:
+
+userIdp:
+  ## @param userIdp.hostname Hostname for a separate IDP to manage users who can access the FLAME Node UI.
+  ## Leave this blank unless you want to use your own IDP
+  hostname:
+
+## For defining ingress specific metadata
+ingress:
+  ## @param ingress.enabled Enable ingress record generation for the Node UI
+  ##
+  enabled: false
+  ## @param ingress.hostname Default host for the ingress record (evaluated as template)
+  ##
+  hostname: ""
+  ## @param ingress.pathType Ingress path type
+  ##
+  pathType: ImplementationSpecific
+  ## @param ingress.path Default file path for the ingress hostname
+  ##
+  path: /
+
+  annotations: {}
+  className: ""
+  # Specify a tls secret to enable TLS for the given hostname
+  tlsSecretName: ""
+
+## Hub services and data
+hub:
+  endpoints:
+    ## @param hub.coreApi Hub core API endpoint
+    coreApi: https://privateaim.net/core
+    ## @param hub.authApi Hub auth API endpoint
+    authApi: https://privateaim.net/auth
+    ## Credentials used for retrieving a valid token from the hub using a robot account
+  auth:
+    robotUser:
+    robotSecret:
+    ## @param hub.auth.existingSecret Existing k8s secret containing secret for given hub robot ID
+    ## The secret must have a key named "robotSecret"
+    existingSecret: ""
 
 # kong values
 kong:
@@ -297,7 +333,7 @@ keycloak:
     existingConfigmap: flame-default-realm
 
 # hub-api-adapter Values
-flame-node-hub-adapter:
+hubAdapter:
   ## @param offline Forces the HA to use the internal service endpoint for authentication
   ## Overrides idp.jwks
   offline: false
@@ -323,45 +359,95 @@ flame-node-hub-adapter:
     clientId: hub-adapter
     ## @param idp.clientSecret Keycloak client secret. Ignored if `idp.existingSecret` is provided
     ## If not defined and no existingSecret provided, a random string is generated
-    clientSecret:
+    clientSecret: ""
     ## @param idp.existingSecret Existing k8s secret containing Keycloak secret for this client
     ## idp.existingSecretKey should also be defined for custom k8s secret. Defaults to hub-adapter-kc-secret
-    existingSecret:
+    existingSecret: ""
     ## @param idp.existingSecretKey Key where the Keycloak secret is being stored inside the existing k8s secret
-    existingSecretKey:
-    ## @param idp.realm Keycloak realm that the client exists in
-    realm: flame
+    existingSecretKey: ""
     ## @param idp.host URL to keycloak service
     ## Will be inferred using the Release.Name if not defined
-    host:
+    host: ""
     ## @param idp.jwks JWKS URI to override the endpoints fetched from the IDP issuer
     ## Meant for local testing where either no FQDN provided or using localhost and port-forwarding
     jwks: ""
     ## @param idp.httpRelativePath Set the path relative to '/' for IDP resources (e.g. /auth)
     httpRelativePath: "/keycloak"
 
-  ## Downstream node services
-  node:
-    ## @param node.results Node results service endpoint
-    ## @param node.kong Node Kong admin service endpoint
-    ## @param node.po Node pod orchestrator service endpoint
-    results:
-    kong:
-    po:
+  # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
+  replicaCount: 1
 
-  ## Hub services and data
-  hub:
-    ## @param hub.coreApi Hub core API endpoint
-    coreApi: https://privateaim.net/core
-    ## @param hub.authApi Hub auth API endpoint
-    authApi: https://privateaim.net/auth
-    ## Credentials used for retrieving a valid token from the hub using a robot account
-    auth:
-      robotUser:
-      robotSecret:
-      ## @param hub.auth.existingSecret Existing k8s secret containing secret for given hub robot ID
-      ## The secret must have a key named "robotSecret"
-      existingSecret: ""
+  # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+  image:
+    repository: ghcr.io/privateaim/node-hub-api-adapter
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: 0.2.6
+    # This sets the pull policy for images.
+    pullPolicy: Always
+
+  # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+  imagePullSecrets: []
+
+  # This is for setting Kubernetes Annotations to a Pod.
+  # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: {}
+  # This is for setting Kubernetes Labels to a Pod.
+  # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+  podLabels: {}
+
+  podSecurityContext: {}
+    # fsGroup: 2000
+
+  securityContext:
+    runAsNonRoot: true
+    privileged: false
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: [ALL]
+
+  resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+
+  # This is to set up the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+  livenessProbe: &probe
+    httpGet:
+      path: /healthz
+      port: healthcp
+    failureThreshold: 3
+    periodSeconds: 60
+    initialDelaySeconds: 60
+  readinessProbe: *probe
+
+  # Additional environment variables on the output Deployment definition.
+  env: []
+  # - name: FOO
+  #   value: bar
+
+  # Additional volumes on the output Deployment definition.
+  volumes: []
+  # - name: foo
+  #   secret:
+  #     secretName: mysecret
+  #     optional: false
+
+  # Additional volumeMounts on the output Deployment definition.
+  volumeMounts: []
+  # - name: foo
+  #   mountPath: "/etc/foo"
+  #   readOnly: true
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
 
 flame-node-pod-orchestration:
   api:
@@ -425,25 +511,10 @@ flame-node-message-broker:
     HUB_AUTH_ROBOT_ID:
     HUB_AUTH_ROBOT_SECRET:
 
-flame-node-ui:
+ui:
   ## @param offline Forces the UI to use the internal service endpoint for authentication
   offline: false
   env: production
-
-  ## For defining ingress specific metadata
-  ingress:
-    ## @param ingress.enabled Enable ingress record generation for the Node UI
-    ##
-    enabled: false
-    ## @param ingress.pathType Ingress path type
-    ##
-    pathType: ImplementationSpecific
-    ## @param ingress.hostname Default host for the ingress record (evaluated as template)
-    ##
-    hostname:
-    ## @param ingress.path Default file path for the ingress hostname
-    ##
-    path: /
 
   ## Keycloak related information
   idp:
@@ -454,25 +525,95 @@ flame-node-ui:
     clientId: node-ui
     ## @param idp.clientSecret Keycloak client secret. Ignored if `idp.existingSecret` is provided
     ## If not defined and no existingSecret provided, a random string is generated
-    clientSecret:
+    clientSecret: ""
     ## @param idp.existingSecret Existing k8s secret containing Keycloak secret for this client
-    ## idp.existingSecretKey should also be defined for custom k8s secret. Defaults to flame-service-secret
-    existingSecret:
+    ## idp.existingSecretKey should also be defined for custom k8s secret. Defaults to hub-adapter-kc-secret
+    existingSecret: ""
     ## @param idp.existingSecretKey Key where the Keycloak secret is being stored inside the existing k8s secret
-    existingSecretKey:
-    ## @param idp.realm Keycloak realm that the client exists in
-    realm: flame
-    ## @param idp.host URL to keycloak service
-    ## Will be set to localhost:8080 if not defined
-    host:
-    ## @param idp.service Service name of keycloak
+    existingSecretKey: ""
+    ## @param idp.host IDP URL. If the IDP is Keycloak, include /realms/{realm} at the end of the URL
     ## Will be inferred using the Release.Name if not defined
-    service:
+    host: ""
+    ## @param idp.service k8s service URL to the IDP. This is used for local development
+    ## If the IDP is Keycloak, include /realms/{realm} at the end of the URL e.g. http://my-keycloak-svc:80/realms/flame
+    service: ""
 
-  ## Downstream node services
-  node:
-    ## @param node.adapter Hub adapter endpoint
-    adapter:
+  # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
+  replicaCount: 1
+
+  # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+  image:
+    repository: ghcr.io/privateaim/node-ui
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: 0.2.13
+    # This sets the pull policy for images.
+    pullPolicy: Always
+
+  # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+  imagePullSecrets: []
+
+  # This is for setting Kubernetes Annotations to a Pod.
+  # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: {}
+  # This is for setting Kubernetes Labels to a Pod.
+  # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+  podLabels: {}
+
+  podSecurityContext:
+    {}
+    # fsGroup: 2000
+
+  securityContext:
+    runAsNonRoot: true
+    privileged: false
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: [ALL]
+
+  resources:
+    {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+
+  # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+  livenessProbe: &probe
+    httpGet:
+      path: /healthz
+      port: ui
+    failureThreshold: 3
+    periodSeconds: 60
+    initialDelaySeconds: 60
+  readinessProbe: *probe
+
+  # Additional environment variables on the output Deployment definition.
+  extraEnv: []
+  # - name: FOO
+  #   value: bar
+
+  # Additional volumes on the output Deployment definition.
+  volumes: []
+  # - name: foo
+  #   secret:
+  #     secretName: mysecret
+  #     optional: false
+
+  # Additional volumeMounts on the output Deployment definition.
+  volumeMounts: []
+  # - name: foo
+  #   mountPath: "/etc/foo"
+  #   readOnly: true
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
 
 ## node-data-store deploys dummy blaze (FHIR) and minio (S3) data stores for testing the Flame Node
 flame-node-data-store:

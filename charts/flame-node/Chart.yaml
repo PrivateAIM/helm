@@ -27,9 +27,6 @@ dependencies:
   - name: kong
     repository: https://charts.konghq.com
     version: 2.38.0
-  - name: flame-node-hub-adapter
-    repository: file://../flame-node-hub-api-adapter
-    version: 0.1.0
   - name: flame-node-result-service
     repository: file://../flame-node-result-service
     version: 0.1.0
@@ -38,9 +35,6 @@ dependencies:
     version: 0.1.0
   - name: flame-node-message-broker
     repository: file://../flame-node-message-broker
-    version: 0.1.0
-  - name: flame-node-ui
-    repository: file://../flame-node-ui
     version: 0.1.0
   - name: keycloak
     repository: file://../third-party/keycloak

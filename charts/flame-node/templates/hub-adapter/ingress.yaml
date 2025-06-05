@@ -16,7 +16,7 @@ spec:
   ingressClassName: {{ . }}
   {{- end }}
   rules:
-    - host: &host {{ regexReplaceAll "^https?://(.*)" (include "adapter.ingress.hostname" .) "${1}" }}
+    - host: &host {{ regexReplaceAll "^https?://(.*)" (include "node.ingress.hostname" .) "${1}" }}
       http:
         paths:
           - path: {{ (include "adapter.root.path" .) }}

@@ -8,51 +8,51 @@ spec:
       component: node-ui-service
       version: {{ .Chart.AppVersion }}
       deployment-id:  {{ .Release.Name }}
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{ .Values.ui.replicaCount }}
   template:
     metadata:
       annotations:
-        checksum/secrets: {{ include (print $.Template.BasePath "/node-ui-secret.yaml") . | sha256sum }}
-        {{- with .Values.podAnnotations }}
+        checksum/secrets: {{ include (print $.Template.BasePath "/ui/secret.yaml") . | sha256sum }}
+        {{- with .Values.ui.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
       labels:
         component: node-ui-service
         version: {{ .Chart.AppVersion }}
         deployment-id:  {{ .Release.Name }}
-        {{- with .Values.podLabels }}
+        {{- with .Values.ui.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
-      {{- with .Values.imagePullSecrets }}
+      {{- with .Values.ui.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+        {{- toYaml .Values.ui.podSecurityContext | nindent 8 }}
       containers:
         - name: node-ui
           securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+            {{- toYaml .Values.ui.securityContext | nindent 12 }}
+          image: "{{ .Values.ui.image.repository }}:{{ .Values.ui.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.ui.image.pullPolicy }}
           ports:
             - containerPort: 3000
               name: ui
           env:
             - name: NODE_ENV
-              value: {{ .Values.env | default "production" | quote }}
+              value: {{ .Values.ui.env | default "production" | quote }}
             - name: NUXT_PUBLIC_BASE_URL
-              value: {{ include "ui.ingress.hostname" . }}
+              value: {{ include "node.ingress.hostname" . }}
             - name: NUXT_PUBLIC_HUB_ADAPTER_URL
               value: {{ include "ui.adapter.endpoint" . }}
             - name: NUXT_PUBLIC_ORIGIN
-              value: {{ printf "%s/flame/api/auth" (include "ui.ingress.hostname" .) }}
+              value: {{ printf "%s/flame/api/auth" (include "node.ingress.hostname" .) }}
             - name: NUXT_PUBLIC_KEYCLOAK_BASE_URL
               value: {{ include "ui.userIdp.endpoint" . }}
             - name: NUXT_KEYCLOAK_CLIENT_ID
-              value: {{ .Values.idp.clientId | default "node-ui" | quote }}
-            {{ if or (contains "localhost" (include "ui.userIdp.endpoint" .)) .Values.offline }}
+              value: {{ .Values.ui.idp.clientId | default "node-ui" | quote }}
+            {{ if or (contains "localhost" (include "ui.userIdp.endpoint" .)) .Values.ui.offline }}
             - name: NUXT_K8S_KEYCLOAK_ENDPOINT
               value: {{ include "ui.keycloak.service.endpoint" . }}
             {{ end }}
@@ -63,26 +63,26 @@ spec:
                   key: {{ include "ui.keycloak.secretKey" . }}
             - name: NUXT_AUTH_SECRET
               value: {{ randAlphaNum 32 | b64enc }}
-            {{- with .Values.extraEnv }}
+            {{- with .Values.ui.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
-          {{- with .Values.livenessProbe }}
+          {{- with .Values.ui.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.readinessProbe }}
+          {{- with .Values.ui.readinessProbe }}
           readinessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+            {{- toYaml .Values.ui.resources | nindent 12 }}
           volumeMounts:
-            {{- toYaml .Values.volumeMounts | nindent 12 }}
+            {{- toYaml .Values.ui.volumeMounts | nindent 12 }}
       volumes:
-        {{- toYaml .Values.volumes | nindent 8 }}
+        {{- toYaml .Values.ui.volumes | nindent 8 }}
       nodeSelector:
-        {{- toYaml .Values.nodeSelector | nindent 8 }}
+        {{- toYaml .Values.ui.nodeSelector | nindent 8 }}
       affinity:
-        {{- toYaml .Values.affinity | nindent 8 }}
+        {{- toYaml .Values.ui.affinity | nindent 8 }}
       tolerations:
-        {{- toYaml .Values.tolerations | nindent 8 }}
+        {{- toYaml .Values.ui.tolerations | nindent 8 }}

@@ -8,34 +8,34 @@ spec:
       component: hub-adapter-service
       version: {{ .Chart.AppVersion }}
       deployment-id:  {{ .Release.Name }}
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{ .Values.hubAdapter.replicaCount }}
   template:
     metadata:
       annotations:
-        checksum/secrets: {{ include (print $.Template.BasePath "/hub-adapter-secret.yaml") . | sha256sum }}
-        {{- with .Values.podAnnotations }}
+        checksum/secrets: {{ include (print $.Template.BasePath "/hub-adapter/secret.yaml") . | sha256sum }}
+        {{- with .Values.hubAdapter.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
       labels:
         component: hub-adapter-service
         version: {{ .Chart.AppVersion }}
         deployment-id:  {{ .Release.Name }}
-        {{- with .Values.podLabels }}
+        {{- with .Values.hubAdapter.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
-      {{- with .Values.imagePullSecrets }}
+      {{- with .Values.hubAdapter.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+        {{- toYaml .Values.hubAdapter.podSecurityContext | nindent 8 }}
       containers:
         - name: api-gateway
           securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+            {{- toYaml .Values.hubAdapter.securityContext | nindent 12 }}
+          image: "{{ .Values.hubAdapter.image.repository }}:{{ .Values.hubAdapter.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.hubAdapter.image.pullPolicy }}
           ports:
             - containerPort: 5000
               name: healthcp
@@ -43,7 +43,7 @@ spec:
             - name: API_ROOT_PATH
               value: {{ (include "adapter.root.path" .) | default "" }}
             - name: API_CLIENT_ID
-              value: {{ .Values.idp.clientId | default "hub-adapter" | quote }}
+              value: {{ .Values.hubAdapter.idp.clientId | default "hub-adapter" | quote }}
             - name: API_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
@@ -52,46 +52,46 @@ spec:
             - name: IDP_URL
               value: {{ include "adapter.userIdp.endpoint" . }}
             - name: NODE_SVC_OIDC_URL
-              value: {{ printf "http://%s-keycloak:80%s/realms/flame" .Release.Name .Values.idp.httpRelativePath }}
+              value: {{ printf "http://%s-keycloak:80%s/realms/flame" .Release.Name .Values.hubAdapter.idp.httpRelativePath }}
             - name: OVERRIDE_JWKS
               value: {{ include "adapter.jwks.endpoint" . }}
             - name: RESULTS_SERVICE_URL
-              value: {{ include "adapter.results.endpoint" . }}
+              value: {{ printf "http://%s-node-result-service:8080" .Release.Name }}
             - name: PODORC_SERVICE_URL
-              value: {{ include "adapter.po.endpoint" . }}
+              value: {{ printf "http://%s-po-service:8000" .Release.Name }}
             - name: KONG_ADMIN_SERVICE_URL
-              value: {{ include "adapter.kong.endpoint" . }}
+              value: {{ printf "http://%s-kong-admin:80" .Release.Name }}
             - name: HUB_SERVICE_URL
-              value: {{ ( include "adapter.hub.coreApi" .) | default "https://core.privateaim.dev" | quote }}
+              value: {{ ( include "hub.coreApi" .) | default "https://core.privateaim.dev" | quote }}
             - name: HUB_AUTH_SERVICE_URL
-              value: {{ ( include "adapter.hub.authApi" .) | default "https://auth.privateaim.dev" | quote }}
+              value: {{ ( include "hub.authApi" .) | default "https://auth.privateaim.dev" | quote }}
             - name: HUB_ROBOT_USER
-              value: {{ required "A robot ID for the Hub is required." (include "adapter.hub.robotUser" .) | quote }}  # To be properly filled in
+              value: {{ required "A robot ID for the Hub is required." (include "hub.robotUser" .) | quote }}  # To be properly filled in
             - name: HUB_ROBOT_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "adapter.hub.secretName" . }}
+                  name: {{ include "hub.secretName" . }}
                   key: "robotSecret"
-            {{- with .Values.env }}
+            {{- with .Values.hubAdapter.env }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
-          {{- with .Values.livenessProbe }}
+          {{- with .Values.hubAdapter.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.readinessProbe }}
+          {{- with .Values.hubAdapter.readinessProbe }}
           readinessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+            {{- toYaml .Values.hubAdapter.resources | nindent 12 }}
           volumeMounts:
-            {{- toYaml .Values.volumeMounts | nindent 12 }}
+            {{- toYaml .Values.hubAdapter.volumeMounts | nindent 12 }}
       volumes:
-        {{- toYaml .Values.volumes | nindent 8 }}
+        {{- toYaml .Values.hubAdapter.volumes | nindent 8 }}
       nodeSelector:
-        {{- toYaml .Values.nodeSelector | nindent 8 }}
+        {{- toYaml .Values.hubAdapter.nodeSelector | nindent 8 }}
       affinity:
-        {{- toYaml .Values.affinity | nindent 8 }}
+        {{- toYaml .Values.hubAdapter.affinity | nindent 8 }}
       tolerations:
-        {{- toYaml .Values.tolerations | nindent 8 }}
+        {{- toYaml .Values.hubAdapter.tolerations | nindent 8 }}
