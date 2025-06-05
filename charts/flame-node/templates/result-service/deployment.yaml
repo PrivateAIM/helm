@@ -29,7 +29,7 @@ spec:
         - name: results-service
           securityContext:
             {{- toYaml .Values.resultService.securityContext | nindent 12 }}
-          image: "{{ .Values.resultService.image.repository }}:{{ .Values.resultService.image.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.resultService.image.repository }}:{{ .Values.resultService.image.tag | default "latest" }}"
           imagePullPolicy: {{ .Values.resultService.image.pullPolicy }}
           ports:
             - containerPort: 8080

@@ -39,7 +39,7 @@ spec:
         {{- toYaml .Values.messageBroker.podSecurityContext | nindent 8 }}
       containers:
         - name: {{ .Release.Name }}-node-message-broker
-          image: "{{ .Values.messageBroker.image.repository }}:{{ .Values.messageBroker.image.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.messageBroker.image.repository }}:{{ .Values.messageBroker.image.tag | default "latest" }}"
           imagePullPolicy: {{ .Values.messageBroker.image.pullPolicy }}
           securityContext:
             {{- toYaml .Values.messageBroker.securityContext | nindent 12 }}

@@ -136,7 +136,7 @@ resultService:
   image:
     repository: ghcr.io/privateaim/node-result-service
     # Overrides the image tag whose default is the chart appVersion.
-    tag: sha-68e442f
+    tag: 0.1.1
     # This sets the pull policy for images.
     pullPolicy: Always
 
@@ -510,7 +510,7 @@ messageBroker:
   image:
     repository: ghcr.io/privateaim/node-message-broker
     # Overrides the image tag whose default is the chart appVersion.
-    tag: ""
+    tag: 0.3.1
     # This sets the pull policy for images.
     pullPolicy: Always
 

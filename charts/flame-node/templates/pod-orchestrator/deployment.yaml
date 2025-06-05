@@ -36,7 +36,7 @@ spec:
         - name: init-postgres
           securityContext:
             {{- toYaml .Values.podOrchestrator.waitForPostgres.securityContext | nindent 12 }}
-          image: "{{ .Values.podOrchestrator.waitForPostgres.image.repository }}:{{ .Values.podOrchestrator.waitForPostgres.image.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.podOrchestrator.waitForPostgres.image.repository }}:{{ .Values.podOrchestrator.waitForPostgres.image.tag | default "latest" }}"
           imagePullPolicy: {{ .Values.podOrchestrator.waitForPostgres.image.pullPolicy }}
           command: ['sh', '-c', "until nc -vz {{ coalesce .Values.podOrchestrator.env.POSTGRES_HOST (include "postgresql.endpoint" .) }}.{{ .Release.Namespace }}.svc {{ .Values.postgresql.primary.service.ports.postgresql }}; do echo waiting for postgres; sleep 2; done"]
           {{- with .Values.podOrchestrator.waitForPostgres.env }}

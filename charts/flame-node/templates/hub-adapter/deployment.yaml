@@ -34,7 +34,7 @@ spec:
         - name: api-gateway
           securityContext:
             {{- toYaml .Values.hubAdapter.securityContext | nindent 12 }}
-          image: "{{ .Values.hubAdapter.image.repository }}:{{ .Values.hubAdapter.image.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.hubAdapter.image.repository }}:{{ .Values.hubAdapter.image.tag | default "latest" }}"
           imagePullPolicy: {{ .Values.hubAdapter.image.pullPolicy }}
           ports:
             - containerPort: 5000
