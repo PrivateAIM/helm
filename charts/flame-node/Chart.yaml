@@ -30,9 +30,6 @@ dependencies:
   - name: flame-node-result-service
     repository: file://../flame-node-result-service
     version: 0.1.0
-  - name: flame-node-pod-orchestration
-    repository: file://../flame-node-pod-orchestration
-    version: 0.1.0
   - name: keycloak
     repository: file://../third-party/keycloak
     version: 24.4.10
@@ -41,3 +38,6 @@ dependencies:
     repository: file://../flame-node-data-store
     version: 0.1.0
     condition: flame-node-data-store.enabled
+  - name: postgresql
+    repository: https://charts.bitnami.com/bitnami
+    version: 15.2.5

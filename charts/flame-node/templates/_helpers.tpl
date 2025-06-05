@@ -33,21 +33,6 @@ Set the hostname of the Node UI. Assumes if global ingress enabled then global h
 {{- end -}}
 
 {{/*
-Return the user IDP hostname
-*/}}
-{{- define "userIdp.hostname" -}}
-{{- if .Values.userIdp.hostname -}}
-    {{- if hasPrefix "http" .Values.userIdp.hostname -}}
-        {{- print .Values.userIdp.hostname -}}
-    {{- else -}}
-        {{- printf "http://%s" .Values.userIdp.hostname -}}
-    {{- end -}}
-{{- else if or .Values.global.node.ingress.enabled .Values.ingress.enabled -}}
-    {{- printf "%s/keycloak/realms/flame" (include "node.ingress.hostname" .) -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
 Return the secret containing the hub robot secret
 */}}
 {{- define "hub.secretName" -}}
@@ -67,10 +52,17 @@ Return the http relative path for the internal keycloak instance e.g. "/keycloak
 {{- end -}}
 
 {{/*
-Return the internal Keycloak service endpoint
+Return the endpoint for the internal keycloak instance with the (cleaned) relative path e.g. "/keycloak"
+*/}}
+{{- define "keycloak.base.endpoint" -}}
+{{- printf "http://%s-keycloak:80%s" .Release.Name (include "keycloak.httpRelativePath" .) -}}
+{{- end -}}
+
+{{/*
+Return the internal Keycloak service endpoint with the realm
 */}}
 {{- define "keycloak.service.endpoint" -}}
-{{- printf "http://%s-keycloak:80%s/realms/flame" .Release.Name (include "keycloak.httpRelativePath" .) -}}
+{{- printf "%s/realms/flame" (include "keycloak.base.endpoint" .) -}}
 {{- end -}}
 
 {{/*
@@ -78,6 +70,21 @@ Return the internal Keycloak JWKS endpoint
 */}}
 {{- define "keycloak.jwks.endpoint" -}}
 {{- printf "%s/protocol/openid-connect/certs" (include "keycloak.service.endpoint" .) -}}
+{{- end -}}
+
+{{/*
+Return the user IDP hostname
+*/}}
+{{- define "userIdp.hostname" -}}
+{{- if .Values.userIdp.hostname -}}
+    {{- if hasPrefix "http" .Values.userIdp.hostname -}}
+        {{- print .Values.userIdp.hostname -}}
+    {{- else -}}
+        {{- printf "http://%s" .Values.userIdp.hostname -}}
+    {{- end -}}
+{{- else if or .Values.global.node.ingress.enabled .Values.ingress.enabled -}}
+    {{- printf "%s/keycloak/realms/flame" (include "node.ingress.hostname" .) -}}
+{{- end -}}
 {{- end -}}
 
 {{/*UI helpers*/}}
@@ -245,5 +252,46 @@ Return the JWKS endpoint for user and client authentication which overrides what
     {{- print .Values.hubAdapter.idp.jwks -}}
 {{- else -}}
     {{- print "" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*Pod Orchestartor helpers*/}}
+
+{{/*
+Return the postgres service endpoint
+*/}}
+{{- define "po.postgres.endpoint" -}}
+{{- if .Values.podOrchestrator.env.POSTGRES_HOST -}}
+    {{- .Values.podOrchestrator.env.POSTGRES_HOST -}}
+{{- else if .Values.postgresql.fullnameOverride -}}
+    {{- print .Values.postgresql.fullnameOverride -}}
+{{- else if .Values.postgresql.nameOverride -}}
+    {{- printf "%s-%s" .Release.Name .Values.postgresql.nameOverride -}}
+{{- else -}}
+    {{- printf "%s-postgresql" .Release.Name -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Generate a random clientSecret value for the PO client in keycloak if none provided
+*/}}
+{{- define "po.keycloak.clientSecret" -}}
+{{- if .Values.podOrchestrator.idp.debug -}}
+    {{- print "9dd01665c2f3f02f93c32d03bd854569f03cd62f439ccf9f0861c141b9d6330e" -}}
+{{- else -}}
+{{/*    {{- print ( randAlphaNum 22 | b64enc | quote ) -}}*/}}
+    {{- /* Create "po_secret" dict inside ".Release" to store various stuff. */ -}}
+    {{- if not (index .Release "po_secret") -}}
+        {{-   $_ := set .Release "po_secret" dict -}}
+    {{- end -}}
+    {{- /* Some random ID of this password, in case there will be other random values alongside this instance. */ -}}
+    {{- $key := printf "%s_%s" .Release.Name "password" -}}
+    {{- /* If $key does not yet exist in .Release.po_secret, then... */ -}}
+    {{- if not (index .Release.po_secret $key) -}}
+        {{- /* ... store random password under the $key */ -}}
+        {{-   $_ := set .Release.po_secret $key (randAlphaNum 32) -}}
+    {{- end -}}
+        {{- /* Retrieve previously generated value. */ -}}
+        {{- print (index .Release.po_secret $key | b64enc) -}}
 {{- end -}}
 {{- end -}}
