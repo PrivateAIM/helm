@@ -1,6 +1,3 @@
-{{/*Possibly TODO REMOVE*/}}
-
-
 {{/*Global Helpers*/}}
 
 {{/*
@@ -84,6 +81,16 @@ Return the user IDP hostname
     {{- end -}}
 {{- else if or .Values.global.node.ingress.enabled .Values.ingress.enabled -}}
     {{- printf "%s/keycloak/realms/flame" (include "node.ingress.hostname" .) -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "postgresql.endpoint" -}}
+{{- if .Values.postgresql.fullnameOverride -}}
+    {{- print .Values.postgresql.fullnameOverride -}}
+{{- else if .Values.postgresql.nameOverride -}}
+    {{- printf "%s-%s" .Release.Name .Values.postgresql.nameOverride -}}
+{{- else -}}
+    {{- printf "%s-postgresql" .Release.Name -}}
 {{- end -}}
 {{- end -}}
 
@@ -258,21 +265,6 @@ Return the JWKS endpoint for user and client authentication which overrides what
 {{/*Pod Orchestartor helpers*/}}
 
 {{/*
-Return the postgres service endpoint
-*/}}
-{{- define "po.postgres.endpoint" -}}
-{{- if .Values.podOrchestrator.env.POSTGRES_HOST -}}
-    {{- .Values.podOrchestrator.env.POSTGRES_HOST -}}
-{{- else if .Values.postgresql.fullnameOverride -}}
-    {{- print .Values.postgresql.fullnameOverride -}}
-{{- else if .Values.postgresql.nameOverride -}}
-    {{- printf "%s-%s" .Release.Name .Values.postgresql.nameOverride -}}
-{{- else -}}
-    {{- printf "%s-postgresql" .Release.Name -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
 Generate a random clientSecret value for the PO client in keycloak if none provided
 */}}
 {{- define "po.keycloak.clientSecret" -}}
@@ -293,5 +285,19 @@ Generate a random clientSecret value for the PO client in keycloak if none provi
     {{- end -}}
         {{- /* Retrieve previously generated value. */ -}}
         {{- print (index .Release.po_secret $key | b64enc) -}}
+{{- end -}}
+{{- end -}}
+
+{{/*Result Service helpers*/}}
+
+{{/*
+Return the secret containing private key
+*/}}
+{{- define "results.hub.crypto.privateKeySecretName" -}}
+{{- $secretName := .Values.hub.crypto.existingSecret -}}
+{{- if $secretName -}}
+    {{- printf "%s" (tpl $secretName $) -}}
+{{- else -}}
+    {{- printf "%s-ecdh-private-key-secret" .Release.Name -}}
 {{- end -}}
 {{- end -}}

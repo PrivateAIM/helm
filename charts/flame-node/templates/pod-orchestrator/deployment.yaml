@@ -38,7 +38,7 @@ spec:
             {{- toYaml .Values.podOrchestrator.waitForPostgres.securityContext | nindent 12 }}
           image: "{{ .Values.podOrchestrator.waitForPostgres.image.repository }}:{{ .Values.podOrchestrator.waitForPostgres.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.podOrchestrator.waitForPostgres.image.pullPolicy }}
-          command: ['sh', '-c', "until nc -vz {{ include "po.postgres.endpoint" . }}.{{ .Release.Namespace }}.svc {{ .Values.postgresql.primary.service.ports.postgresql }}; do echo waiting for postgres; sleep 2; done"]
+          command: ['sh', '-c', "until nc -vz {{ coalesce .Values.podOrchestrator.env.POSTGRES_HOST (include "postgresql.endpoint" .) }}.{{ .Release.Namespace }}.svc {{ .Values.postgresql.primary.service.ports.postgresql }}; do echo waiting for postgres; sleep 2; done"]
           {{- with .Values.podOrchestrator.waitForPostgres.env }}
           env:
             {{- toYaml . | nindent 12 }}
@@ -66,9 +66,9 @@ spec:
             - name: MINIO_SECRET_KEY
               value: {{ .Values.podOrchestrator.minio.secretKey }}
             - name: POSTGRES_HOST
-              value: {{ include "po.postgres.endpoint" . }}
+              value: {{ coalesce .Values.podOrchestrator.env.POSTGRES_HOST (include "postgresql.endpoint" .) }}
             - name: POSTGRES_DB
-              value: {{ .Values.postgresql.auth.database}}
+              value: {{ .Values.postgresql.auth.database }}
               ## TODO: add _helpers.tpl in case we want to use secret instead for postgres user/pwd
             - name: POSTGRES_USER
               value: {{ .Values.postgresql.auth.username }}

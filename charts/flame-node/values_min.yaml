@@ -1,14 +1,5 @@
 # Global values
 global:
-  hub:
-    endpoints:
-      auth: https://auth.privateaim.dev
-      core: https://core.privateaim.dev
-      messenger: https://messenger.privateaim.dev
-      storage: https://storage.privateaim.dev
-    auth:
-      robotUser:
-      robotSecret:
   node:
     ingress:
       enabled: true
