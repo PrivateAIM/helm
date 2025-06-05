@@ -62,16 +62,16 @@ spec:
             - name: KONG_ADMIN_SERVICE_URL
               value: {{ printf "http://%s-kong-admin:80" .Release.Name }}
             - name: HUB_SERVICE_URL
-              value: {{ ( include "hub.coreApi" .) | default "https://core.privateaim.dev" | quote }}
+              value: {{ .Values.hub.endpoints.core | default "https://core.privateaim.dev" | quote }}
             - name: HUB_AUTH_SERVICE_URL
-              value: {{ ( include "hub.authApi" .) | default "https://auth.privateaim.dev" | quote }}
+              value: {{ .Values.hub.endpoints.auth | default "https://auth.privateaim.dev" | quote }}
             - name: HUB_ROBOT_USER
-              value: {{ required "A robot ID for the Hub is required." (include "hub.robotUser" .) | quote }}  # To be properly filled in
+              value: {{ required "A robot ID for the Hub is required." .Values.hub.auth.robotUser | quote }}  # To be properly filled in
             - name: HUB_ROBOT_SECRET
               valueFrom:
                 secretKeyRef:
                   name: {{ include "hub.secretName" . }}
-                  key: "robotSecret"
+                  key: robotSecret
             {{- with .Values.hubAdapter.env }}
             {{- toYaml . | nindent 12 }}
             {{- end }}

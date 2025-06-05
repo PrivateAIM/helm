@@ -1,48 +1,5 @@
 {{/*Possibly TODO REMOVE*/}}
 
-{{/*
-Return hub auth API endpoint
-*/}}
-{{- define "hub.authApi" -}}
-{{- if .Values.global.hub.endpoints.auth -}}
-    {{- .Values.global.hub.endpoints.auth -}}
-{{- else -}}
-    {{- .Values.hub.endpoints.auth -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Return hub core API endpoint
-*/}}
-{{- define "hub.coreApi" -}}
-{{- if .Values.global.hub.endpoints.core -}}
-    {{- .Values.global.hub.endpoints.core -}}
-{{- else -}}
-    {{- .Values.hub.endpoints.core -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Return hub robot user ID
-*/}}
-{{- define "hub.robotUser" -}}
-{{- if .Values.global.hub.auth.robotUser -}}
-    {{- .Values.global.hub.auth.robotUser -}}
-{{- else -}}
-    {{- .Values.hub.auth.robotUser -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Return hub robot user secret
-*/}}
-{{- define "hub.robotSecret" -}}
-{{- if .Values.global.hub.auth.robotSecret -}}
-    {{- .Values.global.hub.auth.robotSecret | b64enc -}}
-{{- else -}}
-    {{- .Values.hub.auth.robotSecret | b64enc -}}
-{{- end -}}
-{{- end -}}
 
 {{/*Global Helpers*/}}
 
@@ -88,6 +45,39 @@ Return the user IDP hostname
 {{- else if or .Values.global.node.ingress.enabled .Values.ingress.enabled -}}
     {{- printf "%s/keycloak/realms/flame" (include "node.ingress.hostname" .) -}}
 {{- end -}}
+{{- end -}}
+
+{{/*
+Return the secret containing the hub robot secret
+*/}}
+{{- define "hub.secretName" -}}
+{{- $robotSecretName := .Values.hub.auth.existingSecret -}}
+{{- if $robotSecretName -}}
+    {{- printf "%s" (tpl $robotSecretName $) -}}
+{{- else -}}
+    {{- printf "%s-hub-robot-secret" .Release.Name -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return the http relative path for the internal keycloak instance e.g. "/keycloak"
+*/}}
+{{- define "keycloak.httpRelativePath" -}}
+{{- printf "/%s" (replace .Values.keycloak.httpRelativePath "/" "") -}}
+{{- end -}}
+
+{{/*
+Return the internal Keycloak service endpoint
+*/}}
+{{- define "keycloak.service.endpoint" -}}
+{{- printf "http://%s-keycloak:80%s/realms/flame" .Release.Name (include "keycloak.httpRelativePath" .) -}}
+{{- end -}}
+
+{{/*
+Return the internal Keycloak JWKS endpoint
+*/}}
+{{- define "keycloak.jwks.endpoint" -}}
+{{- printf "%s/protocol/openid-connect/certs" (include "keycloak.service.endpoint" .) -}}
 {{- end -}}
 
 {{/*UI helpers*/}}
@@ -169,17 +159,6 @@ Generate a random clientSecret value for the node-ui client in keycloak if none 
 {{- end -}}
 {{- end -}}
 
-{{/*
-Return the Keycloak service endpoint
-*/}}
-{{- define "ui.keycloak.service.endpoint" -}}
-{{- if .Values.ui.idp.service -}}
-    {{- print .Values.ui.idp.service -}}
-{{- else -}}
-    {{- printf "http://%s-keycloak:80/keycloak/realms/flame" .Release.Name -}}
-{{- end -}}
-{{- end -}}
-
 {{/*Hub Adapter helpers*/}}
 
 {{/*
@@ -201,21 +180,6 @@ Return the endpoint for user authentication
     {{- print (include "userIdp.hostname" .) -}}
 {{- else -}}
     {{- printf "http://%s-keycloak:80/keycloak/realms/flame" .Release.Name -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Return the secret containing the hub robot secret
-*/}}
-{{- define "hub.secretName" -}}
-{{- $globalRobotSecretName := .Values.global.hub.auth.existingSecret -}}
-{{- $robotSecretName := .Values.hub.auth.existingSecret -}}
-{{- if $globalRobotSecretName -}}
-    {{- printf "%s" (tpl $globalRobotSecretName $) -}}
-{{- else if $robotSecretName -}}
-    {{- printf "%s" (tpl $robotSecretName $) -}}
-{{- else -}}
-    {{- printf "%s-hub-adapter-robot-secret" .Release.Name -}}
 {{- end -}}
 {{- end -}}
 
@@ -275,8 +239,8 @@ Return the secret key that contains the Keycloak client secret
 Return the JWKS endpoint for user and client authentication which overrides what is fetched by the API.
 */}}
 {{- define "adapter.jwks.endpoint" -}}
-{{- if .Values.hubAdapter.offline -}}
-    {{- printf "http://%s-keycloak:80/keycloak/realms/flame/protocol/openid-connect/certs" .Release.Name -}}
+{{- if .Values.offline -}}
+    {{- print (include "keycloak.jwks.endpoint" .) -}}
 {{- else if .Values.hubAdapter.idp.jwks -}}
     {{- print .Values.hubAdapter.idp.jwks -}}
 {{- else -}}

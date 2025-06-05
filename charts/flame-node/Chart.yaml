@@ -33,9 +33,6 @@ dependencies:
   - name: flame-node-pod-orchestration
     repository: file://../flame-node-pod-orchestration
     version: 0.1.0
-  - name: flame-node-message-broker
-    repository: file://../flame-node-message-broker
-    version: 0.1.0
   - name: keycloak
     repository: file://../third-party/keycloak
     version: 24.4.10

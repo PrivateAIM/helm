@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/part-of: flame
     app.kubernetes.io/version: {{ .Chart.AppVersion }}
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{ .Values.messageBroker.replicaCount }}
   revisionHistoryLimit: 3
   selector:
     matchLabels:
@@ -19,7 +19,7 @@ spec:
   template:
     metadata:
       annotations:
-        {{- with .Values.podAnnotations }}
+        {{- with .Values.messageBroker.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
       labels:
@@ -27,29 +27,29 @@ spec:
         app.kubernetes.io/component: server
         app.kubernetes.io/part-of: flame
         app.kubernetes.io/version: {{ .Chart.AppVersion }}
-        {{- with .Values.podLabels }}
+        {{- with .Values.messageBroker.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
-      {{- with .Values.imagePullSecrets }}
+      {{- with .Values.messageBroker.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+        {{- toYaml .Values.messageBroker.podSecurityContext | nindent 8 }}
       containers:
         - name: {{ .Release.Name }}-node-message-broker
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          image: "{{ .Values.messageBroker.image.repository }}:{{ .Values.messageBroker.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.messageBroker.image.pullPolicy }}
           securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
+            {{- toYaml .Values.messageBroker.securityContext | nindent 12 }}
           ports:
             - containerPort: 8080
           env:
             - name: SERVER_PORT
               value: "8080"
             - name: AUTH_JWKS_URL
-              value: {{ required "A valid JWKS URL for Keycloak is required." (include "broker.keycloak.endpoint" .) }}
+              value: {{ required "A valid JWKS URL for Keycloak is required." (include "keycloak.jwks.endpoint" .) }}
             - name: PERSISTENCE_HOSTNAME
               value: "{{ .Release.Name}}-node-message-broker-db"
             - name: PERSISTENCE_PORT
@@ -57,41 +57,41 @@ spec:
             - name: PERSISTENCE_DATABASE_NAME
               value: "message-broker"
             - name: HUB_BASE_URL
-              value: {{ required "A valid HUB API base URL is required." (include "broker.hub.coreApi" .) | default "https://api.privateaim.net/" | quote}}
+              value: {{ required "A valid HUB API base URL is required." .Values.hub.endpoints.core | default "https://api.privateaim.net/" | quote}}
             - name: HUB_AUTH_BASE_URL
-              value: {{ required "A valid HUB Auth base URL is required." (include "broker.hub.authApi" .) | default "https://auth.privateaim.net/" | quote }}
+              value: {{ required "A valid HUB Auth base URL is required." .Values.hub.endpoints.auth | default "https://auth.privateaim.net/" | quote }}
             - name: HUB_MESSENGER_BASE_URL
-              value: {{ required "A valid HUB Messenger base URL is required." (include "broker.hub.messengerApi" .) | default "https://messenger.privateaim.net/" | quote }}              
+              value: {{ required "A valid HUB Messenger base URL is required." .Values.hub.endpoints.messenger | default "https://messenger.privateaim.net/" | quote }}
             - name: HUB_AUTH_ROBOT_ID
-              value: {{ required "A robot ID for the Hub is required." (include "broker.hub.robotUser" .) | quote }}
+              value: {{ required "A robot ID for the Hub is required." .Values.hub.auth.robotUser | quote }}
             - name: HUB_AUTH_ROBOT_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "broker.hub.secretName" . }}
+                  name: {{ include "hub.secretName" . }}
                   key: robotSecret
             # DO NOT USE THIS IN PRODUCTION!!! This is just for internal testing purposes.
             - name: NODE_TLS_REJECT_UNAUTHORIZED
               value: "0"
-            {{- with .Values.env }}
+            {{- with .Values.messageBroker.env }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
-          {{- with .Values.readinessProbe }}
+            {{- toYaml .Values.messageBroker.resources | nindent 12 }}
+          {{- with .Values.messageBroker.readinessProbe }}
           readinessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.livenessProbe }}
+          {{- with .Values.messageBroker.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           volumeMounts:
-            {{- toYaml .Values.volumeMounts | nindent 12 }}
+            {{- toYaml .Values.messageBroker.volumeMounts | nindent 12 }}
       volumes:
-        {{- toYaml .Values.volumes | nindent 8 }}
+        {{- toYaml .Values.messageBroker.volumes | nindent 8 }}
       nodeSelector:
-        {{- toYaml .Values.nodeSelector | nindent 8 }}
+        {{- toYaml .Values.messageBroker.nodeSelector | nindent 8 }}
       affinity:
-        {{- toYaml .Values.affinity | nindent 8 }}
+        {{- toYaml .Values.messageBroker.affinity | nindent 8 }}
       tolerations:
-        {{- toYaml .Values.tolerations | nindent 8 }}
+        {{- toYaml .Values.messageBroker.tolerations | nindent 8 }}

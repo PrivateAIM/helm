@@ -15,10 +15,10 @@ spec:
       app.kubernetes.io/component: database
       app.kubernetes.io/part-of: flame
       app.kubernetes.io/version: {{ .Chart.AppVersion }}
-  replicas: {{ .Values.db.replicaCount }}
+  replicas: {{ .Values.messageBroker.db.replicaCount }}
   template:
     metadata:
-      {{- with .Values.db.podAnnotations }}
+      {{- with .Values.messageBroker.db.podAnnotations }}
       annotations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
@@ -27,65 +27,65 @@ spec:
         app.kubernetes.io/component: database
         app.kubernetes.io/part-of: flame
         app.kubernetes.io/version: {{ .Chart.AppVersion }}
-        {{- with .Values.db.podLabels }}
+        {{- with .Values.messageBroker.db.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
-      {{- with .Values.db.imagePullSecrets }}
+      {{- with .Values.messageBroker.db.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       securityContext:
-        {{- toYaml .Values.db.podSecurityContext | nindent 8 }}
+        {{- toYaml .Values.messageBroker.db.podSecurityContext | nindent 8 }}
       containers:
         - name: {{ .Release.Name }}-node-message-broker-db
           securityContext:
-            {{- toYaml .Values.db.securityContext | nindent 12 }}
-          image: "{{ .Values.db.image.repository }}:{{ .Values.db.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.db.image.pullPolicy }}
+            {{- toYaml .Values.messageBroker.db.securityContext | nindent 12 }}
+          image: "{{ .Values.messageBroker.db.image.repository }}:{{ .Values.messageBroker.db.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.messageBroker.db.image.pullPolicy }}
           ports:
             - containerPort: 27017
           env:
             - name: MONGO_INITDB_DATABASE
               value: "message-broker"
             - name: TZ
-              value: {{ .Values.common.timezone | default "Europe/Berlin" | quote }}
-            {{- with .Values.db.env }}
+              value: {{ .Values.messageBroker.common.timezone | default "Europe/Berlin" | quote }}
+            {{- with .Values.messageBroker.db.env }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
-          {{- with .Values.db.livenessProbe }}
+          {{- with .Values.messageBroker.db.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.db.readinessProbe }}
+          {{- with .Values.messageBroker.db.readinessProbe }}
           readinessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           resources:
-            {{- toYaml .Values.db.resources | nindent 12 }}
+            {{- toYaml .Values.messageBroker.db.resources | nindent 12 }}
           volumeMounts:
             - name: storage
               mountPath: /data/db
-            {{- with .Values.db.volumeMounts }}
+            {{- with .Values.messageBroker.db.volumeMounts }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
       volumes:
-        {{- toYaml .Values.db.volumes | nindent 8 }}
+        {{- toYaml .Values.messageBroker.db.volumes | nindent 8 }}
       nodeSelector:
-        {{- toYaml .Values.db.nodeSelector | nindent 8 }}
+        {{- toYaml .Values.messageBroker.db.nodeSelector | nindent 8 }}
       affinity:
-        {{- toYaml .Values.db.affinity | nindent 8 }}
+        {{- toYaml .Values.messageBroker.db.affinity | nindent 8 }}
       tolerations:
-        {{- toYaml .Values.db.tolerations | nindent 8 }}
+        {{- toYaml .Values.messageBroker.db.tolerations | nindent 8 }}
   volumeClaimTemplates:
     - metadata:
         name: storage
       spec:
         accessModes:
-          {{- toYaml .Values.db.persistence.accessModes | nindent 10 }}
-        {{- with .Values.db.persistence.storageClass }}
+          {{- toYaml .Values.messageBroker.db.persistence.accessModes | nindent 10 }}
+        {{- with .Values.messageBroker.db.persistence.storageClass }}
         storageClassName: {{ . }}
         {{- end }}
         resources:
           requests:
-            storage: {{ .Values.db.persistence.size }}
+            storage: {{ .Values.messageBroker.db.persistence.size }}

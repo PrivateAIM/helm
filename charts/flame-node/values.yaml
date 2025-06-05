@@ -21,9 +21,15 @@ global:
       ## @param global.node.ingress.enabled Host name to be assigned to the Node UI (/) and Hub Adapter API (/api)
       hostname:
 
+## @param offline Forces the UI and hub adapter to use the internal service endpoint for authentication
+## Overrides hubAdapter.idp.jwks
+offline: false
+
 userIdp:
   ## @param userIdp.hostname Hostname for a separate IDP to manage users who can access the FLAME Node UI.
   ## Leave this blank unless you want to use your own IDP
+  ## If this is set, clients for the UI and hubAdapter must be created in the IDP and the clientId and clientSecret
+  ## provided below (see .Values.ui.idp and .Values.hubAdapter.idp)
   hostname:
 
 ## For defining ingress specific metadata
@@ -49,15 +55,19 @@ ingress:
 ## Hub services and data
 hub:
   endpoints:
-    ## @param hub.coreApi Hub core API endpoint
-    coreApi: https://privateaim.net/core
-    ## @param hub.authApi Hub auth API endpoint
-    authApi: https://privateaim.net/auth
-    ## Credentials used for retrieving a valid token from the hub using a robot account
+    ## @param hub.endpoints.core Hub core API endpoint
+    core: https://core.privateaim.dev
+    ## @param hub.endpoints.auth Hub auth API endpoint
+    auth: https://auth.privateaim.dev
+    ## @param hub.endpoints.messenger Hub messenger API endpoint. Overrides broker.HUB_BASE_URL if provided
+    messenger: https://messenger.privateaim.dev
+    ## @param hub.endpoints.storage Hub storage API endpoint
+    storage: https://storage.privateaim.dev
+  ## Credentials used for retrieving a valid token from the hub using a robot account
   auth:
     robotUser:
     robotSecret:
-    ## @param hub.auth.existingSecret Existing k8s secret containing secret for given hub robot ID
+    ## @param hub.auth.existingSecret Existing k8s secret containing secret for given hub robot user UUID
     ## The secret must have a key named "robotSecret"
     existingSecret: ""
 
@@ -141,7 +151,7 @@ flame-node-result-service:
       usePasswordFiles: false
   ## Hub services and data
   hub:
-    ## @param hub.coreApi Hub core API endpoint
+    ## @param hub.core Hub core API endpoint
     coreURL: https://core.privateaim.dev
     ## @param hub.authURL Hub auth API endpoint
     authURL: https://auth.privateaim.dev
@@ -334,10 +344,6 @@ keycloak:
 
 # hub-api-adapter Values
 hubAdapter:
-  ## @param offline Forces the HA to use the internal service endpoint for authentication
-  ## Overrides idp.jwks
-  offline: false
-
   ## For defining ingress specific metadata
   ingress:
     ## @param ingress.enabled Enable ingress record generation for the Hub Adapter
@@ -365,9 +371,6 @@ hubAdapter:
     existingSecret: ""
     ## @param idp.existingSecretKey Key where the Keycloak secret is being stored inside the existing k8s secret
     existingSecretKey: ""
-    ## @param idp.host URL to keycloak service
-    ## Will be inferred using the Release.Name if not defined
-    host: ""
     ## @param idp.jwks JWKS URI to override the endpoints fetched from the IDP issuer
     ## Meant for local testing where either no FQDN provided or using localhost and port-forwarding
     jwks: ""
@@ -497,23 +500,175 @@ flame-node-pod-orchestration:
       ##
       usePasswordFiles: false
 
-flame-node-message-broker:
-  # Uncomment, if you want to use a specific storage class.
-  # Otherwise, the default one will be used.
-  # db:
-  #   persistence:
-  #     storageClass: yourStorageClassToBeUsed
+messageBroker:
+  common:
+    timezone: Europe/Berlin
+
   broker:
-    AUTH_JWKS_URL:
-    HUB_BASE_URL:
-    HUB_AUTH_BASE_URL:
-    HUB_MESSENGER_BASE_URL:
-    HUB_AUTH_ROBOT_ID:
-    HUB_AUTH_ROBOT_SECRET:
+    AUTH_JWKS_URL: ""
+    HUB_AUTH_ROBOT_SECRET: ""
+
+  # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
+  replicaCount: 1
+
+  # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+  image:
+    repository: ghcr.io/privateaim/node-message-broker
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: ""
+    # This sets the pull policy for images.
+    pullPolicy: Always
+
+  # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+  imagePullSecrets: []
+
+  # This is for setting Kubernetes Annotations to a Pod.
+  # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: {}
+  # This is for setting Kubernetes Labels to a Pod.
+  # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+  podLabels: {}
+
+  podSecurityContext: {}
+    # fsGroup: 2000
+
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    privileged: false
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: [ALL]
+
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 100m
+    limits:
+      memory: 512Mi
+
+  # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: 8080
+    initialDelaySeconds: 90
+    periodSeconds: 10
+    timeoutSeconds: 10
+  readinessProbe:
+    httpGet:
+      path: /health
+      port: 8080
+    initialDelaySeconds: 60
+    periodSeconds: 5
+    timeoutSeconds: 10
+
+  # Additional environment variables on the output Deployment definition.
+  env: []
+  # - name: FOO
+  #   value: bar
+
+  # Additional volumes on the output Deployment definition.
+  volumes: []
+  # - name: foo
+  #   secret:
+  #     secretName: mysecret
+  #     optional: false
+
+  # Additional volumeMounts on the output Deployment definition.
+  volumeMounts: []
+  # - name: foo
+  #   mountPath: "/etc/foo"
+  #   readOnly: true
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+  db:
+    persistence:
+      size: 100Mi
+      storageClass: ""
+      accessModes: [ReadWriteOnce]
+
+    # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
+    replicaCount: 1
+
+    # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+    image:
+      repository: mongo
+      # Overrides the image tag whose default is the chart appVersion.
+      tag: 7.0.5@sha256:fcde2d71bf00b592c9cabab1d7d01defde37d69b3d788c53c3bc7431b6b15de8
+      # This sets the pull policy for images.
+      pullPolicy: Always
+
+    # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+    imagePullSecrets: []
+
+    # This is for setting Kubernetes Annotations to a Pod.
+    # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+    podAnnotations: {}
+    # This is for setting Kubernetes Labels to a Pod.
+    # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+    podLabels: {}
+
+    podSecurityContext: {}
+      # fsGroup: 2000
+
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 1000
+      privileged: false
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: [ALL]
+
+    resources:
+      requests:
+        memory: 256Mi
+        cpu: 100m
+      limits:
+        memory: 1Gi
+
+    # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+    livenessProbe: &dbProbe
+      exec:
+        command:
+          - mongosh
+          - --eval
+          - 'db.runCommand("ping").ok'
+          - --quiet
+      failureThreshold: 3
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 15
+    readinessProbe:
+      <<: *dbProbe
+      initialDelaySeconds: 30
+
+    # Additional environment variables on the output StatefulSet definition.
+    env: []
+    # - name: FOO
+    #   value: bar
+
+    # Additional volumes on the output StatefulSet definition.
+    volumes: []
+    # - name: foo
+    #   secret:
+    #     secretName: mysecret
+    #     optional: false
+
+    # Additional volumeMounts on the output StatefulSet definition.
+    volumeMounts: []
+    # - name: foo
+    #   mountPath: "/etc/foo"
+    #   readOnly: true
+
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
 
 ui:
-  ## @param offline Forces the UI to use the internal service endpoint for authentication
-  offline: false
   env: production
 
   ## Keycloak related information
@@ -531,12 +686,6 @@ ui:
     existingSecret: ""
     ## @param idp.existingSecretKey Key where the Keycloak secret is being stored inside the existing k8s secret
     existingSecretKey: ""
-    ## @param idp.host IDP URL. If the IDP is Keycloak, include /realms/{realm} at the end of the URL
-    ## Will be inferred using the Release.Name if not defined
-    host: ""
-    ## @param idp.service k8s service URL to the IDP. This is used for local development
-    ## If the IDP is Keycloak, include /realms/{realm} at the end of the URL e.g. http://my-keycloak-svc:80/realms/flame
-    service: ""
 
   # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
   replicaCount: 1
