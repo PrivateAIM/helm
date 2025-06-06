@@ -473,6 +473,11 @@ flame-node-data-store:
       enabled: true
       size: 5Gi
   
+    # ⚠️ Note:
+    # The dataPopulatorJob is intended for initial population of FHIR resources with dummy data from Synthea.
+    # If enabled (`enabled: true`), it will add resources to the Blaze data store which may lead to unintended data being present.
+    # By default, this job is disabled. Only enable it if you want to populate the Blaze data store with initial data.
+    # ⚠️ Recommended: Keep `dataPopulatorJob.enabled: false` after initial setup to avoid data contamination.
     dataPopulatorJob:
       enabled: false
       env:
