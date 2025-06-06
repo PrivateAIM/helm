@@ -32,7 +32,7 @@ dependencies:
     version: 24.4.10
     condition: keycloak.enabled
   - name: flame-node-data-store
-    repository: file://../flame-node-data-store
+    repository: file://flame-node-data-store
     version: 0.1.0
     condition: flame-node-data-store.enabled
   - name: postgresql
