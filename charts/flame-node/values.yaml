@@ -761,15 +761,25 @@ ui:
 
 ## node-data-store deploys dummy blaze (FHIR) and minio (S3) data stores for testing the Flame Node
 flame-node-data-store:
-  enabled: true
+  enabled: false
 
   # blaze values
   blaze:
     service:
       type: ClusterIP
       port: 80
-    dataPopulatorJob:
+
+    persistence:
       enabled: true
+      size: 5Gi
+  
+    # ⚠️ Note:
+    # The dataPopulatorJob is intended for initial population of FHIR resources with dummy data from Synthea.
+    # If enabled (`enabled: true`), it will add resources to the Blaze data store which may lead to unintended data being present.
+    # By default, this job is disabled. Only enable it if you want to populate the Blaze data store with initial data.
+    # ⚠️ Recommended: Keep `dataPopulatorJob.enabled: false` after initial setup to avoid data contamination.
+    dataPopulatorJob:
+      enabled: false
       env:
         SYNTHEA_N_PATIENTS: 10
         SYNTHEA_SEED: 3256262546
