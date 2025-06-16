@@ -53,7 +53,7 @@ spec:
             - name: HUB_AUTH_ROBOT_ID
               value: {{ required "A robot ID for the Hub is required." (include "broker.hub.robotUser" .) | quote }}
             - name: HUB_AUTH_ROBOT_SECRET_FILE
-              value: "/opt/message-broker/auth/robot-secret.txt"
+              value: "/opt/message-broker/auth/robot_secret.txt"
             - name: HUB_BASE_URL
               value: {{ required "A valid HUB API base URL is required." (include "broker.hub.coreApi" .) | default "https://api.privateaim.dev/" | quote}}
             - name: HUB_MESSENGER_BASE_URL
@@ -86,9 +86,9 @@ spec:
               name: "crypto"
               subPath: "private_key.pem"
               readOnly: true
-            - mountPath: "/opt/message-broker/auth/robot-secret.txt"
+            - mountPath: "/opt/message-broker/auth/robot_secret.txt"
               name: "auth"
-              subPath: "robot-secret.txt"
+              subPath: "robot_secret.txt"
               readOnly: true
       volumes:
         - name: crypto
@@ -101,8 +101,8 @@ spec:
           secret:
             secretName: {{ printf "%s-node-message-broker-hub-auth" .Release.Name }}
             items:
-              - key: "robot-secret"
-                path: "robot-secret.txt"
+              - key: "robot_secret"
+                path: "robot_secret.txt"
       nodeSelector:
         {{- toYaml .Values.nodeSelector | nindent 8 }}
       affinity:
