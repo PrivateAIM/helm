@@ -93,7 +93,7 @@ spec:
       volumes:
         - name: crypto
           secret:
-            secretName: "ecdh-private-key-secret"
+            secretName: {{ include "hub.crypto.privateKeySecretName" . }}
             items:
               - key: "private_key.pem"
                 path: "private_key.pem"
