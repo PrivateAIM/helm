@@ -90,6 +90,9 @@ spec:
               name: "auth"
               subPath: "robot_secret.txt"
               readOnly: true
+            {{- with .Values.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
       volumes:
         - name: crypto
           secret:
@@ -103,6 +106,9 @@ spec:
             items:
               - key: "robot_secret"
                 path: "robot_secret.txt"
+        {{- with .Values.volumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       nodeSelector:
         {{- toYaml .Values.nodeSelector | nindent 8 }}
       affinity:
