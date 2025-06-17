@@ -1,5 +1,9 @@
 ## Global variables
 global:
+  node:
+    proxy:
+      httpProxy: ""
+      httpsProxy: ""
   hub:
     endpoints:
       ## @param global.hub.endpoints.auth Hub Auth API endpoint. Overrides env.HUB__AUTH_BASE_URL

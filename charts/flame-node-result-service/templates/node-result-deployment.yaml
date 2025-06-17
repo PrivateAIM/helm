@@ -58,6 +58,10 @@ spec:
               value: postgres
             - name: POSTGRES__PASSWORD
               value: postgres
+            - name: PROXY__HTTP_URL
+              value: {{ .Values.global.node.proxy.httpProxy | default "" }}
+            - name: PROXY__HTTPS_URL
+              value: {{ .Values.global.node.proxy.httpsProxy | default "" }}
             - name: MINIO__ENDPOINT
               value: {{ .Release.Name }}-minio:9000
               ## TODO: add _helpers.tpl in case we want to use secret instead for minio user/pwd
