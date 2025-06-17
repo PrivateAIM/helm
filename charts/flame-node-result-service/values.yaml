@@ -60,7 +60,7 @@ replicaCount: 1
 image:
   repository: ghcr.io/privateaim/node-result-service
   # Overrides the image tag whose default is the chart appVersion.
-  tag: sha-68e442f
+  tag: 0.1.1
   # This sets the pull policy for images.
   pullPolicy: Always
 
