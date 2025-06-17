@@ -15,6 +15,9 @@ global:
       ## The secret must have a key named "robotSecret"
       existingSecret: ""
   node:
+    proxy:
+      httpProxy: ""
+      httpsProxy: ""
     ingress:
       ## @param global.node.ingress.enabled Toggle whether ingress should be enabled
       enabled: false

@@ -14,6 +14,9 @@ global:
       ## @param global.hub.auth.existingSecret Valid robot secret encoded in a k8s secret. Overrides hub.auth.existingSecret if provided
       existingSecret: ""
   node:
+    proxy:
+      httpProxy: ""
+      httpsProxy: ""
     ingress:
       ## @param global.node.ingress.enabled Toggle whether ingress should be enabled
       enabled: false
@@ -97,7 +100,7 @@ replicaCount: 1
 image:
   repository: ghcr.io/privateaim/node-hub-api-adapter
   # Overrides the image tag whose default is the chart appVersion.
-  tag: 0.2.6
+  tag: 0.2.7
   # This sets the pull policy for images.
   pullPolicy: Always
 

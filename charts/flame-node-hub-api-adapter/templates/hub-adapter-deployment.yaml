@@ -55,6 +55,10 @@ spec:
               value: {{ printf "http://%s-keycloak:80%s/realms/flame" .Release.Name .Values.idp.httpRelativePath }}
             - name: OVERRIDE_JWKS
               value: {{ include "adapter.jwks.endpoint" . }}
+            - name: HA_HTTP_PROXY
+              value: {{ .Values.global.node.proxy.httpProxy | default "" }}
+            - name: HA_HTTPS_PROXY
+              value: {{ .Values.global.node.proxy.httpsProxy | default "" }}
             - name: RESULTS_SERVICE_URL
               value: {{ include "adapter.results.endpoint" . }}
             - name: PODORC_SERVICE_URL
