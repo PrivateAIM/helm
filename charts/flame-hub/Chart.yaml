@@ -40,6 +40,11 @@ dependencies:
         version: 0.28.1
         repository: https://helm.releases.hashicorp.com
 
+    -   condition: services.loki
+        name: grafana-loki
+        version: 5.0.1
+        repository: https://charts.bitnami.com/bitnami
+
     -   name: authup
         repository: file://../third-party/authup
         version: 0.1.0

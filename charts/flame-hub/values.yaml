@@ -19,6 +19,7 @@ services:
     minio: true
     mysql: true
     redis: true
+    loki: true
 
 vault:
     server:
@@ -61,3 +62,9 @@ mysql:
             enabled: true
             size: 16Gi
     architecture: "replication"
+
+grafana-loki:
+    nameOverride: "loki"
+    image:
+        pullPolicy: "Always"
+
