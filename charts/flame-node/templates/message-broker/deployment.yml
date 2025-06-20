@@ -64,11 +64,6 @@ spec:
               value: {{ .Release.Name }}-node-message-broker-db
             - name: PERSISTENCE_PORT
               value: "27017"
-{{/*            - name: HUB_AUTH_ROBOT_SECRET*/}}
-{{/*              valueFrom:*/}}
-{{/*                secretKeyRef:*/}}
-{{/*                  name: {{ include "hub.secretName" . }}*/}}
-{{/*                  key: robotSecret*/}}
             - name: SECURITY_NODE_PRIVATE_ECDH_KEY_FILE
               value: "/opt/message-broker/crypto/private_key.pem"
             - name: SERVER_PORT

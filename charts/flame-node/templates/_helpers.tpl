@@ -286,7 +286,7 @@ Generate a random clientSecret value for the PO client in keycloak if none provi
 {{/*
 Return the secret containing private key
 */}}
-{{- define "results.hub.crypto.privateKeySecretName" -}}
+{{- define "hub.crypto.privateKeySecretName" -}}
 {{- $secretName := .Values.hub.crypto.existingSecret -}}
 {{- if $secretName -}}
     {{- printf "%s" (tpl $secretName $) -}}

@@ -52,14 +52,12 @@ spec:
               value: {{ coalesce .Values.resultService.env.POSTGRES_HOST (include "postgresql.endpoint" .) }}
             - name: POSTGRES__DB
               value: {{ .Values.postgresql.auth.database }}
-              ## TODO: add _helpers.tpl in case we want to use secret instead for postgres user/pwd
             - name: POSTGRES__USER
               value: {{ .Values.postgresql.auth.username }}
             - name: POSTGRES__PASSWORD
               value: {{ .Values.postgresql.auth.password }}
             - name: MINIO__ENDPOINT
               value: {{ .Release.Name }}-minio:9000
-              ## TODO: add _helpers.tpl in case we want to use secret instead for minio user/pwd
             - name: MINIO__ACCESS_KEY
               value: {{ required "MinIO user must be set." .Values.minio.rootUser | quote }}
             - name: MINIO__SECRET_KEY
@@ -68,11 +66,11 @@ spec:
               value: {{ .Values.resultService.env.MINIO_USE_SSL | default false | quote }}
             - name: MINIO__BUCKET
               value: {{ required "MinIO bucket must be set." .Values.resultService.env.MINIO_BUCKET | quote }}
-            - name: HUB__AUTH_METHOD
+            - name: HUB__AUTH__FLOW
               value: "robot"
-            - name: HUB__ROBOT_AUTH__ID
+            - name: HUB__AUTH__ID
               value: {{ required "Hub robot id must be set." .Values.hub.auth.robotUser  | quote }}
-            - name: HUB__ROBOT_AUTH__SECRET
+            - name: HUB__AUTH__SECRET
               valueFrom:
                 secretKeyRef:
                   name: {{ include "hub.secretName" . }}
@@ -107,7 +105,7 @@ spec:
       volumes:
         - name: crypto
           secret:
-            secretName: {{ include "results.hub.crypto.privateKeySecretName" . }}
+            secretName: {{ include "hub.crypto.privateKeySecretName" . }}
         {{- with .Values.resultService.volumes }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
