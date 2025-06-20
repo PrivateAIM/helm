@@ -46,32 +46,33 @@ spec:
           ports:
             - containerPort: 8080
           env:
-            - name: SERVER_PORT
-              value: "8080"
             - name: AUTH_JWKS_URL
               value: {{ required "A valid JWKS URL for Keycloak is required." (include "keycloak.jwks.endpoint" .) }}
-            - name: PERSISTENCE_HOSTNAME
-              value: "{{ .Release.Name}}-node-message-broker-db"
-            - name: PERSISTENCE_PORT
-              value: "27017"
-            - name: PERSISTENCE_DATABASE_NAME
-              value: "message-broker"
-            - name: HUB_BASE_URL
-              value: {{ required "A valid HUB API base URL is required." .Values.hub.endpoints.core | default "https://api.privateaim.net/" | quote}}
             - name: HUB_AUTH_BASE_URL
               value: {{ required "A valid HUB Auth base URL is required." .Values.hub.endpoints.auth | default "https://auth.privateaim.net/" | quote }}
-            - name: HUB_MESSENGER_BASE_URL
-              value: {{ required "A valid HUB Messenger base URL is required." .Values.hub.endpoints.messenger | default "https://messenger.privateaim.net/" | quote }}
             - name: HUB_AUTH_ROBOT_ID
               value: {{ required "A robot ID for the Hub is required." .Values.hub.auth.robotUser | quote }}
-            - name: HUB_AUTH_ROBOT_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "hub.secretName" . }}
-                  key: robotSecret
-            # DO NOT USE THIS IN PRODUCTION!!! This is just for internal testing purposes.
-            - name: NODE_TLS_REJECT_UNAUTHORIZED
-              value: "0"
+            - name: HUB_AUTH_ROBOT_SECRET_FILE
+              value: "/opt/message-broker/auth/robot_secret.txt"
+            - name: HUB_BASE_URL
+              value: {{ required "A valid HUB API base URL is required." .Values.hub.endpoints.core | default "https://api.privateaim.net/" | quote}}
+            - name: HUB_MESSENGER_BASE_URL
+              value: {{ required "A valid HUB Messenger base URL is required." .Values.hub.endpoints.messenger | default "https://messenger.privateaim.net/" | quote }}
+            - name: PERSISTENCE_DATABASE_NAME
+              value: "message-broker"
+            - name: PERSISTENCE_HOSTNAME
+              value: {{ .Release.Name }}-node-message-broker-db
+            - name: PERSISTENCE_PORT
+              value: "27017"
+{{/*            - name: HUB_AUTH_ROBOT_SECRET*/}}
+{{/*              valueFrom:*/}}
+{{/*                secretKeyRef:*/}}
+{{/*                  name: {{ include "hub.secretName" . }}*/}}
+{{/*                  key: robotSecret*/}}
+            - name: SECURITY_NODE_PRIVATE_ECDH_KEY_FILE
+              value: "/opt/message-broker/crypto/private_key.pem"
+            - name: SERVER_PORT
+              value: "8080"
             {{- with .Values.messageBroker.env }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
@@ -86,9 +87,33 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           volumeMounts:
-            {{- toYaml .Values.messageBroker.volumeMounts | nindent 12 }}
+            - mountPath: "/opt/message-broker/crypto/private_key.pem"
+              name: "crypto"
+              subPath: "private_key.pem"
+              readOnly: true
+            - mountPath: "/opt/message-broker/auth/robot_secret.txt"
+              name: "auth"
+              subPath: "robot_secret.txt"
+              readOnly: true
+            {{- with .Values.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
       volumes:
-        {{- toYaml .Values.messageBroker.volumes | nindent 8 }}
+        - name: crypto
+          secret:
+            secretName: {{ include "hub.crypto.privateKeySecretName" . }}
+            items:
+              - key: "private_key.pem"
+                path: "private_key.pem"
+        - name: auth
+          secret:
+            secretName: {{ include "hub.secretName" . }}
+            items:
+              - key: robotSecret
+                path: "robot_secret.txt"
+        {{- with .Values.volumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       nodeSelector:
         {{- toYaml .Values.messageBroker.nodeSelector | nindent 8 }}
       affinity:
