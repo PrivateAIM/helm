@@ -66,11 +66,11 @@ spec:
               value: {{ .Values.env.MINIO_USE_SSL | default false | quote }}
             - name: MINIO__BUCKET
               value: {{ required "MinIO bucket must be set." .Values.env.MINIO_BUCKET | quote }}
-            - name: HUB__AUTH__FLOW
+            - name: HUB__AUTH_METHOD
               value: "robot"
-            - name: HUB__AUTH__ID
+            - name: HUB__ROBOT_AUTH__ID
               value: {{ required "Hub robot id must be set." (include "results.hub.robotUser" .)  | quote }}
-            - name: HUB__AUTH__SECRET
+            - name: HUB__ROBOT_AUTH__SECRET
               valueFrom:
                 secretKeyRef:
                   name: {{ include "results.hub.secretName" . }}
