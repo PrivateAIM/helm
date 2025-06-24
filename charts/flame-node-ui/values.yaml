@@ -5,7 +5,10 @@ global:
       ## @param global.node.ingress.enabled Toggle whether ingress should be enabled
       enabled: false
       ## @param global.node.ingress.enabled Host name to be assigned to the Node UI (/) and Hub Adapter API (/api)
-      hostname: ""
+      hostname:
+    proxy:
+      httpProxy:
+      httpsProxy:
   userIdp:
     ## @param global.userIdp.hostname Hostname for a separate IDP to manage users who can access the FLAME Node UI.
     ## Leave this blank unless you want to use your own IDP
