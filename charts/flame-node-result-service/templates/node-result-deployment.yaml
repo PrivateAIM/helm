@@ -48,12 +48,10 @@ spec:
               value: /etc/crypto/private_key.pem
             - name: UVICORN_LOG_LEVEL
               value: debug
-              ## TODO: make dynamic forom env
             - name: POSTGRES__HOST
               value: flame-node-result-service-postgresql
             - name: POSTGRES__DB
               value: postgres_db
-              ## TODO: add _helpers.tpl in case we want to use secret instead for postgres user/pwd
             - name: POSTGRES__USER
               value: postgres
             - name: POSTGRES__PASSWORD
@@ -64,7 +62,6 @@ spec:
               value: {{ .Values.global.node.proxy.httpsProxy | default "" }}
             - name: MINIO__ENDPOINT
               value: {{ .Release.Name }}-minio:9000
-              ## TODO: add _helpers.tpl in case we want to use secret instead for minio user/pwd
             - name: MINIO__ACCESS_KEY
               value: {{ required "MinIO user must be set." .Values.minio.rootUser | quote }}
             - name: MINIO__SECRET_KEY
@@ -81,7 +78,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: {{ include "results.hub.secretName" . }}
-                  key: "robotSecret"
+                  key: robotSecret
             - name: HUB__AUTH_BASE_URL
               value: {{ (include "results.hub.authApi" .) | default "https://auth.privateaim.dev" | quote }}
             - name: HUB__CORE_BASE_URL
