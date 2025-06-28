@@ -158,6 +158,18 @@ Return the JWKS endpoint for user and client authentication which overrides what
 {{- end -}}
 
 {{/*
+Return whether to force the Hub Adapter to include proxy information for user auth against the IDP
+If neither IDP hostname nor proxy info are provided, then default to true, otherwise do as told
+*/}}
+{{- define "adapter.proxy.idp.internal" -}}
+{{- if and .Values.global.userIdp.hostname (or .Values.global.node.proxy.httpProxy .Values.global.node.proxy.httpsProxy) -}}
+    {{- print .Values.global.userIdp.internalService -}}
+{{- else -}}
+    {{- print "true" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Return the Results service endpoint
 */}}
 {{- define "adapter.results.endpoint" -}}

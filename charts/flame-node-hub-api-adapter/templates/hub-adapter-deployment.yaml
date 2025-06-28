@@ -53,6 +53,8 @@ spec:
               value: {{ include "adapter.userIdp.endpoint" . }}
             - name: NODE_SVC_OIDC_URL
               value: {{ printf "http://%s-keycloak:80%s/realms/flame" .Release.Name .Values.idp.httpRelativePath }}
+            - name: INTERNAL_IDP
+              value: {{ include "adapter.proxy.idp.internal" . | quote }}
             - name: OVERRIDE_JWKS
               value: {{ include "adapter.jwks.endpoint" . }}
             - name: HA_HTTP_PROXY
