@@ -68,7 +68,7 @@ spec:
               value: "/opt/message-broker/crypto/private_key.pem"
             - name: SERVER_PORT
               value: "8080"
-            - name: JAVA_OPTS
+            - name: JAVA_TOOL_OPTIONS
               value: {{ include "broker.proxy.java.options" . | quote }}
             {{- with .Values.env }}
             {{- toYaml . | nindent 12 }}

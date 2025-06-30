@@ -132,12 +132,33 @@ Extract the proxy port (if present)
 {{- end }}
 
 {{/*
-Extract the proxy port (if present)
+Generate Java proxy system properties
 */}}
 {{- define "broker.proxy.java.options" -}}
-{{- $httpHostPort := include "broker.proxy.core" .Values.global.node.proxy.httpProxy -}}
-{{- $httpSplit := splitList ":" $httpHostPort -}}
-{{- $httpsHostPort := include "broker.proxy.core" .Values.global.node.proxy.httpsProxy -}}
-{{- $httpsSplit := splitList ":" $httpsHostPort -}}
-{{- printf "-Dhttp.proxyHost=%s -Dhttp.proxyPort=%s -Dhttps.proxyHost=%s -Dhttps.proxyPort=%s" (index $httpSplit 0) (index $httpSplit 1) (index $httpsSplit 0) (index $httpsSplit 1) -}}
+{{- $httpProxy := .Values.global.node.proxy.httpProxy | default "" -}}
+{{- $httpsProxy := .Values.global.node.proxy.httpsProxy | default "" -}}
+{{- $options := list -}}
+
+{{- if $httpProxy -}}
+    {{- $httpHost := include "broker.proxy.host" $httpProxy -}}
+    {{- $httpPort := include "broker.proxy.port" $httpProxy -}}
+    {{- if and $httpHost $httpPort -}}
+        {{- $options = append $options (printf "-Dhttp.proxyHost=%s" $httpHost) -}}
+        {{- $options = append $options (printf "-Dhttp.proxyPort=%s" $httpPort) -}}
+    {{- end -}}
+{{- end -}}
+
+{{- if $httpsProxy -}}
+    {{- $httpsHost := include "broker.proxy.host" $httpsProxy -}}
+    {{- $httpsPort := include "broker.proxy.port" $httpsProxy -}}
+    {{- if and $httpsHost $httpsPort -}}
+        {{- $options = append $options (printf "-Dhttps.proxyHost=%s" $httpsHost) -}}
+        {{- $options = append $options (printf "-Dhttps.proxyPort=%s" $httpsPort) -}}
+    {{- end -}}
+{{- end -}}
+
+{{- if $options -}}
+    {{- $options = append $options (printf "-Dhttp.nonProxyHosts=localhost|%s-keycloak -Dhttps.nonProxyHosts=localhost|%s-keycloak" .Release.Name .Release.Name ) -}}
+    {{- join " " $options -}}
+{{- end -}}
 {{- end }}
