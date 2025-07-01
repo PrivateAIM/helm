@@ -46,28 +46,32 @@ spec:
           ports:
             - containerPort: 8080
           env:
-            - name: AUTH_JWKS_URL
-              value: {{ required "A valid JWKS URL for Keycloak is required." (include "broker.keycloak.endpoint" .) }}
-            - name: HUB_AUTH_BASE_URL
-              value: {{ required "A valid HUB Auth base URL is required." (include "broker.hub.authApi" .) | default "https://auth.privateaim.dev/" | quote }}
-            - name: HUB_AUTH_ROBOT_ID
-              value: {{ required "A robot ID for the Hub is required." (include "broker.hub.robotUser" .) | quote }}
-            - name: HUB_AUTH_ROBOT_SECRET_FILE
-              value: "/opt/message-broker/auth/robot_secret.txt"
-            - name: HUB_BASE_URL
-              value: {{ required "A valid HUB API base URL is required." (include "broker.hub.coreApi" .) | default "https://api.privateaim.dev/" | quote}}
-            - name: HUB_MESSENGER_BASE_URL
-              value: {{ required "A valid HUB Messenger base URL is required." (include "broker.hub.messengerApi" .) | default "https://messenger.privateaim.dev/" | quote }}
-            - name: PERSISTENCE_DATABASE_NAME
-              value: "message-broker"
-            - name: PERSISTENCE_HOSTNAME
-              value: {{ .Release.Name}}-node-message-broker-db
-            - name: PERSISTENCE_PORT
-              value: "27017"
-            - name: SECURITY_NODE_PRIVATE_ECDH_KEY_FILE
-              value: "/opt/message-broker/crypto/private_key.pem"
             - name: SERVER_PORT
               value: "8080"
+            - name: AUTH_JWKS_URL
+              value: {{ required "A valid JWKS URL for Keycloak is required." (include "broker.keycloak.endpoint" .) }}
+            - name: PERSISTENCE_HOSTNAME
+              value: "{{ .Release.Name}}-node-message-broker-db"
+            - name: PERSISTENCE_PORT
+              value: "27017"
+            - name: PERSISTENCE_DATABASE_NAME
+              value: "message-broker"
+            - name: HUB_BASE_URL
+              value: {{ required "A valid HUB API base URL is required." (include "broker.hub.coreApi" .) | default "https://api.privateaim.net/" | quote}}
+            - name: HUB_AUTH_BASE_URL
+              value: {{ required "A valid HUB Auth base URL is required." (include "broker.hub.authApi" .) | default "https://auth.privateaim.net/" | quote }}
+            - name: HUB_MESSENGER_BASE_URL
+              value: {{ required "A valid HUB Messenger base URL is required." (include "broker.hub.messengerApi" .) | default "https://messenger.privateaim.net/" | quote }}              
+            - name: HUB_AUTH_ROBOT_ID
+              value: {{ required "A robot ID for the Hub is required." (include "broker.hub.robotUser" .) | quote }}
+            - name: HUB_AUTH_ROBOT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "broker.hub.secretName" . }}
+                  key: robotSecret
+            # DO NOT USE THIS IN PRODUCTION!!! This is just for internal testing purposes.
+            - name: NODE_TLS_REJECT_UNAUTHORIZED
+              value: "0"
             {{- with .Values.env }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
@@ -82,33 +86,9 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           volumeMounts:
-            - mountPath: "/opt/message-broker/crypto/private_key.pem"
-              name: "crypto"
-              subPath: "private_key.pem"
-              readOnly: true
-            - mountPath: "/opt/message-broker/auth/robot_secret.txt"
-              name: "auth"
-              subPath: "robot_secret.txt"
-              readOnly: true
-            {{- with .Values.volumeMounts }}
-            {{- toYaml . | nindent 12 }}
-            {{- end }}
+            {{- toYaml .Values.volumeMounts | nindent 12 }}
       volumes:
-        - name: crypto
-          secret:
-            secretName: {{ include "hub.crypto.privateKeySecretName" . }}
-            items:
-              - key: "private_key.pem"
-                path: "private_key.pem"
-        - name: auth
-          secret:
-            secretName: {{ printf "%s-node-message-broker-hub-auth" .Release.Name }}
-            items:
-              - key: "robot_secret"
-                path: "robot_secret.txt"
-        {{- with .Values.volumes }}
-        {{- toYaml . | nindent 8 }}
-        {{- end }}
+        {{- toYaml .Values.volumes | nindent 8 }}
       nodeSelector:
         {{- toYaml .Values.nodeSelector | nindent 8 }}
       affinity:
