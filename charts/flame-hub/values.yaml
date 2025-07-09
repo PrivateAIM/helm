@@ -17,6 +17,7 @@ services:
     vault: true
     rabbitmq: true
     minio: true
+    monitoring: true
     mysql: true
     redis: true
 

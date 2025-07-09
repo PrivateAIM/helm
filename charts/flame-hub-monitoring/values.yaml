@@ -26,8 +26,34 @@ grafana-loki:
 
 prometheus:
   nameOverride: "prometheus"
-  image:
-    pullPolicy: "Always"
-
+  alertmanager:
+    service:
+      type: ClusterIP
+  server:
+    replicaCount: 2
+    service:
+      type: ClusterIP
+      ports:
+        http: 9090
+    image:
+      pullPolicy: "Always"
+    configuration: |
+      scrape_configs:
+        - job_name: flame-hub-server-core
+          metrics_path: /metrics
+          static_configs:
+            - targets: ["{{ .Release.Name }}-flame-hub-server-core:3000"]
+        - job_name: flame-hub-server-messenger
+          metrics_path: /metrics
+          static_configs:
+            - targets: ["{{ .Release.Name }}-flame-hub-server-messenger:3000"]
+        - job_name: flame-hub-server-storage
+          metrics_path: /metrics
+          static_configs:
+            - targets: ["{{ .Release.Name }}-flame-hub-server-storage:3000"]
+        - job_name: flame-authup-server-core
+          metrics_path: /metrics
+          static_configs:
+            - targets: ["{{ .Release.Name }}-flame-authup-server-core:3000"]
 
 
