@@ -10,6 +10,13 @@ spec:
         - host: {{ .Values.global.hub.hostname }}
           http:
               paths:
+                  - path: /grafana(/|$)(.*)
+                    pathType: "ImplementationSpecific"
+                    backend:
+                      service:
+                        name: {{ .Release.Name }}-grafana
+                        port:
+                          number: 3000
                   - path: /core(/|$)(.*)
                     pathType: "ImplementationSpecific"
                     backend:
