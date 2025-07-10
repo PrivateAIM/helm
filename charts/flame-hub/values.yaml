@@ -17,6 +17,7 @@ services:
     vault: true
     rabbitmq: true
     minio: true
+    monitoring: true
     mysql: true
     redis: true
 
@@ -61,3 +62,4 @@ mysql:
             enabled: true
             size: 16Gi
     architecture: "replication"
+
