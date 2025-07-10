@@ -85,6 +85,10 @@ spec:
                   value: "core"
               -   name: MASTER_IMAGES_BRANCH
                   value: {{ .Values.env.masterImagesBranch | default "master" | quote }}
+              -   name: LOKI_COMPACTOR_URL
+                  value: "{{ .Release.Name }}-loki-compactor"
+              -   name: LOKI_QUERIER_URL
+                  value: "{{ .Release.Name }}-loki-query-frontend"
           resources:
               requests:
                   memory: "512Mi"
