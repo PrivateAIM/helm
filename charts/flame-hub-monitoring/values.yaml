@@ -3,8 +3,8 @@
 # Declare variables to be passed into your templates.
 
 ingress:
-  enabled: true
-  hostname: "foo.bar"
+  enabled: false
+  hostname: ""
   path: "/"
   pathType: "Prefix"
 
@@ -18,6 +18,9 @@ grafana:
     enabled: true
   datasources:
     secretName: grafana-datasources
+  config:
+    useGrafanaIniFile: true
+    grafanaIniConfigMap: grafana
 
 grafana-loki:
   nameOverride: "loki"
