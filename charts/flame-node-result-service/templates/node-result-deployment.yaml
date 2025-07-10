@@ -8,6 +8,7 @@ spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
+      flame-component: result-service
       app: {{ .Release.Name }}-node-result
   template:
     metadata:

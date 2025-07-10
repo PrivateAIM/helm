@@ -13,6 +13,7 @@ spec:
   revisionHistoryLimit: 3
   selector:
     matchLabels:
+      flame-component: message-broker
       app.kubernetes.io/name: {{ .Release.Name }}-node-message-broker
       app.kubernetes.io/component: server
       app.kubernetes.io/part-of: flame

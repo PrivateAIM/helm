@@ -8,7 +8,7 @@ spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      component: po
+      flame-component: po
       version: {{ .Chart.AppVersion }}
       deployment-id:  {{ .Release.Name }}
   template:
