@@ -3,6 +3,7 @@ kind: Service
 metadata:
   name: {{ .Release.Name }}-node-ui-service
   labels:
+    flame-component: ui
     component: node-ui-service
     version: {{ .Chart.AppVersion }}
     deployment-id:  {{ .Release.Name }}

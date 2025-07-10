@@ -3,6 +3,7 @@ kind: Service
 metadata:
   name: {{ .Release.Name }}-hub-adapter-service
   labels:
+    flame-component: hub-adapter
     component: hub-adapter-service
     version: {{ .Chart.AppVersion }}
     deployment-id:  {{ .Release.Name }}
