@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Release.Name }}-hub-adapter-deployment
+  labels:
+    flame-component: hub-adapter
 spec:
   selector:
     matchLabels:
@@ -17,6 +19,7 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
       labels:
+        flame-component: hub-adapter
         component: hub-adapter-service
         version: {{ .Chart.AppVersion }}
         deployment-id:  {{ .Release.Name }}
