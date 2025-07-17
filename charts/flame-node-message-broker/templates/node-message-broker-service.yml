@@ -2,6 +2,8 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ .Release.Name }}-node-message-broker
+  labels:
+    component: flame-message-broker
 spec:
   selector:
     component: flame-message-broker

@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Release.Name }}-po
+  labels:
+    component: flame-po
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
