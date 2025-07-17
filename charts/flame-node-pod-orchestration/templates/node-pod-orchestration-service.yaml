@@ -7,5 +7,5 @@ spec:
   - name: api
     port: 8000
   selector:
-    component: po
+    component: flame-po
     deployment-id: {{ .Release.Name }}

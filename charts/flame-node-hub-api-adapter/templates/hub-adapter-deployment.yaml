@@ -5,7 +5,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      component: hub-adapter-service
+      component: flame-hub-adapter
       version: {{ .Chart.AppVersion }}
       deployment-id:  {{ .Release.Name }}
   replicas: {{ .Values.replicaCount }}
@@ -17,7 +17,7 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
       labels:
-        component: hub-adapter-service
+        component: flame-hub-adapter
         version: {{ .Chart.AppVersion }}
         deployment-id:  {{ .Release.Name }}
         {{- with .Values.podLabels }}

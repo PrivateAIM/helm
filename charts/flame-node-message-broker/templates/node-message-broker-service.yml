@@ -4,6 +4,7 @@ metadata:
   name: {{ .Release.Name }}-node-message-broker
 spec:
   selector:
+    component: flame-message-broker
     app.kubernetes.io/name: {{ .Release.Name }}-node-message-broker
     app.kubernetes.io/component: server
     app.kubernetes.io/part-of: flame

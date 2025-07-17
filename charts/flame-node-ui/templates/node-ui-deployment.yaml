@@ -5,7 +5,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      component: node-ui-service
+      component: flame-node-ui
       version: {{ .Chart.AppVersion }}
       deployment-id:  {{ .Release.Name }}
   replicas: {{ .Values.replicaCount }}
@@ -17,7 +17,7 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
       labels:
-        component: node-ui-service
+        component: flame-node-ui
         version: {{ .Chart.AppVersion }}
         deployment-id:  {{ .Release.Name }}
         {{- with .Values.podLabels }}
