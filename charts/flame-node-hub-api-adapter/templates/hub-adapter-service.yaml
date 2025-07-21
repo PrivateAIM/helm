@@ -3,8 +3,7 @@ kind: Service
 metadata:
   name: {{ .Release.Name }}-hub-adapter-service
   labels:
-    flame-component: hub-adapter
-    component: hub-adapter-service
+    component: flame-hub-adapter
     version: {{ .Chart.AppVersion }}
     deployment-id:  {{ .Release.Name }}
 spec:
@@ -12,6 +11,6 @@ spec:
   - name: api
     port: 5000
   selector:
-    component: hub-adapter-service
+    component: flame-hub-adapter
     version: {{ .Chart.AppVersion }}
     deployment-id:  {{ .Release.Name }}

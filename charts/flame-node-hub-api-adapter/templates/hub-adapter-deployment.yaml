@@ -3,12 +3,11 @@ kind: Deployment
 metadata:
   name: {{ .Release.Name }}-hub-adapter-deployment
   labels:
-    flame-component: hub-adapter
+    component: flame-hub-adapter
 spec:
   selector:
     matchLabels:
-      flame-component: hub-adapter
-      component: hub-adapter-service
+      component: flame-hub-adapter
       version: {{ .Chart.AppVersion }}
       deployment-id:  {{ .Release.Name }}
   replicas: {{ .Values.replicaCount }}
@@ -20,8 +19,7 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
       labels:
-        flame-component: hub-adapter
-        component: hub-adapter-service
+        component: flame-hub-adapter
         version: {{ .Chart.AppVersion }}
         deployment-id:  {{ .Release.Name }}
         {{- with .Values.podLabels }}

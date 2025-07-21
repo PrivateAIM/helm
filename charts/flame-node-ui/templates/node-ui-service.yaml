@@ -3,8 +3,7 @@ kind: Service
 metadata:
   name: {{ .Release.Name }}-node-ui-service
   labels:
-    flame-component: ui
-    component: node-ui-service
+    component: flame-node-ui
     version: {{ .Chart.AppVersion }}
     deployment-id:  {{ .Release.Name }}
 spec:
@@ -12,6 +11,6 @@ spec:
   - name: ui
     port: 3000
   selector:
-    component: node-ui-service
+    component: flame-node-ui
     version: {{ .Chart.AppVersion }}
     deployment-id:  {{ .Release.Name }}

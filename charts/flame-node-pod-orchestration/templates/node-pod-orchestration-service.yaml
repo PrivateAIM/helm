@@ -3,11 +3,11 @@ kind: Service
 metadata:
   name: {{ .Release.Name }}-po-service
   labels:
-    flame-component: po
+    component: flame-po
 spec:
   ports:
   - name: api
     port: 8000
   selector:
-    flame-component: po
+    component: flame-po
     deployment-id: {{ .Release.Name }}

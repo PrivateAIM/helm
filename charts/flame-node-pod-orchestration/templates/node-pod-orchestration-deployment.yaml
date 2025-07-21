@@ -3,12 +3,12 @@ kind: Deployment
 metadata:
   name: {{ .Release.Name }}-po
   labels:
-    flame-component: po
+    component: flame-po
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      flame-component: po
+      component: flame-po
       version: {{ .Chart.AppVersion }}
       deployment-id:  {{ .Release.Name }}
   template:
@@ -19,7 +19,7 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
       labels:
-        flame-component: po
+        component: flame-po
         version: {{ .Chart.AppVersion }}
         deployment-id: {{ .Release.Name }}
         {{- with .Values.podLabels }}

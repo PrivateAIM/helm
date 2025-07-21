@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: {{ .Release.Name }}-node-result-service
   labels:
-    flame-component: result-service
+    component: flame-result-service
 spec:
   selector:
     app: {{ .Release.Name }}-node-result

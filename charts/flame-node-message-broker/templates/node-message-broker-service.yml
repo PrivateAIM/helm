@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: {{ .Release.Name }}-node-message-broker
   labels:
-    flame-component: message-broker
+    component: flame-message-broker
 spec:
   selector:
     app.kubernetes.io/name: {{ .Release.Name }}-node-message-broker

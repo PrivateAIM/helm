@@ -3,12 +3,12 @@ kind: Deployment
 metadata:
   name: {{ .Release.Name }}-node-result-deployment
   labels:
-    flame-component: result-service
+    component: flame-result-service
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      flame-component: result-service
+      component: flame-result-service
       app: {{ .Release.Name }}-node-result
   template:
     metadata:
@@ -17,7 +17,7 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
       labels:
-        flame-component: result-service
+        component: flame-result-service
         app: {{ .Release.Name }}-node-result
         {{- with .Values.podLabels }}
         {{- toYaml . | nindent 8 }}
