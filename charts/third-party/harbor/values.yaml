@@ -1,0 +1,12 @@
+harbor:
+  nameOverride: "harbor"
+  adminPassword: "start123"
+  exposureType: "ingress"
+  externalURL: http://harbor.localhost
+  migration:
+    enabled: true
+  ingress:
+    core:
+      hostname: "harbor.localhost"
+      tls: true
+      selfSigned: true
