@@ -6,7 +6,7 @@ spec:
   replicas: {{ .Values.podOrchestrator.replicaCount }}
   selector:
     matchLabels:
-      component: po
+      component: flame-po
       version: {{ .Chart.AppVersion }}
       deployment-id:  {{ .Release.Name }}
   template:
@@ -17,7 +17,7 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
       labels:
-        component: po
+        component: flame-po
         version: {{ .Chart.AppVersion }}
         deployment-id: {{ .Release.Name }}
         {{- with .Values.podOrchestrator.podLabels }}

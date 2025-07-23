@@ -8,7 +8,7 @@ metadata:
     {{- toYaml . | nindent 4 }}
     {{- end }}
   labels:
-    component: hub-adapter-service
+    component: flame-hub-adapter
     version: {{ .Chart.AppVersion }}
     deployment-id:  {{ .Release.Name }}
 spec:
