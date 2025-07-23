@@ -60,10 +60,14 @@ spec:
               value: postgres
             - name: POSTGRES__PASSWORD
               value: postgres
+          {{- if .Values.global.node.proxy.httpProxy }}
             - name: PROXY__HTTP_URL
-              value: {{ .Values.global.node.proxy.httpProxy | default "" }}
+              value: {{ .Values.global.node.proxy.httpProxy }}
+          {{- end }}
+          {{- if .Values.global.node.proxy.httpsProxy }}
             - name: PROXY__HTTPS_URL
-              value: {{ .Values.global.node.proxy.httpsProxy | default "" }}
+              value: {{ .Values.global.node.proxy.httpsProxy }}
+          {{- end }}
             - name: MINIO__ENDPOINT
               value: {{ .Release.Name }}-minio:9000
             - name: MINIO__ACCESS_KEY
@@ -74,11 +78,11 @@ spec:
               value: {{ .Values.env.MINIO_USE_SSL | default false | quote }}
             - name: MINIO__BUCKET
               value: {{ required "MinIO bucket must be set." .Values.env.MINIO_BUCKET | quote }}
-            - name: HUB__AUTH_METHOD
+            - name: HUB__AUTH__FLOW
               value: "robot"
-            - name: HUB__ROBOT_AUTH__ID
+            - name: HUB__AUTH__ID
               value: {{ required "Hub robot id must be set." (include "results.hub.robotUser" .)  | quote }}
-            - name: HUB__ROBOT_AUTH__SECRET
+            - name: HUB__AUTH__SECRET
               valueFrom:
                 secretKeyRef:
                   name: {{ include "results.hub.secretName" . }}
