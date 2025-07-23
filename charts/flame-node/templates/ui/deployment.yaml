@@ -2,10 +2,12 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Release.Name }}-node-ui-deployment
+  labels:
+    component: flame-node-ui
 spec:
   selector:
     matchLabels:
-      component: node-ui-service
+      component: flame-node-ui
       version: {{ .Chart.AppVersion }}
       deployment-id:  {{ .Release.Name }}
   replicas: {{ .Values.ui.replicaCount }}
@@ -17,7 +19,7 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
       labels:
-        component: node-ui-service
+        component: flame-node-ui
         version: {{ .Chart.AppVersion }}
         deployment-id:  {{ .Release.Name }}
         {{- with .Values.ui.podLabels }}
@@ -42,6 +44,8 @@ spec:
           env:
             - name: NODE_ENV
               value: {{ .Values.ui.env | default "production" | quote }}
+            - name: UI_PROXY
+              value: {{ .Values.global.node.proxy.httpsProxy | default "" | quote }}
             - name: NUXT_PUBLIC_BASE_URL
               value: {{ include "node.ingress.hostname" . }}
             - name: NUXT_PUBLIC_HUB_ADAPTER_URL

@@ -1,6 +1,9 @@
 # Global values
 global:
   node:
+    proxy:
+      httpProxy: ""
+      httpsProxy: ""
     ingress:
       ## @param global.node.ingress.enabled Toggle whether ingress should be enabled
       enabled: false
@@ -12,11 +15,12 @@ global:
 offline: false
 
 userIdp:
-  ## @param userIdp.hostname Hostname for a separate IDP to manage users who can access the FLAME Node UI.
+  ## @param global.userIdp.hostname Hostname for a separate IDP to manage users who can access the FLAME Node UI.
   ## Leave this blank unless you want to use your own IDP
-  ## If this is set, clients for the UI and hubAdapter must be created in the IDP and the clientId and clientSecret
-  ## provided below (see .Values.ui.idp and .Values.hubAdapter.idp)
   hostname:
+  ## @param global.userIdp.internalService Whether the supplied IDP URL is an internal (k8s) service or not
+  ## This setting only affects configurations in which an external IDP URL is supplied and proxy has been configured under node.proxy
+  internalService: false
 
 ## For defining ingress specific metadata
 ingress:

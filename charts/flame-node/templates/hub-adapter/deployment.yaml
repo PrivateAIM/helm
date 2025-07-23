@@ -2,10 +2,12 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Release.Name }}-hub-adapter-deployment
+  labels:
+    component: flame-hub-adapter
 spec:
   selector:
     matchLabels:
-      component: hub-adapter-service
+      component: flame-hub-adapter
       version: {{ .Chart.AppVersion }}
       deployment-id:  {{ .Release.Name }}
   replicas: {{ .Values.hubAdapter.replicaCount }}
@@ -17,7 +19,7 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
       labels:
-        component: hub-adapter-service
+        component: flame-hub-adapter
         version: {{ .Chart.AppVersion }}
         deployment-id:  {{ .Release.Name }}
         {{- with .Values.hubAdapter.podLabels }}
@@ -53,8 +55,14 @@ spec:
               value: {{ include "adapter.userIdp.endpoint" . }}
             - name: NODE_SVC_OIDC_URL
               value: {{ printf "http://%s-keycloak:80%s/realms/flame" .Release.Name .Values.hubAdapter.idp.httpRelativePath }}
+            - name: INTERNAL_IDP
+              value: {{ include "adapter.proxy.idp.internal" . | quote }}
             - name: OVERRIDE_JWKS
               value: {{ include "adapter.jwks.endpoint" . }}
+            - name: HA_HTTP_PROXY
+              value: {{ .Values.global.node.proxy.httpProxy | default "" }}
+            - name: HA_HTTPS_PROXY
+              value: {{ .Values.global.node.proxy.httpsProxy | default "" }}
             - name: RESULTS_SERVICE_URL
               value: {{ printf "http://%s-node-result-service:8080" .Release.Name }}
             - name: PODORC_SERVICE_URL
