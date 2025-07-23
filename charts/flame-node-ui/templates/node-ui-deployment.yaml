@@ -2,10 +2,12 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Release.Name }}-node-ui-deployment
+  labels:
+    component: flame-node-ui
 spec:
   selector:
     matchLabels:
-      component: node-ui-service
+      component: flame-node-ui
       version: {{ .Chart.AppVersion }}
       deployment-id:  {{ .Release.Name }}
   replicas: {{ .Values.replicaCount }}
@@ -17,7 +19,7 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
       labels:
-        component: node-ui-service
+        component: flame-node-ui
         version: {{ .Chart.AppVersion }}
         deployment-id:  {{ .Release.Name }}
         {{- with .Values.podLabels }}

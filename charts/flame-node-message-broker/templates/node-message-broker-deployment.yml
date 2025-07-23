@@ -3,6 +3,7 @@ kind: Deployment
 metadata:
   name: {{ .Release.Name }}-node-message-broker
   labels:
+    component: flame-message-broker
     app.kubernetes.io/name: {{ .Release.Name }}-node-message-broker
     app.kubernetes.io/component: server
     app.kubernetes.io/part-of: flame
@@ -12,6 +13,7 @@ spec:
   revisionHistoryLimit: 3
   selector:
     matchLabels:
+      component: flame-message-broker
       app.kubernetes.io/name: {{ .Release.Name }}-node-message-broker
       app.kubernetes.io/component: server
       app.kubernetes.io/part-of: flame
@@ -23,6 +25,7 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
       labels:
+        component: flame-message-broker
         app.kubernetes.io/name: {{ .Release.Name }}-node-message-broker
         app.kubernetes.io/component: server
         app.kubernetes.io/part-of: flame
