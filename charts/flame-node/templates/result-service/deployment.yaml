@@ -53,21 +53,20 @@ spec:
             - name: UVICORN_LOG_LEVEL
               value: debug
             - name: POSTGRES__HOST
-              value: {{ coalesce .Values.resultService.env.POSTGRES_HOST (include "postgresql.endpoint" .) }}
+              value: {{ include "postgresql.endpoint" . }}
             - name: POSTGRES__DB
               value: {{ .Values.postgresql.auth.database }}
             - name: POSTGRES__USER
               value: {{ .Values.postgresql.auth.username }}
             - name: POSTGRES__PASSWORD
-              value: {{ .Values.postgresql.auth.password }}
               value: postgres
-          {{- if .Values.global.node.proxy.httpProxy }}
+          {{- if .Values.proxy.httpProxy }}
             - name: PROXY__HTTP_URL
-              value: {{ .Values.global.node.proxy.httpProxy }}
+              value: {{ .Values.proxy.httpProxy }}
           {{- end }}
-          {{- if .Values.global.node.proxy.httpsProxy }}
+          {{- if .Values.proxy.httpsProxy }}
             - name: PROXY__HTTPS_URL
-              value: {{ .Values.global.node.proxy.httpsProxy }}
+              value: {{ .Values.proxy.httpsProxy }}
           {{- end }}
             - name: MINIO__ENDPOINT
               value: {{ .Release.Name }}-minio:9000

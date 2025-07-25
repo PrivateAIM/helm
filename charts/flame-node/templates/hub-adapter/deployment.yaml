@@ -56,13 +56,13 @@ spec:
             - name: NODE_SVC_OIDC_URL
               value: {{ printf "http://%s-keycloak:80%s/realms/flame" .Release.Name .Values.hubAdapter.idp.httpRelativePath }}
             - name: INTERNAL_IDP
-              value: {{ include "adapter.proxy.idp.internal" . | quote }}
+              value: {{ include "adapter.proxy.idp.internal" . | default true | quote }}
             - name: OVERRIDE_JWKS
               value: {{ include "adapter.jwks.endpoint" . }}
             - name: HA_HTTP_PROXY
-              value: {{ .Values.global.node.proxy.httpProxy | default "" }}
+              value: {{ .Values.proxy.httpProxy | default "" }}
             - name: HA_HTTPS_PROXY
-              value: {{ .Values.global.node.proxy.httpsProxy | default "" }}
+              value: {{ .Values.proxy.httpsProxy | default "" }}
             - name: RESULTS_SERVICE_URL
               value: {{ printf "http://%s-node-result-service:8080" .Release.Name }}
             - name: PODORC_SERVICE_URL

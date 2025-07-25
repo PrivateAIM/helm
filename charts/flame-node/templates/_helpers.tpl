@@ -191,6 +191,18 @@ Return the endpoint for user authentication
 {{- end -}}
 
 {{/*
+Return whether to force the Hub Adapter to include proxy information for user auth against the IDP
+If neither IDP hostname nor proxy info are provided, then default to true, otherwise do as told
+*/}}
+{{- define "adapter.proxy.idp.internal" -}}
+{{- if and .Values.userIdp.hostname (or .Values.proxy.httpProxy .Values.proxy.httpsProxy) -}}
+    {{- print .Values.userIdp.internalService -}}
+{{- else -}}
+    {{- print true -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Return the secret containing the Keycloak client secret
 */}}
 {{- define "adapter.keycloak.secretName" -}}
