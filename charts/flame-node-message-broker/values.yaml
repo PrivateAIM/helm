@@ -15,6 +15,10 @@ global:
       robotSecret: ""
       ## @param global.hub.auth.existingSecret Valid robot secret encoded in a k8s secret. Overrides hub.auth.existingSecret if provided
       existingSecret: ""
+  node:
+    proxy:
+      httpProxy:
+      httpsProxy:
 
 common:
   timezone: Europe/Berlin

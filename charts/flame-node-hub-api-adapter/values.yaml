@@ -14,6 +14,9 @@ global:
       ## @param global.hub.auth.existingSecret Valid robot secret encoded in a k8s secret. Overrides hub.auth.existingSecret if provided
       existingSecret: ""
   node:
+    proxy:
+      httpProxy: ""
+      httpsProxy: ""
     ingress:
       ## @param global.node.ingress.enabled Toggle whether ingress should be enabled
       enabled: false
@@ -23,6 +26,8 @@ global:
     ## @param global.userIdp.hostname Hostname for a separate IDP to manage users who can access the FLAME Node UI.
     ## Leave this blank unless you want to use your own IDP
     hostname:
+    ## @param global.userIdp.internalService Whether the supplied IDP URL is an internal service or not
+    internalService: false
 
 ## @param offline Forces the HA to use the internal service endpoint for authentication
 ## Overrides idp.jwks
@@ -97,7 +102,7 @@ replicaCount: 1
 image:
   repository: ghcr.io/privateaim/node-hub-api-adapter
   # Overrides the image tag whose default is the chart appVersion.
-  tag: 0.2.6
+  tag: 0.2.8
   # This sets the pull policy for images.
   pullPolicy: Always
 

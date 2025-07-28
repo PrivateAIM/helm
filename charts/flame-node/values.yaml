@@ -15,6 +15,9 @@ global:
       ## The secret must have a key named "robotSecret"
       existingSecret: ""
   node:
+    proxy:
+      httpProxy: ""
+      httpsProxy: ""
     ingress:
       ## @param global.node.ingress.enabled Toggle whether ingress should be enabled
       enabled: false
@@ -24,6 +27,9 @@ global:
     ## @param global.userIdp.hostname Hostname for a separate IDP to manage users who can access the FLAME Node UI.
     ## Leave this blank unless you want to use your own IDP
     hostname:
+    ## @param global.userIdp.internalService Whether the supplied IDP URL is an internal (k8s) service or not
+    ## This setting only affects configurations in which an external IDP URL is supplied and proxy has been configured under node.proxy
+    internalService: false
 
 # kong values
 kong:

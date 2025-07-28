@@ -71,6 +71,12 @@ spec:
               value: "/opt/message-broker/crypto/private_key.pem"
             - name: SERVER_PORT
               value: "8080"
+            - name: HTTP_PROXY
+              value: {{ .Values.global.node.proxy.httpProxy | default "" }}
+            - name: HTTPS_PROXY
+              value: {{ .Values.global.node.proxy.httpsProxy | default "" }}
+            # - name: NO_PROXY
+            #   value: "localhost,127.0.0.1,*.local,*.cluster.local,nginx-analysis-*,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
             {{- with .Values.env }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
