@@ -3,20 +3,23 @@ global:
   node:
     ingress:
       ## @param global.node.ingress.enabled Toggle whether ingress should be enabled
+      ## This overrides ingress.enabled
       enabled: false
       ## @param global.node.ingress.enabled Host name to be assigned to the Node UI (/) and Hub Adapter API (/api)
+      ## This overrides ingress.hostname and is also supplied to the bundled keycloak helm chart
       hostname:
 
 ## @param offline Forces the UI and hub adapter to use the internal service endpoint for authentication
 ## Overrides hubAdapter.idp.jwks
 offline: false
 
+## @param userIdp The following settings are used to configure a separate IDP for the Node UI other than the default keycloak instance
 userIdp:
   ## @param userIdp.hostname Hostname for a separate IDP to manage users who can access the FLAME Node UI.
   ## Leave this blank unless you want to use your own IDP
   hostname:
   ## @param userIdp.internalService Whether the supplied IDP URL is an internal (k8s) service or not
-  ## This setting only affects configurations in which an external IDP URL is supplied and proxy has been configured under proxy.httpProxy or proxy.httpsProxy
+  ## This setting only affects configurations in which an external IDP URL (i.e. an IDP outside this k8s instance) is supplied and a forward proxy has been configured under proxy.httpProxy or proxy.httpsProxy
   internalService: false
 
 ## @param proxy Forward proxy URLs
@@ -27,10 +30,10 @@ proxy:
 ## For defining ingress specific metadata
 ingress:
   ## @param ingress.enabled Enable ingress record generation for the Node UI
-  ##
+  ## You should generally use global.node.ingress.enabled instead
   enabled: false
   ## @param ingress.hostname Default host for the ingress record (evaluated as template)
-  ##
+  ## You should generally use global.node.ingress.hostname instead
   hostname: ""
   ## @param ingress.pathType Ingress path type
   ##
@@ -38,10 +41,11 @@ ingress:
   ## @param ingress.path Default file path for the ingress hostname
   ##
   path: /
-
+  ## @param ingress.annotations Additional annotations for the Ingress resource
   annotations: {}
+  ## @param ingress.className IngressClass that will be be used to implement the Ingress (Kubernetes 1.18+)
   className: ""
-  # Specify a tls secret to enable TLS for the given hostname
+  # @param ingress.tlsSecretName Specify a tls secret to enable TLS for the given hostname
   tlsSecretName: ""
 
 ## Hub services and data
@@ -142,7 +146,7 @@ resultService:
   image:
     repository: ghcr.io/privateaim/node-result-service
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.1.2
+    tag: 0.1.3
     # This sets the pull policy for images.
     pullPolicy: Always
 
@@ -300,7 +304,7 @@ hubAdapter:
   image:
     repository: ghcr.io/privateaim/node-hub-api-adapter
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.2.6
+    tag: 0.2.8
     # This sets the pull policy for images.
     pullPolicy: Always
 
@@ -519,7 +523,7 @@ messageBroker:
   image:
     repository: ghcr.io/privateaim/node-message-broker
     # Overrides the image tag whose default is the chart appVersion.
-    tag: "0.4.0"
+    tag: 0.4.0
     # This sets the pull policy for images.
     pullPolicy: Always
 
@@ -615,7 +619,7 @@ ui:
   image:
     repository: ghcr.io/privateaim/node-ui
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.2.13
+    tag: 0.2.14
     # This sets the pull policy for images.
     pullPolicy: Always
 

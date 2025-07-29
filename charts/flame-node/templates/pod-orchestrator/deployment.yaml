@@ -74,6 +74,10 @@ spec:
               value: {{ .Values.postgresql.auth.username }}
             - name: POSTGRES_PASSWORD
               value: {{ .Values.postgresql.auth.password }}
+            - name: PO_HTTP_PROXY
+              value: {{ .Values.proxy.httpProxy | default "" }}
+            - name: PO_HTTPS_PROXY
+              value: {{ .Values.proxy.httpsProxy | default "" }}
             - name: RESULT_CLIENT_ID
               value: {{ .Values.podOrchestrator.env.RESULT_CLIENT_ID }}
             - name: RESULT_CLIENT_SECRET
