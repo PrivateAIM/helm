@@ -34,7 +34,7 @@ helm install <release-name> -f <values-file> flame/<chart-name>
 
 To uninstall the chart:
 ```shell
-helm delete <release-name>
+helm uninstall <release-name>
 ```
 
 ### Hub
