@@ -6,5 +6,5 @@ values_*
 Chart.lock
 .monokle
 *.tgz
-!charts/flame-node-*/*.tgz
+!charts/flame-node/flame-node-data-store/charts/*.tgz
 *.pem
