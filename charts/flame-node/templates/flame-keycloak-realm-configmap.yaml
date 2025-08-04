@@ -13,7 +13,7 @@ data:
     - clientId: "hub-adapter"
       name: "Node Hub Adapter Gateway API"
       clientAuthenticatorType: "client-secret"
-      secret: {{ include "adapter.keycloak.clientSecret" (index .Subcharts "flame-node-hub-adapter") | b64dec }}
+      secret: {{ include "adapter.keycloak.clientSecret" . | b64dec }}
       standardFlowEnabled: true
       implicitFlowEnabled: false
       directAccessGrantsEnabled: true
@@ -24,7 +24,7 @@ data:
     - clientId: "service1"
       name: "Test service"
       clientAuthenticatorType: "client-secret"
-      secret: {{ include "po.keycloak.clientSecret" (index .Subcharts "flame-node-pod-orchestration") | b64dec }}
+      secret: {{ include "po.keycloak.clientSecret" . | b64dec }}
       standardFlowEnabled: true
       implicitFlowEnabled: false
       directAccessGrantsEnabled: true
@@ -35,8 +35,8 @@ data:
     - clientId: "node-ui"
       name: "Node UI"
       clientAuthenticatorType: "client-secret"
-      secret: {{ include "ui.keycloak.clientSecret" (index .Subcharts "flame-node-ui") | b64dec }}
-      redirectUris: [ {{ printf "%s/*" (include "ui.ingress.hostname" (index .Subcharts "flame-node-ui")) }} ]
+      secret: {{ include "ui.keycloak.clientSecret" . | b64dec }}
+      redirectUris: [ {{ printf "%s/*" (include "node.ingress.hostname" .) }} ]
       webOrigins: [ "+" ]
       standardFlowEnabled: true
       implicitFlowEnabled: false

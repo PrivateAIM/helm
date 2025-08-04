@@ -1,35 +1,84 @@
 # Global values
 global:
-  hub:
-    endpoints:
-      auth: https://auth.privateaim.dev
-      core: https://core.privateaim.dev
-      messenger: https://messenger.privateaim.dev
-      storage: https://storage.privateaim.dev
-    auth:
-      ## @param global.hub.auth.robotUser Robot user ID
-      robotUser: ""
-      ## @param global.hub.auth.robotSecret Robot secret
-      robotSecret: ""
-      ## @param global.hub.auth.existingSecret Valid robot secret encoded in an existing k8s secret. Overrides robotSecret if provided
-      ## The secret must have a key named "robotSecret"
-      existingSecret: ""
   node:
-    proxy:
-      httpProxy: ""
-      httpsProxy: ""
     ingress:
       ## @param global.node.ingress.enabled Toggle whether ingress should be enabled
+      ## This overrides ingress.enabled
       enabled: false
       ## @param global.node.ingress.enabled Host name to be assigned to the Node UI (/) and Hub Adapter API (/api)
+      ## This overrides ingress.hostname and is also supplied to the bundled keycloak helm chart
       hostname:
-  userIdp:
-    ## @param global.userIdp.hostname Hostname for a separate IDP to manage users who can access the FLAME Node UI.
-    ## Leave this blank unless you want to use your own IDP
-    hostname:
-    ## @param global.userIdp.internalService Whether the supplied IDP URL is an internal (k8s) service or not
-    ## This setting only affects configurations in which an external IDP URL is supplied and proxy has been configured under node.proxy
-    internalService: false
+
+## @param offline Forces the UI and hub adapter to use the internal service endpoint for authentication
+## Overrides hubAdapter.idp.jwks
+offline: false
+
+## @param userIdp The following settings are used to configure a separate IDP for the Node UI other than the default keycloak instance
+userIdp:
+  ## @param userIdp.hostname Hostname for a separate IDP to manage users who can access the FLAME Node UI.
+  ## Leave this blank unless you want to use your own IDP
+  hostname:
+  ## @param userIdp.internalService Whether the supplied IDP URL is an internal (k8s) service or not
+  ## This setting only affects configurations in which an external IDP URL (i.e. an IDP outside this k8s instance) is supplied and a forward proxy has been configured under proxy.httpProxy or proxy.httpsProxy
+  internalService: false
+
+## @param proxy Forward proxy URLs
+proxy:
+  httpProxy: ""
+  httpsProxy: ""
+
+## For defining ingress specific metadata
+ingress:
+  ## @param ingress.enabled Enable ingress record generation for the Node UI
+  ## You should generally use global.node.ingress.enabled instead
+  enabled: false
+  ## @param ingress.hostname Default host for the ingress record (evaluated as template)
+  ## You should generally use global.node.ingress.hostname instead
+  hostname: ""
+  ## @param ingress.pathType Ingress path type
+  ##
+  pathType: ImplementationSpecific
+  ## @param ingress.path Default file path for the ingress hostname
+  ##
+  path: /
+  ## @param ingress.annotations Additional annotations for the Ingress resource
+  annotations: {}
+  ## @param ingress.className IngressClass that will be be used to implement the Ingress (Kubernetes 1.18+)
+  className: ""
+  # @param ingress.tlsSecretName Specify a tls secret to enable TLS for the given hostname
+  tlsSecretName: ""
+
+## Hub services and data
+hub:
+  endpoints:
+    ## @param hub.endpoints.core Hub core API endpoint
+    core: https://core.privateaim.dev
+    ## @param hub.endpoints.auth Hub auth API endpoint
+    auth: https://auth.privateaim.dev
+    ## @param hub.endpoints.messenger Hub messenger API endpoint. Overrides broker.HUB_BASE_URL if provided
+    messenger: https://messenger.privateaim.dev
+    ## @param hub.endpoints.storage Hub storage API endpoint
+    storage: https://storage.privateaim.dev
+  ## Credentials used for retrieving a valid token from the hub using a robot account
+  auth:
+    robotUser:
+    robotSecret:
+    ## @param hub.auth.existingSecret Existing k8s secret containing secret for given hub robot user UUID
+    ## The secret must have a key named "robotSecret"
+    existingSecret: ""
+  ## Values required by the result service for encrypting intermediate results sent to the Hub
+  crypto:
+    ## @param hub.crypto.privateKey Content of the private key to be added to the secret. Need to use the "|" scalar:
+    ## https://yaml.org/spec/1.2.2/#812-literal-style
+    ##
+    privateKey:
+    ## @param hub.crypto.existingSecret Existing secret containing the private key for the node
+    ## Create this secret following the steps below:
+    ## 1) Generate your public and private key pair using the "Crypto" tab in the Hub
+    ## 2) Save the private key as 'private_key.pem' (it must use this name)
+    ## 3) Run the command below where SECRET_NAME is the name of the secret you want to create:
+    ##       kubectl create secret generic SECRET_NAME --from-file=./private_key.pem
+    existingSecret:
 
 # kong values
 kong:
@@ -83,182 +132,93 @@ kong:
       password: kong
       postgresPassword: supersecretpassword
 
-flame-node-result-service:
-  result-service-postgresql:
-    nameOverride:
-    fullnameOverride:
-    auth:
-      ## @param auth.enablePostgresUser Assign a password to the "postgres" admin user. Otherwise, remote access will be blocked for this user
-      ##
-      enablePostgresUser: true
-      ## @param auth.postgresPassword Password for the "postgres" admin user. Ignored if `auth.existingSecret` is provided
-      ##
-      postgresPassword: admin
-      username: postgres
-      password: postgres
-      database: postgres_db
-      existingSecret:
-      ## @param auth.secretKeys.adminPasswordKey Name of key in existing secret to use for PostgreSQL credentials. Only used when `auth.existingSecret` is set.
-      ## @param auth.secretKeys.userPasswordKey Name of key in existing secret to use for PostgreSQL credentials. Only used when `auth.existingSecret` is set.
-      ## @param auth.secretKeys.replicationPasswordKey Name of key in existing secret to use for PostgreSQL credentials. Only used when `auth.existingSecret` is set.
-      ##
-      secretKeys:
-        adminPasswordKey: postgres-password
-        userPasswordKey: password
-        replicationPasswordKey: replication-password
-      ## @param auth.usePasswordFiles Mount credentials as a files instead of using an environment variable
-      ##
-      usePasswordFiles: false
-  ## Hub services and data
-  hub:
-    ## @param hub.coreApi Hub core API endpoint
-    coreURL: https://core.privateaim.dev
-    ## @param hub.authURL Hub auth API endpoint
-    authURL: https://auth.privateaim.dev
-    ## @param hub.storageURL Hub storage API endpoint
-    storageURL: https://storage.privateaim.dev
-    ## Credentials used for retrieving a valid robot token from the hub
-    auth:
-      existingSecret:
-      robotUser:
-      robotSecret:
-    crypto:
-      ## @param hub.crypto.privateKey Content of the private key to be added to the secret. Need to use the "|" scalar:
-      ## https://yaml.org/spec/1.2.2/#812-literal-style; https://helm.sh/docs/chart_template_guide/yaml_techniques/
-      ##
-      privateKey:
-      ## @param hub.crypto.existingSecret Existing secret containing the private key for the node
-      ## Create this secret following the steps below:
-      ## 1) Generate your public and private key pair using the "Crypto" tab in the Hub
-      ## 2) Save the private key as 'private_key.pem' (it must use this name)
-      ## 3) Run the command below where SECRET_NAME is the name of the secret you want to create:
-      ##       kubectl create secret generic SECRET_NAME --from-file=./private_key.pem
-      existingSecret:
-
+resultService:
   env:
     MINIO_USE_SSL: false
     MINIO_BUCKET: flame
     OIDC_CERTS_URL:
     OIDC_CLIENT_ID_CLAIM_NAME: azp
 
-  minio:
-    # All possible values can be found at https://github.com/minio/minio/blob/master/helm/minio/values.yaml
+  # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
+  replicaCount: 1
 
-    ## Provide a name in place of minio for `app:` labels
-    nameOverride:
+  # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+  image:
+    repository: ghcr.io/privateaim/node-result-service
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: 0.1.3
+    # This sets the pull policy for images.
+    pullPolicy: Always
 
-    ## Provide a name to substitute for the full names of resources
-    fullnameOverride:
+  # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+  imagePullSecrets: [ ]
 
-    ## set kubernetes cluster domain where minio is running
-    clusterDomain: cluster.local
+  # This is for setting Kubernetes Annotations to a Pod.
+  # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: { }
+  # This is for setting Kubernetes Labels to a Pod.
+  # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+  podLabels: { }
 
-    ## Set default rootUser, rootPassword
-    ## rootUser and rootPassword is generated when not set
-    ## Distributed MinIO ref: https://min.io/docs/minio/linux/operations/install-deploy-manage/deploy-minio-multi-node-multi-drive.html
-    ##
-    rootUser: admin
-    rootPassword: s3cr3t_p4ssw0rd
+  podSecurityContext: { }
+  # fsGroup: 2000
 
-    ## Use existing Secret that store following variables:
-    ##
-    ## | Chart var             | .data.<key> in Secret    |
-    ## |:----------------------|:-------------------------|
-    ## | rootUser              | rootUser                 |
-    ## | rootPassword          | rootPassword             |
-    ##
-    ## All mentioned variables will be ignored in values file.
-    ## .data.rootUser and .data.rootPassword are mandatory,
-    ## others depend on enabled status of corresponding sections.
-    existingSecret:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 100
+    runAsGroup: 101
+    privileged: false
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: [ ALL ]
 
-    ## Path where PV would be mounted on the MinIO Pod
-    mountPath: /mnt/data
+  resources: { }
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
 
-    ## List of buckets to be created after minio install
-    ##
-    buckets:
-      [
-        {
-          name: flame,
-          policy: none,
-          purge: false,
-          versioning: false,
-          objectlocking: false,
-        },
-      ]
-      #   # Name of the bucket
-      # - name: bucket1
-      #   # Policy to be set on the
-      #   # bucket [none|download|upload|public]
-      #   policy: none
-      #   # Purge if bucket exists already
-      #   purge: false
-      #   # set versioning for
-      #   # bucket [true|false]
-      #   versioning: false # remove this key if you do not want versioning feature
-      #   # set objectlocking for
-      #   # bucket [true|false] NOTE: versioning is enabled by default if you use locking
-      #   objectlocking: false
-      # - name: bucket2
-      #   policy: none
-      #   purge: false
-      #   versioning: true
-      #   # set objectlocking for
-      #   # bucket [true|false] NOTE: versioning is enabled by default if you use locking
-      #   objectlocking: false
+  # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+  livenessProbe: { }
+    # httpGet:
+    #   path: /healthz
+    #   port: http-result-srv
+  # failureThreshold: 3
+  # periodSeconds: 10
+  readinessProbe: { }
+    # httpGet:
+    #   path: /healthz
+    #   port: http-result-srv
+  # failureThreshold: 5
+  # periodSeconds: 5
 
-    ## Set default image, imageTag, and imagePullPolicy. mode is used to indicate the
-    image:
-      repository: quay.io/minio/minio
-      tag: RELEASE.2024-03-03T17-50-39Z
-      pullPolicy: IfNotPresent
+  # Additional environment variables on the output Deployment definition.
+  extraEnv: [ ]
+  # - name: FOO
+  #   value: bar
 
-    imagePullSecrets: []
-    ## Update strategy for Deployments
-    deploymentUpdate:
-      type: RollingUpdate
-      maxUnavailable: 0
-      maxSurge: 100%
+  # Additional volumes on the output Deployment definition.
+  volumes: [ ]
+  # - name: foo
+  #   secret:
+  #     secretName: mysecret
+  #     optional: false
 
-    mode: standalone
-    # Number of drives attached to a node
-    drivesPerNode: 1
-    # Number of MinIO containers running
-    replicas: 1
-    # Number of expanded MinIO clusters
-    pools: 1
+  # Additional volumeMounts on the output Deployment definition.
+  volumeMounts: [ ]
+  # - name: foo
+  #   mountPath: "/etc/foo"
+  #   readOnly: true
 
-    resources:
-      requests:
-        memory: 1Gi
-
-    ## Update strategy for StatefulSets
-    statefulSetUpdate:
-      updateStrategy: RollingUpdate
-
-    persistence:
-      enabled: true
-      annotations: {}
-
-      ## A manually managed Persistent Volume and Claim
-      ## Requires persistence.enabled: true
-      ## If defined, PVC must be created manually before volume will be bound
-      existingClaim:
-
-      ## minio data Persistent Volume Storage Class
-      ## If defined, storageClassName: <storageClass>
-      ## If set to "-", storageClassName: "", which disables dynamic provisioning
-      ## If undefined (the default) or set to null, no storageClassName spec is
-      ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
-      ##   GKE, AWS & OpenStack)
-      ##
-      ## Storage class of PV to bind. By default it looks for standard storage class.
-      ## If the PV uses a different storage class, specify that here.
-      storageClass:
-      volumeName:
-      accessMode: ReadWriteOnce
-      size: 10Gi
+  nodeSelector: { }
+  tolerations: [ ]
+  affinity: { }
 
 # keycloak values
 keycloak:
@@ -303,11 +263,7 @@ keycloak:
     existingConfigmap: flame-default-realm
 
 # hub-api-adapter Values
-flame-node-hub-adapter:
-  ## @param offline Forces the HA to use the internal service endpoint for authentication
-  ## Overrides idp.jwks
-  offline: false
-
+hubAdapter:
   ## For defining ingress specific metadata
   ingress:
     ## @param ingress.enabled Enable ingress record generation for the Hub Adapter
@@ -329,47 +285,94 @@ flame-node-hub-adapter:
     clientId: hub-adapter
     ## @param idp.clientSecret Keycloak client secret. Ignored if `idp.existingSecret` is provided
     ## If not defined and no existingSecret provided, a random string is generated
-    clientSecret:
+    clientSecret: ""
     ## @param idp.existingSecret Existing k8s secret containing Keycloak secret for this client
     ## idp.existingSecretKey should also be defined for custom k8s secret. Defaults to hub-adapter-kc-secret
-    existingSecret:
+    existingSecret: ""
     ## @param idp.existingSecretKey Key where the Keycloak secret is being stored inside the existing k8s secret
-    existingSecretKey:
-    ## @param idp.realm Keycloak realm that the client exists in
-    realm: flame
-    ## @param idp.host URL to keycloak service
-    ## Will be inferred using the Release.Name if not defined
-    host:
+    existingSecretKey: ""
     ## @param idp.jwks JWKS URI to override the endpoints fetched from the IDP issuer
     ## Meant for local testing where either no FQDN provided or using localhost and port-forwarding
     jwks: ""
     ## @param idp.httpRelativePath Set the path relative to '/' for IDP resources (e.g. /auth)
     httpRelativePath: "/keycloak"
 
-  ## Downstream node services
-  node:
-    ## @param node.results Node results service endpoint
-    ## @param node.kong Node Kong admin service endpoint
-    ## @param node.po Node pod orchestrator service endpoint
-    results:
-    kong:
-    po:
+  # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
+  replicaCount: 1
 
-  ## Hub services and data
-  hub:
-    ## @param hub.coreApi Hub core API endpoint
-    coreApi: https://privateaim.net/core
-    ## @param hub.authApi Hub auth API endpoint
-    authApi: https://privateaim.net/auth
-    ## Credentials used for retrieving a valid token from the hub using a robot account
-    auth:
-      robotUser:
-      robotSecret:
-      ## @param hub.auth.existingSecret Existing k8s secret containing secret for given hub robot ID
-      ## The secret must have a key named "robotSecret"
-      existingSecret: ""
+  # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+  image:
+    repository: ghcr.io/privateaim/node-hub-api-adapter
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: 0.2.8
+    # This sets the pull policy for images.
+    pullPolicy: Always
 
-flame-node-pod-orchestration:
+  # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+  imagePullSecrets: []
+
+  # This is for setting Kubernetes Annotations to a Pod.
+  # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: {}
+  # This is for setting Kubernetes Labels to a Pod.
+  # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+  podLabels: {}
+
+  podSecurityContext: {}
+    # fsGroup: 2000
+
+  securityContext:
+    runAsNonRoot: true
+    privileged: false
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: [ALL]
+
+  resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+
+  # This is to set up the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+  livenessProbe: &probe
+    httpGet:
+      path: /healthz
+      port: healthcp
+    failureThreshold: 3
+    periodSeconds: 60
+    initialDelaySeconds: 60
+  readinessProbe: *probe
+
+  # Additional environment variables on the output Deployment definition.
+  env: []
+  # - name: FOO
+  #   value: bar
+
+  # Additional volumes on the output Deployment definition.
+  volumes: []
+  # - name: foo
+  #   secret:
+  #     secretName: mysecret
+  #     optional: false
+
+  # Additional volumeMounts on the output Deployment definition.
+  volumeMounts: []
+  # - name: foo
+  #   mountPath: "/etc/foo"
+  #   readOnly: true
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+podOrchestrator:
   api:
     version: 0.1.0
     domain: localhost
@@ -391,79 +394,207 @@ flame-node-pod-orchestration:
     RESULT_CLIENT_SECRET:
 
     POSTGRES_HOST:
-  postgresql:
-    nameOverride:
-    fullnameOverride:
-    auth:
-      ## @param auth.enablePostgresUser Assign a password to the "postgres" admin user. Otherwise, remote access will be blocked for this user
-      ##
-      enablePostgresUser: true
-      ## @param auth.postgresPassword Password for the "postgres" admin user. Ignored if `auth.existingSecret` is provided
-      ##
-      postgresPassword: admin
-      username: postgres
-      password: postgres
-      database: postgres_db
-      existingSecret:
-      ## @param auth.secretKeys.adminPasswordKey Name of key in existing secret to use for PostgreSQL credentials. Only used when `auth.existingSecret` is set.
-      ## @param auth.secretKeys.userPasswordKey Name of key in existing secret to use for PostgreSQL credentials. Only used when `auth.existingSecret` is set.
-      ## @param auth.secretKeys.replicationPasswordKey Name of key in existing secret to use for PostgreSQL credentials. Only used when `auth.existingSecret` is set.
-      ##
-      secretKeys:
-        adminPasswordKey: postgres-password
-        userPasswordKey: password
-        replicationPasswordKey: replication-password
-      ## @param auth.usePasswordFiles Mount credentials as a files instead of using an environment variable
-      ##
-      usePasswordFiles: false
 
-flame-node-message-broker:
-  # Uncomment, if you want to use a specific storage class.
-  # Otherwise, the default one will be used.
-  # db:
-  #   persistence:
-  #     storageClass: yourStorageClassToBeUsed
+  minio:
+    endpoint: ""
+    accessKey: ""
+    secretKey: ""
+
+  # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
+  replicaCount: 1
+
+  # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+  image:
+    repository: ghcr.io/privateaim/node-pod-orchestration
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: latest
+    # This sets the pull policy for images.
+    pullPolicy: Always
+
+  # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+  imagePullSecrets: []
+
+  # This is for setting Kubernetes Annotations to a Pod.
+  # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: {}
+  # This is for setting Kubernetes Labels to a Pod.
+  # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+  podLabels: {}
+
+  podSecurityContext: {}
+    # fsGroup: 2000
+
+  securityContext:
+    runAsNonRoot: true
+    privileged: false
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: [ALL]
+
+  resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+
+  # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+  livenessProbe: &probe
+    httpGet:
+      path: /po/healthz
+      port: 8000
+    initialDelaySeconds: 15
+    periodSeconds: 20
+    failureThreshold: 1
+    timeoutSeconds: 5
+  readinessProbe: *probe
+
+  # Additional environment variables on the output Deployment definition.
+  extraEnv: []
+  # - name: FOO
+  #   value: bar
+
+  # Additional volumes on the output Deployment definition.
+  volumes: []
+  # - name: foo
+  #   secret:
+  #     secretName: mysecret
+  #     optional: false
+
+  # Additional volumeMounts on the output Deployment definition.
+  volumeMounts: []
+  # - name: foo
+  #   mountPath: "/etc/foo"
+  #   readOnly: true
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+  waitForPostgres:
+    # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+    image:
+      repository: busybox
+      # Overrides the image tag whose default is the chart appVersion.
+      tag: 1.37
+      # This sets the pull policy for images.
+      pullPolicy: Always
+
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 30854
+      privileged: false
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: [ALL]
+
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        memory: 128Mi
+
+    # Additional environment variables on the output initContainer definition.
+    env: []
+    # - name: FOO
+    #   value: bar
+
+messageBroker:
+  common:
+    timezone: Europe/Berlin
   broker:
-    AUTH_JWKS_URL:
-    HUB_BASE_URL:
-    HUB_AUTH_BASE_URL:
-    HUB_MESSENGER_BASE_URL:
-    HUB_AUTH_ROBOT_ID:
-    HUB_AUTH_ROBOT_SECRET:
+    AUTH_JWKS_URL: ""
+    HUB_BASE_URL: https://api.privateaim.dev/
+    HUB_AUTH_BASE_URL: https://auth.privateaim.dev/
+    HUB_MESSENGER_BASE_URL: https://messenger.privateaim.dev/
+    HUB_AUTH_ROBOT_ID: ""
+    HUB_AUTH_ROBOT_SECRET: ""
 
-  hub:
-    crypto:
-      ## @param hub.crypto.privateKey Content of the private key to be added to the secret. Need to use the "|" scalar:
-      ## https://yaml.org/spec/1.2.2/#812-literal-style; https://helm.sh/docs/chart_template_guide/yaml_techniques/
-      ##
-      privateKey:
-      ## @param hub.crypto.existingSecret Existing secret containing the private key for the node
-      ## Create this secret following the steps below:
-      ## 1) Generate your public and private key pair using the "Crypto" tab in the Hub
-      ## 2) Save the private key as 'private_key.pem' (it must use this name)
-      ## 3) Run the command below where SECRET_NAME is the name of the secret you want to create:
-      ##       kubectl create secret generic SECRET_NAME --from-file=./private_key.pem
-      existingSecret:
+  # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
+  replicaCount: 1
 
-flame-node-ui:
-  ## @param offline Forces the UI to use the internal service endpoint for authentication
-  offline: false
+  # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+  image:
+    repository: ghcr.io/privateaim/node-message-broker
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: 0.4.0
+    # This sets the pull policy for images.
+    pullPolicy: Always
+
+  # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+  imagePullSecrets: [ ]
+
+  # This is for setting Kubernetes Annotations to a Pod.
+  # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: { }
+  # This is for setting Kubernetes Labels to a Pod.
+  # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+  podLabels: { }
+
+  podSecurityContext: { }
+  # fsGroup: 2000
+
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    privileged: false
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: [ ALL ]
+
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 100m
+    limits:
+      memory: 512Mi
+
+  # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+  livenessProbe:
+    httpGet:
+      path: /actuator/health
+      port: 8090
+    initialDelaySeconds: 90
+    periodSeconds: 10
+    timeoutSeconds: 10
+  readinessProbe:
+    httpGet:
+      path: /actuator/health
+      port: 8090
+    initialDelaySeconds: 60
+    periodSeconds: 5
+    timeoutSeconds: 10
+
+  # Additional environment variables on the output Deployment definition.
+  env: [ ]
+  # - name: FOO
+  #   value: bar
+
+  # Additional volumes on the output Deployment definition.
+  volumes: [ ]
+  # - name: foo
+  #   secret:
+  #     secretName: mysecret
+  #     optional: false
+
+  # Additional volumeMounts on the output Deployment definition.
+  volumeMounts: [ ]
+  # - name: foo
+  #   mountPath: "/etc/foo"
+  #   readOnly: true
+
+  nodeSelector: { }
+  tolerations: [ ]
+  affinity: { }
+
+ui:
   env: production
-
-  ## For defining ingress specific metadata
-  ingress:
-    ## @param ingress.enabled Enable ingress record generation for the Node UI
-    ##
-    enabled: false
-    ## @param ingress.pathType Ingress path type
-    ##
-    pathType: ImplementationSpecific
-    ## @param ingress.hostname Default host for the ingress record (evaluated as template)
-    ##
-    hostname:
-    ## @param ingress.path Default file path for the ingress hostname
-    ##
-    path: /
 
   ## Keycloak related information
   idp:
@@ -474,25 +605,89 @@ flame-node-ui:
     clientId: node-ui
     ## @param idp.clientSecret Keycloak client secret. Ignored if `idp.existingSecret` is provided
     ## If not defined and no existingSecret provided, a random string is generated
-    clientSecret:
+    clientSecret: ""
     ## @param idp.existingSecret Existing k8s secret containing Keycloak secret for this client
-    ## idp.existingSecretKey should also be defined for custom k8s secret. Defaults to flame-service-secret
-    existingSecret:
+    ## idp.existingSecretKey should also be defined for custom k8s secret. Defaults to hub-adapter-kc-secret
+    existingSecret: ""
     ## @param idp.existingSecretKey Key where the Keycloak secret is being stored inside the existing k8s secret
-    existingSecretKey:
-    ## @param idp.realm Keycloak realm that the client exists in
-    realm: flame
-    ## @param idp.host URL to keycloak service
-    ## Will be set to localhost:8080 if not defined
-    host:
-    ## @param idp.service Service name of keycloak
-    ## Will be inferred using the Release.Name if not defined
-    service:
+    existingSecretKey: ""
 
-  ## Downstream node services
-  node:
-    ## @param node.adapter Hub adapter endpoint
-    adapter:
+  # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
+  replicaCount: 1
+
+  # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+  image:
+    repository: ghcr.io/privateaim/node-ui
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: 0.2.14
+    # This sets the pull policy for images.
+    pullPolicy: Always
+
+  # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+  imagePullSecrets: []
+
+  # This is for setting Kubernetes Annotations to a Pod.
+  # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: {}
+  # This is for setting Kubernetes Labels to a Pod.
+  # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+  podLabels: {}
+
+  podSecurityContext:
+    {}
+    # fsGroup: 2000
+
+  securityContext:
+    runAsNonRoot: true
+    privileged: false
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: [ALL]
+
+  resources:
+    {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+
+  # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+  livenessProbe: &probe
+    httpGet:
+      path: /healthz
+      port: ui
+    failureThreshold: 3
+    periodSeconds: 60
+    initialDelaySeconds: 60
+  readinessProbe: *probe
+
+  # Additional environment variables on the output Deployment definition.
+  extraEnv: []
+  # - name: FOO
+  #   value: bar
+
+  # Additional volumes on the output Deployment definition.
+  volumes: []
+  # - name: foo
+  #   secret:
+  #     secretName: mysecret
+  #     optional: false
+
+  # Additional volumeMounts on the output Deployment definition.
+  volumeMounts: []
+  # - name: foo
+  #   mountPath: "/etc/foo"
+  #   readOnly: true
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
 
 ## node-data-store deploys dummy blaze (FHIR) and minio (S3) data stores for testing the Flame Node
 flame-node-data-store:
@@ -535,3 +730,175 @@ flame-node-data-store:
     persistence:
       enabled: true
       size: 5Gi
+
+postgresql:
+  nameOverride:
+  fullnameOverride:
+  auth:
+    ## @param auth.enablePostgresUser Assign a password to the "postgres" admin user. Otherwise, remote access will be blocked for this user
+    ##
+    enablePostgresUser: true
+    ## @param auth.postgresPassword Password for the "postgres" admin user. Ignored if `auth.existingSecret` is provided
+    ##
+    postgresPassword: admin
+    username: postgres
+    password: postgres
+    database: postgres_db
+    existingSecret:
+    ## @param auth.secretKeys.adminPasswordKey Name of key in existing secret to use for PostgreSQL credentials. Only used when `auth.existingSecret` is set.
+    ## @param auth.secretKeys.userPasswordKey Name of key in existing secret to use for PostgreSQL credentials. Only used when `auth.existingSecret` is set.
+    ## @param auth.secretKeys.replicationPasswordKey Name of key in existing secret to use for PostgreSQL credentials. Only used when `auth.existingSecret` is set.
+    ##
+    secretKeys:
+      adminPasswordKey: postgres-password
+      userPasswordKey: password
+      replicationPasswordKey: replication-password
+    ## @param auth.usePasswordFiles Mount credentials as a files instead of using an environment variable
+    ##
+    usePasswordFiles: false
+
+minio:
+  # All possible values can be found at https://github.com/minio/minio/blob/master/helm/minio/values.yaml
+
+  ## Provide a name in place of minio for `app:` labels
+  nameOverride:
+
+  ## Provide a name to substitute for the full names of resources
+  fullnameOverride:
+
+  ## set kubernetes cluster domain where minio is running
+  clusterDomain: cluster.local
+
+  ## Set default rootUser, rootPassword
+  ## rootUser and rootPassword is generated when not set
+  ## Distributed MinIO ref: https://min.io/docs/minio/linux/operations/install-deploy-manage/deploy-minio-multi-node-multi-drive.html
+  ##
+  rootUser: "admin"
+  rootPassword: "s3cr3t_p4ssw0rd"
+
+  ## Use existing Secret that store following variables:
+  ##
+  ## | Chart var             | .data.<key> in Secret    |
+  ## |:----------------------|:-------------------------|
+  ## | rootUser              | rootUser                 |
+  ## | rootPassword          | rootPassword             |
+  ##
+  ## All mentioned variables will be ignored in values file.
+  ## .data.rootUser and .data.rootPassword are mandatory,
+  ## others depend on enabled status of corresponding sections.
+  existingSecret:
+
+  ## Path where PV would be mounted on the MinIO Pod
+  mountPath: "/mnt/data"
+
+  ## List of buckets to be created after minio install
+  ##
+  buckets: [
+    {
+      name: flame,
+      policy: none,
+      purge: false,
+      versioning: false,
+      objectlocking: false
+    }
+  ]
+    #   # Name of the bucket
+    # - name: bucket1
+    #   # Policy to be set on the
+    #   # bucket [none|download|upload|public]
+    #   policy: none
+    #   # Purge if bucket exists already
+    #   purge: false
+    #   # set versioning for
+    #   # bucket [true|false]
+    #   versioning: false # remove this key if you do not want versioning feature
+    #   # set objectlocking for
+    #   # bucket [true|false] NOTE: versioning is enabled by default if you use locking
+    #   objectlocking: false
+    # - name: bucket2
+    #   policy: none
+    #   purge: false
+    #   versioning: true
+    #   # set objectlocking for
+    #   # bucket [true|false] NOTE: versioning is enabled by default if you use locking
+    #   objectlocking: false
+
+
+  ## Set default image, imageTag, and imagePullPolicy. mode is used to indicate the
+  image:
+    repository: quay.io/minio/minio
+    tag: RELEASE.2024-03-03T17-50-39Z
+    pullPolicy: IfNotPresent
+
+  imagePullSecrets: []
+  ## Update strategy for Deployments
+  deploymentUpdate:
+    type: RollingUpdate
+    maxUnavailable: 0
+    maxSurge: 100%
+
+  mode: standalone
+  # Number of drives attached to a node
+  drivesPerNode: 1
+  # Number of MinIO containers running
+  replicas: 1
+  # Number of expanded MinIO clusters
+  pools: 1
+
+  resources:
+    requests:
+      memory: 1Gi
+
+  ## Update strategy for StatefulSets
+  statefulSetUpdate:
+    updateStrategy: RollingUpdate
+
+  persistence:
+    enabled: true
+    annotations: {}
+
+    ## A manually managed Persistent Volume and Claim
+    ## Requires persistence.enabled: true
+    ## If defined, PVC must be created manually before volume will be bound
+    existingClaim:
+
+    ## minio data Persistent Volume Storage Class
+    ## If defined, storageClassName: <storageClass>
+    ## If set to "-", storageClassName: "", which disables dynamic provisioning
+    ## If undefined (the default) or set to null, no storageClassName spec is
+    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+    ##   GKE, AWS & OpenStack)
+    ##
+    ## Storage class of PV to bind. By default it looks for standard storage class.
+    ## If the PV uses a different storage class, specify that here.
+    storageClass:
+    volumeName:
+    accessMode: ReadWriteOnce
+    size: 10Gi
+
+node-message-broker-db:
+  global:
+    defaultStorageClass: ""
+  architecture: "standalone"
+  useStatefulSet: true
+  replicaCount: 1
+
+  auth:
+    enabled: false
+
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 100m
+    limits:
+      memory: 1Gi
+
+  persistence:
+    size: 100Mi
+    storageClass: ""
+
+  serviceAccount:
+    create: false
+
+  networkPolicy:
+    enabled: false

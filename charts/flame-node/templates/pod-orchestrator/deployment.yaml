@@ -1,0 +1,137 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-po
+spec:
+  replicas: {{ .Values.podOrchestrator.replicaCount }}
+  selector:
+    matchLabels:
+      component: flame-po
+      version: {{ .Chart.AppVersion }}
+      deployment-id:  {{ .Release.Name }}
+  template:
+    metadata:
+      annotations:
+        checksum/secrets: {{ include (print $.Template.BasePath "/pod-orchestrator/secret.yaml") . | sha256sum }}
+        {{- with .Values.podOrchestrator.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        component: flame-po
+        version: {{ .Chart.AppVersion }}
+        deployment-id: {{ .Release.Name }}
+        {{- with .Values.podOrchestrator.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.podOrchestrator.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podOrchestrator.podSecurityContext | nindent 8 }}
+      serviceAccountName: {{ .Release.Name }}-po-sa
+      #automountServiceAccountToken: false
+      initContainers:
+        - name: init-postgres
+          securityContext:
+            {{- toYaml .Values.podOrchestrator.waitForPostgres.securityContext | nindent 12 }}
+          image: "{{ .Values.podOrchestrator.waitForPostgres.image.repository }}:{{ .Values.podOrchestrator.waitForPostgres.image.tag | default "latest" }}"
+          imagePullPolicy: {{ .Values.podOrchestrator.waitForPostgres.image.pullPolicy }}
+          command: ['sh', '-c', "until nc -vz {{ coalesce .Values.podOrchestrator.env.POSTGRES_HOST (include "postgresql.endpoint" .) }}.{{ .Release.Namespace }}.svc {{ .Values.postgresql.primary.service.ports.postgresql }}; do echo waiting for postgres; sleep 2; done"]
+          {{- with .Values.podOrchestrator.waitForPostgres.env }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.podOrchestrator.waitForPostgres.resources | nindent 12 }}
+      containers:
+        - name: po
+          securityContext:
+            {{- toYaml .Values.podOrchestrator.securityContext | nindent 12 }}
+          image: "{{ .Values.podOrchestrator.image.repository }}:{{ .Values.podOrchestrator.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.podOrchestrator.image.pullPolicy }}
+          #image: po:latest
+          #imagePullPolicy: IfNotPresent
+          #VolumeMounts:
+          #  - mountPath: /config/keys
+          #    name: keys
+          ports:
+            - containerPort: 8080
+          env:
+            - name: MINIO_ENDPOINT
+              value: {{ .Values.podOrchestrator.minio.endpoint }}
+            - name: MINIO_ACCESS_KEY
+              value: {{ .Values.podOrchestrator.minio.accessKey }}
+            - name: MINIO_SECRET_KEY
+              value: {{ .Values.podOrchestrator.minio.secretKey }}
+            - name: POSTGRES_HOST
+              value: {{ coalesce .Values.podOrchestrator.env.POSTGRES_HOST (include "postgresql.endpoint" .) }}
+            - name: POSTGRES_DB
+              value: {{ .Values.postgresql.auth.database }}
+              ## TODO: add _helpers.tpl in case we want to use secret instead for postgres user/pwd
+            - name: POSTGRES_USER
+              value: {{ .Values.postgresql.auth.username }}
+            - name: POSTGRES_PASSWORD
+              value: {{ .Values.postgresql.auth.password }}
+            - name: PO_HTTP_PROXY
+              value: {{ .Values.proxy.httpProxy | default "" }}
+            - name: PO_HTTPS_PROXY
+              value: {{ .Values.proxy.httpsProxy | default "" }}
+            - name: RESULT_CLIENT_ID
+              value: {{ .Values.podOrchestrator.env.RESULT_CLIENT_ID }}
+            - name: RESULT_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-po-keycloak-secret
+                  key: podOrcClientSecret
+            - name: KEYCLOAK_URL
+              value: {{ include "keycloak.base.endpoint" . }}
+            - name: KEYCLOAK_REALM
+              value: {{ .Values.podOrchestrator.env.KEYCLOAK_REALM }}
+            - name: HARBOR_URL
+              value: {{ .Values.podOrchestrator.env.HARBOR_URL }}
+            - name: HARBOR_USER
+              value: {{ .Values.podOrchestrator.env.HARBOR_USER }}
+            - name: HARBOR_PW
+              value: {{ .Values.podOrchestrator.env.HARBOR_PW }}
+            - name: HUB_URL_AUTH
+              value: {{ .Values.hub.endpoints.auth | default "https://auth.privateaim.net" | quote }}
+            - name: HUB_URL_CORE
+              value: {{ .Values.hub.endpoints.core | default "https://core.privateaim.net" | quote }}
+            - name: HUB_ROBOT_USER
+              value:  {{ required "A robot ID for the Hub is required." .Values.hub.auth.robotUser | quote }}
+            - name: HUB_ROBOT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "hub.secretName" . }}
+                  key: robotSecret
+            - name: NODE_NAME
+              value: {{ .Values.podOrchestrator.env.NODE_NAME}}
+            - name: NODE_PW
+              value: {{ .Values.podOrchestrator.env.NODE_PW}}
+            - name: NODE_KEY_PW
+              value: {{ .Values.podOrchestrator.env.NODE_KEY_PW}}
+            {{- with .Values.podOrchestrator.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- with .Values.podOrchestrator.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.podOrchestrator.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.podOrchestrator.resources | nindent 12 }}
+          volumeMounts:
+            {{- toYaml .Values.podOrchestrator.volumeMounts | nindent 12 }}
+      volumes:
+        {{- toYaml .Values.podOrchestrator.volumes | nindent 8 }}
+      nodeSelector:
+        {{- toYaml .Values.podOrchestrator.nodeSelector | nindent 8 }}
+      affinity:
+        {{- toYaml .Values.podOrchestrator.affinity | nindent 8 }}
+      tolerations:
+        {{- toYaml .Values.podOrchestrator.tolerations | nindent 8 }}

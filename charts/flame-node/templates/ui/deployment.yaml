@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-node-ui-deployment
+  labels:
+    component: flame-node-ui
+spec:
+  selector:
+    matchLabels:
+      component: flame-node-ui
+      version: {{ .Chart.AppVersion }}
+      deployment-id:  {{ .Release.Name }}
+  replicas: {{ .Values.ui.replicaCount }}
+  template:
+    metadata:
+      annotations:
+        checksum/secrets: {{ include (print $.Template.BasePath "/ui/secret.yaml") . | sha256sum }}
+        {{- with .Values.ui.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        component: flame-node-ui
+        version: {{ .Chart.AppVersion }}
+        deployment-id:  {{ .Release.Name }}
+        {{- with .Values.ui.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.ui.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.ui.podSecurityContext | nindent 8 }}
+      containers:
+        - name: node-ui
+          securityContext:
+            {{- toYaml .Values.ui.securityContext | nindent 12 }}
+          image: "{{ .Values.ui.image.repository }}:{{ .Values.ui.image.tag | default "latest" }}"
+          imagePullPolicy: {{ .Values.ui.image.pullPolicy }}
+          ports:
+            - containerPort: 3000
+              name: ui
+          env:
+            - name: NODE_ENV
+              value: {{ .Values.ui.env | default "production" | quote }}
+            - name: UI_PROXY
+              value: {{ or .Values.proxy.httpsProxy .Values.proxy.httpProxy | default "" | quote }}
+            - name: NUXT_PUBLIC_BASE_URL
+              value: {{ include "node.ingress.hostname" . }}
+            - name: NUXT_PUBLIC_HUB_ADAPTER_URL
+              value: {{ include "ui.adapter.endpoint" . }}
+            - name: NUXT_PUBLIC_ORIGIN
+              value: {{ printf "%s/flame/api/auth" (include "node.ingress.hostname" .) }}
+            - name: NUXT_PUBLIC_KEYCLOAK_BASE_URL
+              value: {{ include "ui.userIdp.endpoint" . }}
+            - name: NUXT_KEYCLOAK_CLIENT_ID
+              value: {{ .Values.ui.idp.clientId | default "node-ui" | quote }}
+            {{ if or (contains "localhost" (include "ui.userIdp.endpoint" .)) .Values.offline }}
+            - name: NUXT_K8S_KEYCLOAK_ENDPOINT
+              value: {{ include "keycloak.service.endpoint" . }}
+            {{ end }}
+            - name: NUXT_KEYCLOAK_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ui.keycloak.secretName" . }}
+                  key: {{ include "ui.keycloak.secretKey" . }}
+            - name: NUXT_AUTH_SECRET
+              value: {{ randAlphaNum 32 | b64enc }}
+            {{- with .Values.ui.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- with .Values.ui.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.ui.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.ui.resources | nindent 12 }}
+          volumeMounts:
+            {{- toYaml .Values.ui.volumeMounts | nindent 12 }}
+      volumes:
+        {{- toYaml .Values.ui.volumes | nindent 8 }}
+      nodeSelector:
+        {{- toYaml .Values.ui.nodeSelector | nindent 8 }}
+      affinity:
+        {{- toYaml .Values.ui.affinity | nindent 8 }}
+      tolerations:
+        {{- toYaml .Values.ui.tolerations | nindent 8 }}

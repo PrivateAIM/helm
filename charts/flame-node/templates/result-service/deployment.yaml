@@ -1,0 +1,129 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-node-result-deployment
+  labels:
+    component: flame-result-service
+spec:
+  replicas: {{ .Values.resultService.replicaCount }}
+  selector:
+    matchLabels:
+      component: flame-result-service
+      app: {{ .Release.Name }}-node-result
+  template:
+    metadata:
+      annotations:
+        {{- with .Values.resultService.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        component: flame-result-service
+        app: {{ .Release.Name }}-node-result
+        {{- with .Values.resultService.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.resultService.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.resultService.podSecurityContext | nindent 8 }}
+      containers:
+        - name: results-service
+          securityContext:
+            {{- toYaml .Values.resultService.securityContext | nindent 12 }}
+          image: "{{ .Values.resultService.image.repository }}:{{ .Values.resultService.image.tag | default "latest" }}"
+          imagePullPolicy: {{ .Values.resultService.image.pullPolicy }}
+          ports:
+            - containerPort: 8080
+              name: http-result-srv
+          volumeMounts:
+            - name: crypto
+              mountPath: /etc/crypto
+              readOnly: true
+            {{- with .Values.resultService.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          env:
+            - name: CRYPTO__PROVIDER
+              value: file
+            - name:  CRYPTO__ECDH_PRIVATE_KEY_PATH
+              value: /etc/crypto/private_key.pem
+            - name: UVICORN_LOG_LEVEL
+              value: debug
+            - name: POSTGRES__HOST
+              value: {{ include "postgresql.endpoint" . }}
+            - name: POSTGRES__DB
+              value: {{ .Values.postgresql.auth.database }}
+            - name: POSTGRES__USER
+              value: {{ .Values.postgresql.auth.username }}
+            - name: POSTGRES__PASSWORD
+              value: postgres
+          {{- if .Values.proxy.httpProxy }}
+            - name: PROXY__HTTP_URL
+              value: {{ .Values.proxy.httpProxy }}
+          {{- end }}
+          {{- if .Values.proxy.httpsProxy }}
+            - name: PROXY__HTTPS_URL
+              value: {{ .Values.proxy.httpsProxy }}
+          {{- end }}
+            - name: MINIO__ENDPOINT
+              value: {{ .Release.Name }}-minio:9000
+            - name: MINIO__ACCESS_KEY
+              value: {{ required "MinIO user must be set." .Values.minio.rootUser | quote }}
+            - name: MINIO__SECRET_KEY
+              value: {{ required "MinIO password must be set." .Values.minio.rootPassword | quote }}
+            - name: MINIO__USE_SSL
+              value: {{ .Values.resultService.env.MINIO_USE_SSL | default false | quote }}
+            - name: MINIO__BUCKET
+              value: {{ required "MinIO bucket must be set." .Values.resultService.env.MINIO_BUCKET | quote }}
+            - name: HUB__AUTH__FLOW
+              value: "robot"
+            - name: HUB__AUTH__ID
+              value: {{ required "Hub robot id must be set." .Values.hub.auth.robotUser  | quote }}
+            - name: HUB__AUTH__SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "hub.secretName" . }}
+                  key: robotSecret
+            - name: HUB__AUTH_BASE_URL
+              value: {{ .Values.hub.endpoints.auth | default "https://auth.privateaim.dev" | quote }}
+            - name: HUB__CORE_BASE_URL
+              value: {{ .Values.hub.endpoints.core | default "https://core.privateaim.dev" | quote }}
+            - name: HUB__STORAGE_BASE_URL
+              value: {{ .Values.hub.endpoints.storage | default "https://storage.privateaim.dev" | quote }}
+            - name: OIDC__CERTS_URL
+              value: {{ coalesce .Values.resultService.env.OIDC_CERTS_URL (include "keycloak.jwks.endpoint" .) }}
+            - name: OIDC__CLIENT_ID_CLAIM_NAME
+              value: {{ .Values.resultService.env.OIDC_CLIENT_ID_CLAIM_NAME }}
+            # Change this to "1" for testing purposes. This will cause the value of OIDC__CERTS_URL to be
+            # ignored. You will still need to set this variable for the service to start up correctly.
+            - name: OIDC__SKIP_JWT_VALIDATION
+              value: "0"
+            {{- with .Values.resultService.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- with .Values.resultService.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.resultService.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resultService.resources | nindent 12 }}
+      volumes:
+        - name: crypto
+          secret:
+            secretName: {{ include "hub.crypto.privateKeySecretName" . }}
+        {{- with .Values.resultService.volumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      nodeSelector:
+        {{- toYaml .Values.resultService.nodeSelector | nindent 8 }}
+      affinity:
+        {{- toYaml .Values.resultService.affinity | nindent 8 }}
+      tolerations:
+        {{- toYaml .Values.resultService.tolerations | nindent 8 }}
