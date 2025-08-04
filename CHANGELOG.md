@@ -1,5 +1,48 @@
 # Changelog
 
+## [0.0.6](https://github.com/PrivateAIM/helm/compare/root-v0.0.5...root-v0.0.6) (2025-08-04)
+
+
+### Features
+
+* **adapter:** add offline param to hub adapter values ([81b710a](https://github.com/PrivateAIM/helm/commit/81b710a6039332e92e0c37643a572f38a6f6a2c1))
+* add monitoring capabilities to hub deployment ([#38](https://github.com/PrivateAIM/helm/issues/38)) ([ceda045](https://github.com/PrivateAIM/helm/commit/ceda045fc7ba05d18dcf29762425703481a14c2d))
+* add unique flame-component label ([11085c7](https://github.com/PrivateAIM/helm/commit/11085c72627cc3eaf706ae6c367ae6d898a4b72b))
+* additional offline env vars for UI and HA ([e136410](https://github.com/PrivateAIM/helm/commit/e136410caaef4367115a71ec2808fbebbf2f184a))
+* **blaze:** migrate deployment to statefulset and update values for persistence ([4dd3a5e](https://github.com/PrivateAIM/helm/commit/4dd3a5ec31d3a2345a062ca3ad6c4a37f30d0603))
+* **broker:** working forward proxy ([295e887](https://github.com/PrivateAIM/helm/commit/295e88705f93519e1e40b2c06c9216c3fb1a1e11))
+* **ha:** update env vars to allow for other internal IDPs ([fc9e067](https://github.com/PrivateAIM/helm/commit/fc9e067a5e3558e46810ec9716cef8577b212572))
+* **idp:** add support for separate user IDP and update global values ([21f8655](https://github.com/PrivateAIM/helm/commit/21f865558e53c6e8e9857ecf17e2936d7b1bab7e))
+* integrate message broker into flame-node chart ([34a955e](https://github.com/PrivateAIM/helm/commit/34a955e9d896c09a7df3b30ef4d402523f60be8c))
+* integrate message broker into flame-node chart and begin consolidating helper functions ([794f5af](https://github.com/PrivateAIM/helm/commit/794f5aff915cc0f61901b2ce4a8dc8ceb52af1c3))
+* integrate podOrc into flame-node chart and move postgresql to parent chart ([71dc262](https://github.com/PrivateAIM/helm/commit/71dc26276acf4f9a8b91ee9fa87f9a920c09589f))
+* integrate result service into flame-node chart and move minio to parent chart ([de840a0](https://github.com/PrivateAIM/helm/commit/de840a0195eaa53d5050c61fd83f4c4596561e0f))
+* integrate UI and hub adapter into flame-node chart ([e7d7360](https://github.com/PrivateAIM/helm/commit/e7d73604d6444fb03dbd6ac90c6affeebcbb637b))
+* **keycloak:** enable microsvcs to user controller agnostic idp subpath ([bccf995](https://github.com/PrivateAIM/helm/commit/bccf9950858b1d4eaa6ef5a11dbb8f0aaba63da4))
+* pass loki component urls to container ([c51670f](https://github.com/PrivateAIM/helm/commit/c51670fa6e0a9fa649721f153ae9cfa35a7a773a))
+* **proxy:** update hub-adapter to use forward proxy values ([2217215](https://github.com/PrivateAIM/helm/commit/22172154da4900fc8ecf91b76573fc512a945ed6))
+* **proxy:** update result service to use forward proxy values ([310a7fa](https://github.com/PrivateAIM/helm/commit/310a7fa027964f2190a19c97ef49cf9590256045))
+* **proxy:** working message broker proxy options ([a4109b0](https://github.com/PrivateAIM/helm/commit/a4109b0462a1705f41cb3cbefdc845195a17d7e9))
+* **results:** crypto private key passed as existing secret or value ([611babf](https://github.com/PrivateAIM/helm/commit/611babf54fcc70b5d39e6e2a87d47073eb4290f1))
+* **ui:** add proxy configuration to UI deploy ([5020b48](https://github.com/PrivateAIM/helm/commit/5020b48ef80660f9aee51e24ba0b8b42d3ce128a))
+
+
+### Bug Fixes
+
+* add labels to services ([f59b226](https://github.com/PrivateAIM/helm/commit/f59b22660986fa941181e20a1e2f60c084608033))
+* add missing matchLabels ([c2c374b](https://github.com/PrivateAIM/helm/commit/c2c374b18c36308d411e2f64c4f7726a396db3d1))
+* default image tags and pin image versions in values.yaml ([f42b09d](https://github.com/PrivateAIM/helm/commit/f42b09d163f906f71c90f4a6bb2728b9f24baedf))
+* helper functions and revert message broker image ([e4aa990](https://github.com/PrivateAIM/helm/commit/e4aa99077306f7edff9a91d37487671a5ae91b7c))
+* **po:** update component labels ([4116e50](https://github.com/PrivateAIM/helm/commit/4116e503065051b6403d83b6ad72c93d39f2ccbd))
+* **proxy:** add missing proxy env vars and update value comments ([a3b3083](https://github.com/PrivateAIM/helm/commit/a3b30833604d7622e0b49b4b01e2969626152cd0))
+* **result:** update result deployment to use new env vars ([b0324cf](https://github.com/PrivateAIM/helm/commit/b0324cf1839d0201f6760440a37554447e0d0ba8))
+
+
+### Reverts
+
+* move datastore chart to top level again for merge ([02743f8](https://github.com/PrivateAIM/helm/commit/02743f8ec5e48eaa09cb61643f70481f171bb4d3))
+* **results:** set result-service to previous sha ([a81ff6d](https://github.com/PrivateAIM/helm/commit/a81ff6d314903a4ca50bba3e733f48ce8e32d5d7))
+
 ## [0.0.5](https://github.com/PrivateAIM/helm/compare/root-v0.0.4...root-v0.0.5) (2025-05-07)
 
 
