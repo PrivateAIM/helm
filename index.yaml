@@ -3,6 +3,16 @@ entries:
   authup:
   - apiVersion: v2
     appVersion: 0.1.0
+    created: "2025-08-04T09:54:22.381135005Z"
+    description: A Helm chart for Kubernetes
+    digest: 9bfffbae85c435139a0c4da91bd4e3ff6dfccd364964adb762d1d6aaff53f31e
+    name: authup
+    type: application
+    urls:
+    - https://github.com/PrivateAIM/helm/releases/download/authup-0.0.6/authup-0.0.6.tgz
+    version: 0.0.6
+  - apiVersion: v2
+    appVersion: 0.1.0
     created: "2025-05-08T12:06:55.273036071Z"
     description: A Helm chart for Kubernetes
     digest: 7729473cd17c71c1623f38123d4d4469d684b370c9bed917b8fc31327e3b94d3
@@ -33,6 +43,16 @@ entries:
     version: 0.0.3
   blaze:
   - apiVersion: v2
+    appVersion: 0.34.0
+    created: "2025-08-04T09:54:22.524160877Z"
+    description: A Helm chart for Kubernetes
+    digest: 5f06b8bed481a84db6239e7d027ab639a384968d5457970f91c0de2a33fa74bf
+    name: blaze
+    type: application
+    urls:
+    - https://github.com/PrivateAIM/helm/releases/download/blaze-0.0.6/blaze-0.0.6.tgz
+    version: 0.0.6
+  - apiVersion: v2
     appVersion: 0.25.0
     created: "2025-05-08T12:06:55.49256588Z"
     description: A Helm chart for Kubernetes
@@ -53,6 +73,59 @@ entries:
     - https://github.com/PrivateAIM/helm/releases/download/blaze-0.0.4/blaze-0.0.4.tgz
     version: 0.0.4
   flame-hub:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2025-08-04T09:54:22.733348452Z"
+    dependencies:
+    - condition: services.mysql
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 12.3.3
+    - condition: services.redis
+      name: redis
+      repository: https://charts.bitnami.com/bitnami
+      version: 20.11.5
+    - condition: services.rabbitmq
+      name: rabbitmq
+      repository: https://charts.bitnami.com/bitnami
+      version: 15.5.3
+    - condition: services.minio
+      name: minio
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.0.8
+    - condition: services.vault
+      name: vault
+      repository: https://helm.releases.hashicorp.com
+      version: 0.28.1
+    - condition: services.monitoring
+      name: flame-hub-monitoring
+      repository: file://../flame-hub-monitoring
+      version: 0.0.6
+    - name: authup
+      repository: file://../third-party/authup
+      version: 0.0.6
+    - name: flame-hub-client-ui
+      repository: file://../flame-hub-client-ui
+      version: 0.0.6
+    - name: flame-hub-server-core
+      repository: file://../flame-hub-server-core
+      version: 0.0.6
+    - name: flame-hub-server-messenger
+      repository: file://../flame-hub-server-messenger
+      version: 0.0.6
+    - name: flame-hub-server-storage
+      repository: file://../flame-hub-server-storage
+      version: 0.0.6
+    - name: flame-hub-server-analysis-manager
+      repository: file://../flame-hub-server-analysis-manager
+      version: 0.0.6
+    description: A Helm chart for Kubernetes
+    digest: 1076db2d55eda0e46f18e46347ec699e8e9f8d04e5ad6ffff0bba194f8db06bc
+    name: flame-hub
+    type: application
+    urls:
+    - https://github.com/PrivateAIM/helm/releases/download/flame-hub-0.0.6/flame-hub-0.0.6.tgz
+    version: 0.0.6
   - apiVersion: v2
     appVersion: 0.1.0
     created: "2025-05-08T12:06:55.728528922Z"
@@ -203,6 +276,16 @@ entries:
   flame-hub-client-ui:
   - apiVersion: v2
     appVersion: latest
+    created: "2025-08-04T09:54:22.885863165Z"
+    description: A Helm chart for Kubernetes
+    digest: acf4198dfbff0902b69cc69f8184f8b6a018b338043a400a1a809c912d38acb0
+    name: flame-hub-client-ui
+    type: application
+    urls:
+    - https://github.com/PrivateAIM/helm/releases/download/flame-hub-client-ui-0.0.6/flame-hub-client-ui-0.0.6.tgz
+    version: 0.0.6
+  - apiVersion: v2
+    appVersion: latest
     created: "2025-05-08T12:06:55.937838827Z"
     description: A Helm chart for Kubernetes
     digest: 2ba11830fc68d1234cb7c40b6fa93686ab5f654e19e730212bc655fe8251cf7d
@@ -231,7 +314,38 @@ entries:
     urls:
     - https://github.com/PrivateAIM/helm/releases/download/flame-hub-client-ui-0.0.3/flame-hub-client-ui-0.0.3.tgz
     version: 0.0.3
+  flame-hub-monitoring:
+  - apiVersion: v2
+    appVersion: 0.0.0
+    created: "2025-08-04T09:54:23.07219653Z"
+    dependencies:
+    - name: grafana
+      repository: https://charts.bitnami.com/bitnami
+      version: 12.0.9
+    - name: grafana-loki
+      repository: https://charts.bitnami.com/bitnami
+      version: 5.0.4
+    - name: prometheus
+      repository: https://charts.bitnami.com/bitnami
+      version: 2.1.10
+    description: A Helm chart for Kubernetes
+    digest: 62ea9d072c76537b29db16c303c49e3dfa71ccfecf37b2ab08ffa87c3425ffd1
+    name: flame-hub-monitoring
+    type: application
+    urls:
+    - https://github.com/PrivateAIM/helm/releases/download/flame-hub-monitoring-0.0.6/flame-hub-monitoring-0.0.6.tgz
+    version: 0.0.6
   flame-hub-server-analysis-manager:
+  - apiVersion: v2
+    appVersion: latest
+    created: "2025-08-04T09:54:23.185449505Z"
+    description: A Helm chart for Kubernetes
+    digest: aa479323a20b3884a62cde7b152a5472e49685b652a1b6490915beabcdbd7919
+    name: flame-hub-server-analysis-manager
+    type: application
+    urls:
+    - https://github.com/PrivateAIM/helm/releases/download/flame-hub-server-analysis-manager-0.0.6/flame-hub-server-analysis-manager-0.0.6.tgz
+    version: 0.0.6
   - apiVersion: v2
     appVersion: latest
     created: "2025-05-08T12:06:56.144970684Z"
@@ -265,6 +379,16 @@ entries:
   flame-hub-server-core:
   - apiVersion: v2
     appVersion: latest
+    created: "2025-08-04T09:54:23.294821874Z"
+    description: A Helm chart for Kubernetes
+    digest: 9e90b4fa0ff4cbaa38107a35cb43ce863ba7dd4514ad1f70b463b34d9925f10f
+    name: flame-hub-server-core
+    type: application
+    urls:
+    - https://github.com/PrivateAIM/helm/releases/download/flame-hub-server-core-0.0.6/flame-hub-server-core-0.0.6.tgz
+    version: 0.0.6
+  - apiVersion: v2
+    appVersion: latest
     created: "2025-05-08T12:06:56.357224306Z"
     description: A Helm chart for Kubernetes
     digest: 549604ad25a6ff2f41336c5c2cd756991d11e45aea7ae88091538e25aed7606f
@@ -294,6 +418,16 @@ entries:
     - https://github.com/PrivateAIM/helm/releases/download/flame-hub-server-core-0.0.3/flame-hub-server-core-0.0.3.tgz
     version: 0.0.3
   flame-hub-server-messenger:
+  - apiVersion: v2
+    appVersion: latest
+    created: "2025-08-04T09:54:23.495719671Z"
+    description: A Helm chart for Kubernetes
+    digest: 5fed12a3eb630ce35ed3fa62fbce6bdefb42828705a4a86096fcae81f2a1e1d3
+    name: flame-hub-server-messenger
+    type: application
+    urls:
+    - https://github.com/PrivateAIM/helm/releases/download/flame-hub-server-messenger-0.0.6/flame-hub-server-messenger-0.0.6.tgz
+    version: 0.0.6
   - apiVersion: v2
     appVersion: latest
     created: "2025-05-08T12:06:56.554776084Z"
@@ -327,6 +461,16 @@ entries:
   flame-hub-server-storage:
   - apiVersion: v2
     appVersion: latest
+    created: "2025-08-04T09:54:23.619622431Z"
+    description: A Helm chart for Kubernetes
+    digest: b94bfb802f29b0280b24cc68326a8e001aaf0ed805afc619779f9a67ba9ee4b7
+    name: flame-hub-server-storage
+    type: application
+    urls:
+    - https://github.com/PrivateAIM/helm/releases/download/flame-hub-server-storage-0.0.6/flame-hub-server-storage-0.0.6.tgz
+    version: 0.0.6
+  - apiVersion: v2
+    appVersion: latest
     created: "2025-05-08T12:06:56.742645184Z"
     description: A Helm chart for Kubernetes
     digest: 4b5ec82ab5fd72c823081b1eb113d06452946c2f8cb0ad5815f0b408dadc7cc8
@@ -356,6 +500,38 @@ entries:
     - https://github.com/PrivateAIM/helm/releases/download/flame-hub-server-storage-0.0.3/flame-hub-server-storage-0.0.3.tgz
     version: 0.0.3
   flame-node:
+  - apiVersion: v2
+    appVersion: 0.9.0
+    created: "2025-08-04T09:54:23.826625725Z"
+    dependencies:
+    - condition: keycloak.enabled
+      name: keycloak
+      repository: file://../third-party/keycloak
+      version: 0.0.6
+    - condition: flame-node-data-store.enabled
+      name: flame-node-data-store
+      repository: file://./flame-node-data-store
+      version: 0.0.6
+    - name: kong
+      repository: https://charts.konghq.com
+      version: 2.38.0
+    - name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 15.2.5
+    - name: minio
+      repository: https://charts.min.io/
+      version: 5.1.0
+    - alias: node-message-broker-db
+      name: mongodb
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.5.21
+    description: A Helm chart for deploying the Flame Node
+    digest: b837261292b322446891feece5b13189b1646562a91dd0d75a024260e3a1c8c8
+    name: flame-node
+    type: application
+    urls:
+    - https://github.com/PrivateAIM/helm/releases/download/flame-node-0.0.6/flame-node-0.0.6.tgz
+    version: 0.0.6
   - apiVersion: v2
     appVersion: 0.9.0
     created: "2025-05-08T12:06:57.014608686Z"
@@ -430,6 +606,24 @@ entries:
     - https://github.com/PrivateAIM/helm/releases/download/flame-node-0.0.4/flame-node-0.0.4.tgz
     version: 0.0.4
   flame-node-data-store:
+  - apiVersion: v2
+    appVersion: 0.9.0
+    created: "2025-08-04T09:54:23.990340827Z"
+    dependencies:
+    - name: blaze
+      repository: file://blaze
+      version: 0.0.6
+    - name: minio
+      repository: https://charts.min.io/
+      version: 5.2.0
+    description: A Helm chart for deploying blaze (FHIR) and minio (S3) data stores
+      for testing the Flame Node
+    digest: 652883680b7dab63db595538a02c148255906475f7b2986a870a73fd848ceab4
+    name: flame-node-data-store
+    type: application
+    urls:
+    - https://github.com/PrivateAIM/helm/releases/download/flame-node-data-store-0.0.6/flame-node-data-store-0.0.6.tgz
+    version: 0.0.6
   - apiVersion: v2
     appVersion: 0.9.0
     created: "2025-05-08T12:06:57.19383978Z"
@@ -610,6 +804,45 @@ entries:
       licenses: Apache-2.0
     apiVersion: v2
     appVersion: 26.1.2
+    created: "2025-08-04T09:54:24.149812333Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: oci://registry-1.docker.io/bitnamicharts
+      version: 16.x.x
+    - name: common
+      repository: oci://registry-1.docker.io/bitnamicharts
+      tags:
+      - bitnami-common
+      version: 2.x.x
+    description: Keycloak is a high performance Java-based identity and access management
+      solution. It lets developers add an authentication layer to their applications
+      with minimum effort.
+    digest: 3a2d01fed242855891b826269b44836e5bdc8dc0fc11d973f4677eb71929c722
+    home: https://bitnami.com
+    icon: https://dyltqmyl993wv.cloudfront.net/assets/stacks/keycloak/img/keycloak-stack-220x234.png
+    keywords:
+    - keycloak
+    - access-management
+    maintainers:
+    - name: Broadcom, Inc. All Rights Reserved.
+      url: https://github.com/bitnami/charts
+    name: keycloak
+    sources:
+    - https://github.com/bitnami/charts/tree/main/bitnami/keycloak
+    urls:
+    - https://github.com/PrivateAIM/helm/releases/download/keycloak-0.0.6/keycloak-0.0.6.tgz
+    version: 0.0.6
+  - annotations:
+      category: DeveloperTools
+      images: |
+        - name: keycloak
+          image: docker.io/bitnami/keycloak:26.1.2-debian-12-r0
+        - name: keycloak-config-cli
+          image: docker.io/bitnami/keycloak-config-cli:6.3.0-debian-12-r1
+      licenses: Apache-2.0
+    apiVersion: v2
+    appVersion: 26.1.2
     created: "2025-05-08T12:06:58.423109739Z"
     dependencies:
     - condition: postgresql.enabled
@@ -678,4 +911,4 @@ entries:
     urls:
     - https://github.com/PrivateAIM/helm/releases/download/keycloak-0.0.4/keycloak-0.0.4.tgz
     version: 0.0.4
-generated: "2025-05-08T12:06:58.423199318Z"
+generated: "2025-08-04T09:54:24.149872465Z"
