@@ -44,8 +44,12 @@ spec:
           env:
             - name: NODE_ENV
               value: {{ .Values.ui.env | default "production" | quote }}
-            - name: UI_PROXY
-              value: {{ or .Values.proxy.httpsProxy .Values.proxy.httpProxy | default "" | quote }}
+            - name: HTTP_PROXY
+              value: {{ .Values.proxy.httpProxy | default "" | quote }}
+            - name: HTTPS_PROXY
+              value: {{ .Values.proxy.httpsProxy | default "" | quote }}
+            - name: NO_PROXY
+              value: {{ .Values.proxy.noProxy | default "" | quote }}
             - name: NUXT_PUBLIC_BASE_URL
               value: {{ include "node.ingress.hostname" . }}
             - name: NUXT_PUBLIC_HUB_ADAPTER_URL

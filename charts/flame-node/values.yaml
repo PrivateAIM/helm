@@ -26,6 +26,7 @@ userIdp:
 proxy:
   httpProxy: ""
   httpsProxy: ""
+  noProxy: ""
 
 ## For defining ingress specific metadata
 ingress:
