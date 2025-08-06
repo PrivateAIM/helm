@@ -32,8 +32,8 @@ keycloak:
     adminPassword: admin
 
 proxy:
-  httpProxy: ""
-  httpsProxy: ""
-  noProxy: ""
+  httpProxy:
+  httpsProxy:
+  noProxy:
 
   

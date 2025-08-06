@@ -24,9 +24,9 @@ userIdp:
 
 ## @param proxy Forward proxy URLs
 proxy:
-  httpProxy: ""
-  httpsProxy: ""
-  noProxy: ""
+  httpProxy:
+  httpsProxy:
+  noProxy:
 
 ## For defining ingress specific metadata
 ingress:

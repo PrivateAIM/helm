@@ -1,3 +1,4 @@
+{{- $hasProxyAuth := include "broker.proxy.hasAuth" . -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -67,17 +68,23 @@ spec:
               value: {{ .Release.Name }}-node-message-broker-db
             - name: PERSISTENCE_PORT
               value: "27017"
+            - name: PROXY_HOST
+              value: {{ include "broker.proxy.host" . | quote }}
+            - name: PROXY_PORT
+              value: {{ include "broker.proxy.port" . | quote }}
+            - name: PROXY_WHITELIST
+              value: "^.*nginx-analysis.*$"
+            {{- if $hasProxyAuth }}
+            - name: PROXY_USERNAME
+              value: {{ include "broker.proxy.username" . | default "" | quote }}
+            - name: PROXY_PASSWORD_FILE
+              value: "/opt/message-broker/proxy/proxy_password.txt"
+            {{- end }}
             - name: SECURITY_NODE_PRIVATE_ECDH_KEY_FILE
               value: "/opt/message-broker/crypto/private_key.pem"
             - name: SERVER_PORT
               value: "8080"
-            - name: HTTP_PROXY
-              value: {{ .Values.proxy.httpProxy | default "" }}
-            - name: HTTPS_PROXY
-              value: {{ .Values.proxy.httpsProxy | default "" }}
-            # - name: NO_PROXY
-            #   value: "localhost,127.0.0.1,*.local,*.cluster.local,nginx-analysis-*,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
-            {{- with .Values.env }}
+            {{- with .Values.messageBroker.env }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
           resources:
@@ -99,7 +106,13 @@ spec:
               name: "auth"
               subPath: "robot_secret.txt"
               readOnly: true
-            {{- with .Values.volumeMounts }}
+            {{- if $hasProxyAuth }}
+            - mountPath: "/opt/message-broker/proxy/proxy_password.txt"
+              name: "proxy"
+              subPath: "proxy_password.txt"
+              readOnly: true
+            {{- end }}
+            {{- with .Values.messageBroker.volumeMounts }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
       volumes:
@@ -115,7 +128,15 @@ spec:
             items:
               - key: robotSecret
                 path: "robot_secret.txt"
-        {{- with .Values.volumes }}
+        {{- if $hasProxyAuth }}
+        - name: proxy
+          secret:
+            secretName: {{ .Release.Name }}-proxy-credentials-secret
+            items:
+              - key: proxyPassword
+                path: "proxy_password.txt"
+        {{- end }}
+        {{- with .Values.messageBroker.volumes }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
       nodeSelector:

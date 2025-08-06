@@ -306,3 +306,80 @@ Return the secret containing private key
     {{- printf "%s-ecdh-private-key-secret" .Release.Name -}}
 {{- end -}}
 {{- end -}}
+
+
+{{/*Message Broker helpers*/}}
+
+{{/*
+Parse proxy URL and extract host and port
+*/}}
+{{- define "broker.proxy.hostPort" -}}
+{{- if or .Values.proxy.httpProxy .Values.proxy.httpsProxy -}}
+    {{- $url := coalesce .Values.proxy.httpProxy .Values.proxy.httpsProxy -}}
+    {{- $withoutProtocol := regexReplaceAll "^https?://" $url "" -}}
+    {{- $withoutAuth := regexReplaceAll "^[^@]*@" $withoutProtocol "" -}}
+    {{- $hostPort := regexReplaceAll "/.*$" $withoutAuth "" -}}
+    {{- print $hostPort -}}
+{{- end -}}
+{{- end }}
+
+{{/*
+Extract proxy host
+*/}}
+{{- define "broker.proxy.host" -}}
+{{- $hostPort := include "broker.proxy.hostPort" . -}}
+{{- $host := regexReplaceAll ":.*$" $hostPort "" -}}
+{{- print $host -}}
+{{- end }}
+
+{{/*
+Extract proxy port
+*/}}
+{{- define "broker.proxy.port" -}}
+{{- $hostPort := include "broker.proxy.hostPort" . -}}
+{{- $port := trimPrefix ":" (regexFind ":[0-9]+$" $hostPort) -}}
+{{- print $port -}}
+{{- end }}
+
+{{/*
+Parse proxy URL and extract username and password
+*/}}
+{{- define "broker.proxy.usernamePassword" -}}
+{{- if or .Values.proxy.httpProxy .Values.proxy.httpsProxy -}}
+    {{- $url := coalesce .Values.proxy.httpProxy .Values.proxy.httpsProxy -}}
+    {{- $withoutProtocol := regexReplaceAll "^https?://" $url "" -}}
+    {{- if contains "@" $withoutProtocol -}}
+        {{- print (regexFind "^[^@]*" $withoutProtocol) -}}
+    {{- end -}}
+{{- end -}}
+{{- end }}
+
+{{/*
+Check if proxy URL has authentication
+*/}}
+{{- define "broker.proxy.hasAuth" -}}
+{{- $url := coalesce .Values.proxy.httpProxy .Values.proxy.httpsProxy -}}
+{{- $withoutProtocol := regexReplaceAll "^https?://" $url "" -}}
+{{- if contains "@" $withoutProtocol -}}true{{- end -}}
+{{- end }}
+
+{{/*
+Extract proxy username
+*/}}
+{{- define "broker.proxy.username" -}}
+{{- $auth := include "broker.proxy.usernamePassword" . -}}
+{{- print (regexFind "^[^:]*" $auth) -}}
+{{- end }}
+
+{{/*
+Extract proxy password
+*/}}
+{{- define "broker.proxy.password" -}}
+{{- $auth := include "broker.proxy.usernamePassword" . -}}
+{{- $password := regexFind "[^:]*$" $auth -}}
+{{- if $password -}}
+    {{- print $password -}}
+{{- else -}}
+    {{- print "" -}}
+{{- end -}}
+{{- end }}
