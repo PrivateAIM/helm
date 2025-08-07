@@ -72,12 +72,14 @@ spec:
             #   value: {{ .Values.proxy.httpProxy | default "" }}
             # - name: HTTPS_PROXY
             #   value: {{ .Values.proxy.httpsProxy | default "" }}
+            {{- if or .Values.proxy.httpProxy .Values.proxy.httpsProxy }}
             - name: PROXY_HOST
-              value: {{ include "broker.proxy.host" . | quote }}
+              value: {{ include "broker.proxy.host" . | default "" | quote }}
             - name: PROXY_PORT
-              value: {{ include "broker.proxy.port" . | quote }}
+              value: {{ include "broker.proxy.port" . | default "" | quote }}
             - name: PROXY_WHITELIST
               value: "^.*nginx-analysis.*$"
+            {{- end }}
             {{- if $hasProxyAuth }}
             - name: PROXY_USERNAME
               value: {{ include "broker.proxy.username" . | default "" | quote }}
