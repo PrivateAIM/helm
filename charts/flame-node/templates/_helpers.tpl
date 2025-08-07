@@ -45,7 +45,7 @@ Return the secret containing the hub robot secret
 Return the endpoint for the internal keycloak instance with the (cleaned) relative path e.g. "/keycloak"
 */}}
 {{- define "keycloak.base.endpoint" -}}
-{{- printf "http://%s-keycloak:80%s" .Release.Name (trimSuffix "/" .Values.keycloak.httpRelativePath) -}}
+{{- printf "http://%s-keycloak.%s.svc.cluster.local:80%s" .Release.Name .Release.Namespace (trimSuffix "/" .Values.keycloak.httpRelativePath) -}}
 {{- end -}}
 
 {{/*
@@ -187,18 +187,6 @@ Return the endpoint for user authentication
     {{- print (include "userIdp.hostname" .) -}}
 {{- else -}}
     {{- printf "http://%s-keycloak:80/keycloak/realms/flame" .Release.Name -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Return whether to force the Hub Adapter to include proxy information for user auth against the IDP
-If neither IDP hostname nor proxy info are provided, then default to true, otherwise do as told
-*/}}
-{{- define "adapter.proxy.idp.internal" -}}
-{{- if and .Values.userIdp.hostname (or .Values.proxy.httpProxy .Values.proxy.httpsProxy) -}}
-    {{- print .Values.userIdp.internalService -}}
-{{- else -}}
-    {{- print true -}}
 {{- end -}}
 {{- end -}}
 
@@ -359,8 +347,10 @@ Check if proxy URL has authentication
 */}}
 {{- define "broker.proxy.hasAuth" -}}
 {{- $url := coalesce .Values.proxy.httpProxy .Values.proxy.httpsProxy -}}
-{{- $withoutProtocol := regexReplaceAll "^https?://" $url "" -}}
-{{- if contains "@" $withoutProtocol -}}true{{- end -}}
+{{- if $url -}}
+    {{- $withoutProtocol := regexReplaceAll "^https?://" $url "" -}}
+    {{- if contains "@" $withoutProtocol -}}print true{{- end -}}
+{{- end -}}
 {{- end }}
 
 {{/*

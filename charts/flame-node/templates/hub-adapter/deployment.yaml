@@ -54,21 +54,21 @@ spec:
             - name: IDP_URL
               value: {{ include "adapter.userIdp.endpoint" . }}
             - name: NODE_SVC_OIDC_URL
-              value: {{ printf "http://%s-keycloak:80%s/realms/flame" .Release.Name .Values.hubAdapter.idp.httpRelativePath }}
-            - name: INTERNAL_IDP
-              value: {{ include "adapter.proxy.idp.internal" . | default true | quote }}
+              value: {{ include "keycloak.service.endpoint" . }}
             - name: OVERRIDE_JWKS
               value: {{ include "adapter.jwks.endpoint" . }}
-            - name: HA_HTTP_PROXY
+            - name: HTTP_PROXY
               value: {{ .Values.proxy.httpProxy | default "" }}
-            - name: HA_HTTPS_PROXY
+            - name: HTTPS_PROXY
               value: {{ .Values.proxy.httpsProxy | default "" }}
+            - name: NO_PROXY
+              value: {{ .Values.proxy.noProxy | default "" }}
             - name: RESULTS_SERVICE_URL
-              value: {{ printf "http://%s-node-result-service:8080" .Release.Name }}
+              value: {{ printf "http://%s-node-result-service.%s.svc.cluster.local:8080" .Release.Name .Release.Namespace }}
             - name: PODORC_SERVICE_URL
-              value: {{ printf "http://%s-po-service:8000" .Release.Name }}
+              value: {{ printf "http://%s-po-service.%s.svc.cluster.local:8000" .Release.Name .Release.Namespace }}
             - name: KONG_ADMIN_SERVICE_URL
-              value: {{ printf "http://%s-kong-admin:80" .Release.Name }}
+              value: {{ printf "http://%s-kong-admin.%s.svc.cluster.local:80" .Release.Name .Release.Namespace }}
             - name: HUB_SERVICE_URL
               value: {{ .Values.hub.endpoints.core | default "https://core.privateaim.dev" | quote }}
             - name: HUB_AUTH_SERVICE_URL

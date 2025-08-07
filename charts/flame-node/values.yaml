@@ -295,8 +295,6 @@ hubAdapter:
     ## @param idp.jwks JWKS URI to override the endpoints fetched from the IDP issuer
     ## Meant for local testing where either no FQDN provided or using localhost and port-forwarding
     jwks: ""
-    ## @param idp.httpRelativePath Set the path relative to '/' for IDP resources (e.g. /auth)
-    httpRelativePath: "/keycloak"
 
   # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
   replicaCount: 1
@@ -524,7 +522,7 @@ messageBroker:
   image:
     repository: ghcr.io/privateaim/node-message-broker
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.4.0
+    tag: 0.5.0
     # This sets the pull policy for images.
     pullPolicy: Always
 

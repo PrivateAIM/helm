@@ -68,6 +68,10 @@ spec:
               value: {{ .Release.Name }}-node-message-broker-db
             - name: PERSISTENCE_PORT
               value: "27017"
+            # - name: HTTP_PROXY
+            #   value: {{ .Values.proxy.httpProxy | default "" }}
+            # - name: HTTPS_PROXY
+            #   value: {{ .Values.proxy.httpsProxy | default "" }}
             - name: PROXY_HOST
               value: {{ include "broker.proxy.host" . | quote }}
             - name: PROXY_PORT
