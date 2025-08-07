@@ -38,6 +38,13 @@ spec:
                             name: {{ .Release.Name }}-flame-hub-server-storage
                             port:
                                 number: 3000
+                  - path: /telemetry(/|$)(.*)
+                    pathType: "ImplementationSpecific"
+                    backend:
+                      service:
+                        name: {{ .Release.Name }}-flame-hub-server-telemetry
+                        port:
+                          number: 3000
                   - path: /auth(/|$)(.*)
                     pathType: "ImplementationSpecific"
                     backend:

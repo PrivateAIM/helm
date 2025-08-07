@@ -65,6 +65,10 @@ dependencies:
         repository: file://../flame-hub-server-storage
         version: 0.1.0
 
+    -   name: flame-hub-server-telemetry
+        repository: file://../flame-hub-server-telemetry
+        version: 0.1.0
+
     -   name: flame-hub-server-analysis-manager
         repository: file://../flame-hub-server-analysis-manager
         version: 0.1.0
