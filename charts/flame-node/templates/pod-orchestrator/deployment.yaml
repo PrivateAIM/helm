@@ -38,7 +38,7 @@ spec:
             {{- toYaml .Values.podOrchestrator.waitForPostgres.securityContext | nindent 12 }}
           image: "{{ .Values.podOrchestrator.waitForPostgres.image.repository }}:{{ .Values.podOrchestrator.waitForPostgres.image.tag | default "latest" }}"
           imagePullPolicy: {{ .Values.podOrchestrator.waitForPostgres.image.pullPolicy }}
-          command: ['sh', '-c', "until nc -vz {{ coalesce .Values.podOrchestrator.env.POSTGRES_HOST (include "postgresql.endpoint" .) }}.{{ .Release.Namespace }}.svc {{ .Values.postgresql.primary.service.ports.postgresql }}; do echo waiting for postgres; sleep 2; done"]
+          command: ['sh', '-c', "until nc -vz {{ coalesce .Values.podOrchestrator.env.POSTGRES_HOST (include "postgresql.endpoint" .) }}.{{ .Release.Namespace }}.svc {{ .Values.postgresql.service.port }}; do echo waiting for postgres; sleep 2; done"]
           {{- with .Values.podOrchestrator.waitForPostgres.env }}
           env:
             {{- toYaml . | nindent 12 }}
@@ -68,12 +68,21 @@ spec:
             - name: POSTGRES_HOST
               value: {{ coalesce .Values.podOrchestrator.env.POSTGRES_HOST (include "postgresql.endpoint" .) }}
             - name: POSTGRES_DB
-              value: {{ .Values.postgresql.auth.database }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "postgresql.user.secretName" . }}
+                  key: dbName
               ## TODO: add _helpers.tpl in case we want to use secret instead for postgres user/pwd
             - name: POSTGRES_USER
-              value: {{ .Values.postgresql.auth.username }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "postgresql.user.secretName" . }}
+                  key: dbUser
             - name: POSTGRES_PASSWORD
-              value: {{ .Values.postgresql.auth.password }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "postgresql.user.secretName" . }}
+                  key: dbPassword
             - name: PO_HTTP_PROXY
               value: {{ .Values.proxy.httpProxy | default "" }}
             - name: PO_HTTPS_PROXY

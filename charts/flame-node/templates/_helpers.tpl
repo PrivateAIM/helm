@@ -77,6 +77,30 @@ Return the user IDP hostname
 {{- end -}}
 {{- end -}}
 
+{{/*
+Return the secret containing the postgres user database secrets
+*/}}
+{{- define "postgresql.user.secretName" -}}
+{{- $secretName := .Values.postgresql.userDatabase.existingSecret -}}
+{{- if $secretName -}}
+    {{- printf "%s" (tpl $secretName $) -}}
+{{- else -}}
+    {{- print "postgres-credentials-secret" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return the secret containing the postgres admin credentials
+*/}}
+{{- define "postgresql.admin.secretName" -}}
+{{- $secretName := .Values.postgresql.settings.existingSecret -}}
+{{- if $secretName -}}
+    {{- printf "%s" (tpl $secretName $) -}}
+{{- else -}}
+    {{- print "postgres-credentials-secret" -}}
+{{- end -}}
+{{- end -}}
+
 {{- define "postgresql.endpoint" -}}
 {{- if .Values.postgresql.fullnameOverride -}}
     {{- print .Values.postgresql.fullnameOverride -}}
