@@ -731,42 +731,11 @@ flame-node-data-store:
       size: 5Gi
 
 postgresql:
-  ## Default values for PostgreSQL deployment
-
-  ## PostgreSQL docker image
-  image:
-    registry: "docker.io"
-    repository: "postgres"
-    pullPolicy: IfNotPresent
-    # Overrides the image tag whose default is the chart appVersion.
-    tag: ""
-
-  ## Pull secrets and name override options
-  imagePullSecrets: []
-  nameOverride: ""
-  fullnameOverride: ""
-
-  ## Additional labels for Deployment or StatefulSet
-  customLabels: {}
-
-  ## Additional annotations for Deployment or StatefulSet
-  customAnnotations: {}
 
   ## Optional service account
   serviceAccount:
     # Specifies whether a service account should be created
     create: false
-    # Annotations to add to the service account
-    annotations: {}
-    # The name of the service account to use.
-    # If not set and create is true, a name is generated using the fullname template
-    name: ""
-
-  ## Additional pod annotations
-  podAnnotations: {}
-
-  ## Additional pod labels
-  podLabels: {}
 
   ## Pod management policy
   podManagementPolicy: OrderedReady
@@ -774,38 +743,10 @@ postgresql:
   ## Pod update strategy
   updateStrategyType: RollingUpdate
 
-  ## Pod security context uses file system group 999 (postgres)
-  podSecurityContext:
-    fsGroup: 999
-    supplementalGroups:
-      - 999
-
-  ## Default security options to run PostgreSQL as non-root (postgres user), read only container without privilege escalation
-  securityContext:
-    allowPrivilegeEscalation: false
-    privileged: false
-    readOnlyRootFilesystem: true
-    runAsNonRoot: true
-    runAsGroup: 999
-    runAsUser: 999
-    capabilities:
-      drop:
-        - ALL
-
   ## The postgres service configuration (Default is ClusterIP with port 5432)
   service:
     type: ClusterIP
     port: 5432
-    ## The node port (only relevant for type LoadBalancer or NodePort)
-    nodePort:
-    ## The cluster ip address (only relevant for type LoadBalancer or NodePort)
-    clusterIP:
-    ## The loadbalancer ip address (only relevant for type LoadBalancer)
-    loadBalancerIP:
-    ## Annotations to add to the service
-    annotations: {}
-    ## Labels to add to the service
-    labels: {}
 
   resources: {}
     # limits:
@@ -814,69 +755,6 @@ postgresql:
     # requests:
     #   cpu: 100m
     #   memory: 128Mi
-
-  ## Additional node selector
-  nodeSelector: {}
-
-  ## Tolerations for pod assignment
-  tolerations: []
-
-  ## Affinity for pod assignment
-  affinity: {}
-
-  ## Topology spread constraints for pods
-  topologySpreadConstraints: {}
-
-  ## Maximum number of revisions maintained in revision history
-  revisionHistoryLimit:
-
-  ## Custom startup probe (overwrites default startup probe)
-  customStartupProbe: {}
-
-  ## Default startup check
-  startupProbe:
-    enabled: true
-    initialDelaySeconds: 10
-    timeoutSeconds: 5
-    failureThreshold: 30
-    successThreshold: 1
-    periodSeconds: 10
-
-  ## Custom liveness probe (overwrites default liveness probe)
-  customLivenessProbe: {}
-
-  ## Default health check
-  livenessProbe:
-    enabled: true
-    initialDelaySeconds: 10
-    timeoutSeconds: 5
-    failureThreshold: 3
-    successThreshold: 1
-    periodSeconds: 10
-
-  ## Custom readiness probe (overwrites default readiness probe)
-  customReadinessProbe: {}
-
-  ## Default readiness probe
-  readinessProbe:
-    enabled: true
-    initialDelaySeconds: 10
-    timeoutSeconds: 5
-    failureThreshold: 3
-    successThreshold: 1
-    periodSeconds: 10
-
-  ## Extra init containers
-  extraInitContainers: []
-
-  ## Extra containers for usage as sidecars
-  extraContainers: []
-
-  ## Additional environment variables
-  env: []
-
-  ## Arguments for the container entrypoint process
-  args: []
 
   ## Use Kubernetes Deployment instead of StatefulSet
   useDeployment: false
@@ -924,52 +802,8 @@ postgresql:
       secretKey: dbPassword
       # value:
 
-  ## Optional custom configuration block that will be mounted as file in /etc/postgresql/postgresql.conf
-  ## For more flexible options see extraSecretConfigs: section
-  customConfig: |
-
-  ## Optional custom scripts that can be defined inline and will be mounted as files in /docker-entrypoint-initdb.d
-  customScripts: {}
-  #  01-a-script.sh: |
-  #    echo "hello"
-  #  02-another-script.sh: |
-  #    echo "hello 2"
-
-  ## A list of existing secrets that will be mounted into the container as environment variables
-  ## As an alternative these secrets can set the database superuser password or other options when settings.superuserPassword was not specified
-  ## For example: Setting POSTGRES_DB, USERDB_USER, USERDB_PASSWORD will allow creating a user database and grant access for the given user
-  extraEnvSecrets: []
-
-  ## An existing secret with files that will be added to the postgres configuration in addition to /etc/postgresql/postgresql.conf
-  extraSecretConfigs:
-
-  ## An existing configMap with files that will be mounted into the container as script files (*.sql, *.sh) in /docker-entrypoint-initdb.d
-  ## For more details see https://hub.docker.com/_/postgres
-  extraScripts:
-
-  ## A list of additional existing secrets that will be mounted into the container
-  ## The mounted files of the secrets can be used for advanced configuration - f.e. TLS
-  extraSecrets: []
-      ## Name of the existing K8s secret
-  #  - name:
-      ## Mount default mode (0440 if parameter is omitted)
-  #    defaultMode: 0440
-      ## Mount path where the secret should be mounted into the container (f.e. /mysecretfolder)
-  #    mountPath:
-
-  ## A list of additional existing configMaps that will be mounted into the container
-  extraConfigs: []
-      ## Name of the existing K8s configMap
-  #  - name:
-      ## Mount default mode (0440 if parameter is omitted)
-  #    defaultMode: 0440
-      ## Mount path where the configMap should be mounted into the container (f.e. /mysecretfolder)
-  #    mountPath:
-
   ## Storage parameters
   storage:
-    ##  Set persistentVolumenClaimName to reference an existing PVC
-    persistentVolumeClaimName:
 
     ## Internal volume name and prefix of a created PVC
     volumeName: "postgres-data"
@@ -986,28 +820,6 @@ postgresql:
 
     ## Keep a created Persistent volume claim when uninstalling the helm chart (only for option useDeployment: true)
     keepPvc: false
-
-    ## Additional storage annotations
-    annotations: {}
-
-    ## Additional storage labels
-    labels: {}
-
-  ## Mount existing extra PVC
-  extraStorage: {}
-      ## Internal volume name
-  #  - name:
-      ## Container mount path
-  #    mountPath:
-      ## Name of existing PVC
-  #    pvcName:
-
-  ## Network policies
-  networkPolicy: {}
-    ## Ingress and Egress policies
-    # ingress: {}
-    # egress: {}
-
 
 minio:
   # All possible values can be found at https://github.com/minio/minio/blob/master/helm/minio/values.yaml
@@ -1129,15 +941,17 @@ minio:
     size: 10Gi
 
 node-message-broker-db:
-  global:
-    defaultStorageClass: ""
-  architecture: "standalone"
-  useStatefulSet: true
-  replicaCount: 1
+  ## Pull secrets and name override options
+  imagePullSecrets: []
+  nameOverride: ""
+  fullnameOverride: ""
 
-  auth:
-    enabled: false
+  ## Optional service account
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: false
 
+  ## Resource limits and requests
   resources:
     requests:
       memory: 256Mi
@@ -1145,12 +959,23 @@ node-message-broker-db:
     limits:
       memory: 1Gi
 
-  persistence:
-    size: 100Mi
-    storageClass: ""
+  ## Use Kubernetes Deployment instead of StatefulSet when in Non-HA mode
+  useDeploymentWhenNonHA: false
 
-  serviceAccount:
-    create: false
+  settings:
+    ## The root username
+    rootUsername:
+    ## The root user password
+    rootPassword:
 
-  networkPolicy:
-    enabled: false
+  ## Optional user database which is created during first startup with user and password
+  userDatabase:
+    ## Name of the user database
+    name: messagebroker
+
+  storage:
+    ## Internal volume name and prefix of a created PVC
+    volumeName: "mongodb-volume"
+
+    ## Alternative set requestedSize to define a size for a dynamically created PVC
+    requestedSize: 100Mi
