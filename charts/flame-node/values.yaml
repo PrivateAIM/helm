@@ -18,11 +18,8 @@ userIdp:
   ## @param userIdp.hostname Hostname for a separate IDP to manage users who can access the FLAME Node UI.
   ## Leave this blank unless you want to use your own IDP
   hostname:
-  ## @param userIdp.internalService Whether the supplied IDP URL is an internal (k8s) service or not
-  ## This setting only affects configurations in which an external IDP URL (i.e. an IDP outside this k8s instance) is supplied and a forward proxy has been configured under proxy.httpProxy or proxy.httpsProxy
-  internalService: false
 
-## @param proxy Forward proxy URLs
+## @param proxy Proxy URLs pertaining to `HTTP_PROXY`, `HTTPS_PROXY` and `NO_PROXY` environment variables
 proxy:
   httpProxy:
   httpsProxy:
@@ -40,7 +37,6 @@ ingress:
   ##
   pathType: ImplementationSpecific
   ## @param ingress.path Default file path for the ingress hostname
-  ##
   path: /
   ## @param ingress.annotations Additional annotations for the Ingress resource
   annotations: {}
