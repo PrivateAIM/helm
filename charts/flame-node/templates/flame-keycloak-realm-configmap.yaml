@@ -37,34 +37,6 @@ data:
         "notBefore" : 0,
         "groups" : [ ]
       }, {
-        "id" : "8fa9bc95-d2ce-4c14-aef9-b1d6592e58ad",
-        "username" : "service-account-hub-adapter",
-        "emailVerified" : false,
-        "enabled" : true,
-        "createdTimestamp" : 1755076882405,
-        "totp" : false,
-        "serviceAccountClientId" : "hub-adapter",
-        "credentials" : [ ],
-        "disableableCredentialTypes" : [ ],
-        "requiredActions" : [ ],
-        "realmRoles" : [ "default-roles-flame" ],
-        "notBefore" : 0,
-        "groups" : [ ]
-      }, {
-        "id" : "5252a1c4-f978-4511-94f6-777eb3618b5c",
-        "username" : "service-account-node-ui",
-        "emailVerified" : false,
-        "enabled" : true,
-        "createdTimestamp" : 1755076861469,
-        "totp" : false,
-        "serviceAccountClientId" : "node-ui",
-        "credentials" : [ ],
-        "disableableCredentialTypes" : [ ],
-        "requiredActions" : [ ],
-        "realmRoles" : [ "default-roles-flame" ],
-        "notBefore" : 0,
-        "groups" : [ ]
-      }, {
         "id" : "f914a5ce-03e2-420e-913d-47aa0897ca75",
         "username" : "service-account-service1",
         "emailVerified" : false,
@@ -101,7 +73,7 @@ data:
         "implicitFlowEnabled" : false,
         "directAccessGrantsEnabled" : true,
         "serviceAccountsEnabled" : true,
-        "publicClient" : false,
+        "publicClient" : false
       }, {
         "id" : "bad9a21e-dc4f-4c9e-92db-6dd9e25e8d77",
         "clientId" : "node-ui",
@@ -124,7 +96,7 @@ data:
         "implicitFlowEnabled" : false,
         "directAccessGrantsEnabled" : true,
         "serviceAccountsEnabled" : true,
-        "publicClient" : false,
+        "publicClient" : false
       }, {
         "id" : "2ab23a1f-7ca5-48ad-9317-6659e25414b4",
         "clientId" : "service1",
@@ -147,8 +119,8 @@ data:
         "implicitFlowEnabled" : false,
         "directAccessGrantsEnabled" : true,
         "serviceAccountsEnabled" : true,
-        "publicClient" : false,
+        "publicClient" : false
       } ],
-      "keycloakVersion" : "26.3.2",
+      "keycloakVersion" : "26.3.2"
     }
 {{- end }}

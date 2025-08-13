@@ -35,7 +35,7 @@ ingress:
   hostname: ""
   ## @param ingress.pathType Ingress path type
   ##
-  pathType: ImplementationSpecific
+  pathType: Exact
   ## @param ingress.path Default file path for the ingress hostname
   path: /
   ## @param ingress.annotations Additional annotations for the Ingress resource
@@ -222,7 +222,7 @@ keycloakx:
   ## @param keycloakx.enabled Whether to deploy the bundled Keycloak instance
   enabled: true
   http:
-    relativePath: /keycloak
+    relativePath: /keycloak/
 
   command: ["/opt/keycloak/bin/kc.sh", "start-dev", "--import-realm", "--http-port=8080", "--hostname-strict=false"]
 
@@ -262,38 +262,15 @@ keycloakx:
       -
         # Ingress host
         host: frontend.semplitude.com
-        # Paths for the host
         paths:
-          - path: /keycloak
-            pathType: ImplementationSpecific
+          - path: '{{ tpl .Values.http.relativePath $ | trimSuffix "/" }}/'
+            pathType: Prefix
   # Example TLS configuration
-  #   tls:
-  #     - hosts:
-  #         - keycloak.example.com
-  #       secretName: ""
+    tls:
+      - hosts:
+          - frontend.semplitude.com
+    #     secretName: ""
 
-    # ingress for console only (/auth/admin)
-    console:
-      # If `true`, an Ingress is created for console path only
-      enabled: true
-      # The name of Ingress Class associated with the console ingress only
-      ingressClassName: ""
-      # Ingress annotations for console ingress only
-      # Useful to set nginx.ingress.kubernetes.io/whitelist-source-range particularly
-      annotations: {}
-      rules:
-        -
-          # Ingress host
-          host: frontend.semplitude.com
-          # Paths for the host
-          paths:
-            - path: /auth/admin/
-              pathType: ImplementationSpecific
-      # Console TLS configuration
-      tls: []
-  #      - hosts:
-  #          - console.keycloak.example.com
-  #        secretName: ""
     
 
 # hub-api-adapter Values
