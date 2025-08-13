@@ -58,17 +58,17 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: {{ include "postgresql.user.secretName" . }}
-                  key: dbName
+                  key: DB_DATABASE
             - name: POSTGRES__USER
               valueFrom:
                 secretKeyRef:
                   name: {{ include "postgresql.user.secretName" . }}
-                  key: dbUser
+                  key: DB_USER
             - name: POSTGRES__PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ include "postgresql.user.secretName" . }}
-                  key: dbPassword
+                  key: DB_PASSWORD
           {{- if .Values.proxy.httpProxy }}
             - name: PROXY__HTTP_URL
               value: {{ .Values.proxy.httpProxy }}

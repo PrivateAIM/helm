@@ -1,71 +1,154 @@
-{{- if .Values.keycloak.enabled }}
+{{- if .Values.keycloakx.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: flame-default-realm
+  namespace: {{ .Release.Namespace }}
 data:
-  flame.yaml: |
-    realm: "flame"
-    enabled: true
-    defaultSignatureAlgorithm: "RS256"
-    accessTokenLifespan: 7200
-    clients:
-    - clientId: "hub-adapter"
-      name: "Node Hub Adapter Gateway API"
-      clientAuthenticatorType: "client-secret"
-      secret: {{ include "adapter.keycloak.clientSecret" . | b64dec }}
-      standardFlowEnabled: true
-      implicitFlowEnabled: false
-      directAccessGrantsEnabled: true
-      serviceAccountsEnabled: true
-      authorizationServicesEnabled: true
-      publicClient: false
-      enabled: true
-    - clientId: "service1"
-      name: "Test service"
-      clientAuthenticatorType: "client-secret"
-      secret: {{ include "po.keycloak.clientSecret" . | b64dec }}
-      standardFlowEnabled: true
-      implicitFlowEnabled: false
-      directAccessGrantsEnabled: true
-      serviceAccountsEnabled: true
-      authorizationServicesEnabled: true
-      publicClient: false
-      enabled: true
-    - clientId: "node-ui"
-      name: "Node UI"
-      clientAuthenticatorType: "client-secret"
-      secret: {{ include "ui.keycloak.clientSecret" . | b64dec }}
-      redirectUris: [ {{ printf "%s/*" (include "node.ingress.hostname" .) }} ]
-      webOrigins: [ "+" ]
-      standardFlowEnabled: true
-      implicitFlowEnabled: false
-      directAccessGrantsEnabled: true
-      serviceAccountsEnabled: true
-      authorizationServicesEnabled: false
-      publicClient: false
-      enabled: true
-    users:
-    - username: "flameuser"
-      firstName: "Johnny"
-      lastName: "Storm"
-      email: "foobar@gmail.com"
-      emailVerified: true
-      enabled: true
-      credentials:
-      - type: "password"
-        userLabel: "My password"
-        credentialData: "{\"hashIterations\":210000,\"algorithm\":\"pbkdf2-sha512\",\"additionalParameters\":{}}"
-        secretData: "{\"value\":\"AcmFvt1RyPVxJXASu8d66p6nsCV5uwuvPAQ5Qdo1aqJoFaxc7vxPoJpwDCT8xCRR/SANHsyRRpUGfJGZhBKI0w==\",\"salt\":\"K06PBP69IiB0QWWsiaqSxQ==\",\"additionalParameters\":{}}"
-    - username: "service-account-service1"
-      enabled: true
-      serviceAccountClientId: "service1"
-      clientRoles:
-        realm-management: [
-          "manage-clients",
-          "view-clients",
-          "query-clients",
-          "create-client"
-        ]
-        service1: ["uma_protection"]
+  flame.json: |
+    {
+      "id" : "ed3bb755-7b71-448c-bd21-6fab93ad3169",
+      "realm" : "flame",
+      "defaultSignatureAlgorithm" : "RS256",
+      "accessTokenLifespan" : 7200,
+      "enabled" : true,
+      "requiredCredentials" : [ "password" ],
+      "users" : [ {
+        "id" : "a9b5d936-6a93-4fce-b720-9240aa63e11d",
+        "username" : "flameuser",
+        "firstName" : "Johnny",
+        "lastName" : "Storm",
+        "email" : "foo@gmail.com",
+        "emailVerified" : true,
+        "enabled" : true,
+        "createdTimestamp" : 1755076914251,
+        "totp" : false,
+        "credentials" : [ {
+          "id" : "26a74ac5-0d18-463b-840f-289b4b46b72e",
+          "type" : "password",
+          "userLabel" : "My password",
+          "createdDate" : 1755076922421,
+          "secretData" : "{\"value\":\"PYPGjZXTuiL4qZV5yzDJW3B8H91R4qg6/wqgj4FpZ7o=\",\"salt\":\"Dn8bY/M4KsaNYOBB6Wd0Jw==\",\"additionalParameters\":{}}",
+          "credentialData" : "{\"hashIterations\":5,\"algorithm\":\"argon2\",\"additionalParameters\":{\"hashLength\":[\"32\"],\"memory\":[\"7168\"],\"type\":[\"id\"],\"version\":[\"1.3\"],\"parallelism\":[\"1\"]}}"
+        } ],
+        "disableableCredentialTypes" : [ ],
+        "requiredActions" : [ ],
+        "realmRoles" : [ "default-roles-flame" ],
+        "notBefore" : 0,
+        "groups" : [ ]
+      }, {
+        "id" : "8fa9bc95-d2ce-4c14-aef9-b1d6592e58ad",
+        "username" : "service-account-hub-adapter",
+        "emailVerified" : false,
+        "enabled" : true,
+        "createdTimestamp" : 1755076882405,
+        "totp" : false,
+        "serviceAccountClientId" : "hub-adapter",
+        "credentials" : [ ],
+        "disableableCredentialTypes" : [ ],
+        "requiredActions" : [ ],
+        "realmRoles" : [ "default-roles-flame" ],
+        "notBefore" : 0,
+        "groups" : [ ]
+      }, {
+        "id" : "5252a1c4-f978-4511-94f6-777eb3618b5c",
+        "username" : "service-account-node-ui",
+        "emailVerified" : false,
+        "enabled" : true,
+        "createdTimestamp" : 1755076861469,
+        "totp" : false,
+        "serviceAccountClientId" : "node-ui",
+        "credentials" : [ ],
+        "disableableCredentialTypes" : [ ],
+        "requiredActions" : [ ],
+        "realmRoles" : [ "default-roles-flame" ],
+        "notBefore" : 0,
+        "groups" : [ ]
+      }, {
+        "id" : "f914a5ce-03e2-420e-913d-47aa0897ca75",
+        "username" : "service-account-service1",
+        "emailVerified" : false,
+        "enabled" : true,
+        "createdTimestamp" : 1755076898808,
+        "totp" : false,
+        "serviceAccountClientId" : "service1",
+        "credentials" : [ ],
+        "disableableCredentialTypes" : [ ],
+        "requiredActions" : [ ],
+        "realmRoles" : [ "default-roles-flame" ],
+        "notBefore" : 0,
+        "groups" : [ ]
+      } ],
+      "clients" : [ {
+        "id" : "6c91cd7a-26ca-4e62-bfcc-4345baad12bb",
+        "clientId" : "hub-adapter",
+        "name" : "Node Hub Adapter Gateway API",
+        "description" : "",
+        "rootUrl" : "",
+        "adminUrl" : "",
+        "baseUrl" : "",
+        "surrogateAuthRequired" : false,
+        "enabled" : true,
+        "alwaysDisplayInConsole" : false,
+        "clientAuthenticatorType" : "client-secret",
+        "secret" : {{ include "adapter.keycloak.clientSecret" . | b64dec | quote }},
+        "redirectUris" : [ "/*" ],
+        "webOrigins" : [ "/*" ],
+        "notBefore" : 0,
+        "bearerOnly" : false,
+        "consentRequired" : false,
+        "standardFlowEnabled" : true,
+        "implicitFlowEnabled" : false,
+        "directAccessGrantsEnabled" : true,
+        "serviceAccountsEnabled" : true,
+        "publicClient" : false,
+      }, {
+        "id" : "bad9a21e-dc4f-4c9e-92db-6dd9e25e8d77",
+        "clientId" : "node-ui",
+        "name" : "Node UI",
+        "description" : "",
+        "rootUrl" : "",
+        "adminUrl" : "",
+        "baseUrl" : "",
+        "surrogateAuthRequired" : false,
+        "enabled" : true,
+        "alwaysDisplayInConsole" : false,
+        "clientAuthenticatorType" : "client-secret",
+        "secret" : {{ include "ui.keycloak.clientSecret" . | b64dec | quote }},
+        "redirectUris" : [ {{ printf "%s/*" (include "node.ingress.hostname" .) | quote }} ],
+        "webOrigins" : [ "/*" ],
+        "notBefore" : 0,
+        "bearerOnly" : false,
+        "consentRequired" : false,
+        "standardFlowEnabled" : true,
+        "implicitFlowEnabled" : false,
+        "directAccessGrantsEnabled" : true,
+        "serviceAccountsEnabled" : true,
+        "publicClient" : false,
+      }, {
+        "id" : "2ab23a1f-7ca5-48ad-9317-6659e25414b4",
+        "clientId" : "service1",
+        "name" : "Test service",
+        "description" : "",
+        "rootUrl" : "",
+        "adminUrl" : "",
+        "baseUrl" : "",
+        "surrogateAuthRequired" : false,
+        "enabled" : true,
+        "alwaysDisplayInConsole" : false,
+        "clientAuthenticatorType" : "client-secret",
+        "secret" : {{ include "po.keycloak.clientSecret" . | b64dec | quote }},
+        "redirectUris" : [ "/*" ],
+        "webOrigins" : [ "/*" ],
+        "notBefore" : 0,
+        "bearerOnly" : false,
+        "consentRequired" : false,
+        "standardFlowEnabled" : true,
+        "implicitFlowEnabled" : false,
+        "directAccessGrantsEnabled" : true,
+        "serviceAccountsEnabled" : true,
+        "publicClient" : false,
+      } ],
+      "keycloakVersion" : "26.3.2",
+    }
 {{- end }}

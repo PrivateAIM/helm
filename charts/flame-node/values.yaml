@@ -217,47 +217,84 @@ resultService:
   tolerations: [ ]
   affinity: { }
 
-# keycloak values
-keycloak:
-  ## @param keycloak.enabled Whether to deploy the bundled Keycloak instance
+# keycloakx values
+keycloakx:
+  ## @param keycloakx.enabled Whether to deploy the bundled Keycloak instance
   enabled: true
+  http:
+    relativePath: /keycloak
 
-  ## @param keycloak.httpRelativePath [string] Default (sub)path for the ingress record (evaluated as template)
-  ##
-  httpRelativePath: "/keycloak/"
+  command: ["/opt/keycloak/bin/kc.sh", "start-dev", "--import-realm", "--http-port=8080", "--hostname-strict=false"]
 
-  auth:
-    adminUser: admin
-    adminPassword: admin
+  # database:
+  #   existingSecret: ""
+  #   existingSecretKey: ""
+
+  # Additional environment variables for Keycloak
+  extraEnv: |
+    - name: KC_PROXY
+      value: "passthrough"
+    - name: JAVA_OPTS_APPEND
+      value: >-
+        -Djgroups.dns.query={{ include "keycloak.fullname" . }}-headless
+
+  extraVolumes: |
+    - name: flame-realm-json
+      configMap:
+        name: flame-default-realm
+
+  extraVolumeMounts: |
+    - name: flame-realm-json
+      mountPath: "/opt/keycloak/data/import"
+      readOnly: true
+
+  extraEnvFrom: |
+    - secretRef:
+        name: flame-keycloak-credentials-secret
+    - secretRef:
+        name: postgres-credentials-secret
 
   ingress:
-    ## @param keycloak.ingress.enabled Enable ingress record generation for Keycloak
-    ##
-    enabled: false
-    ## @param keycloak.ingress.hostname Default host for the ingress record
-    ##
-    hostname: ""
-
-  ## @param keycloak.proxyHeaders Set Keycloak proxy headers to "forwarded" or "xforwarded"
-  ## If you are using a reverse proxy for anything other than https passthrough, then this needs to be set else 403
-  proxyHeaders: ""
-
-  postgresql:
+    # If `true`, an Ingress is created
     enabled: true
-    nameOverride: keycloak-postgresql
-    auth:
-      postgresPassword: # Not needed since secret is provided
-      username: keycloak # custom user
-      password: keycloak # custom user pwd
-      database: keycloak
-      existingSecret: kc-password-secret # admin password, requires "password" key in secret
-    architecture: standalone
+     # List of rules for the Ingress
+    rules:
+      -
+        # Ingress host
+        host: frontend.semplitude.com
+        # Paths for the host
+        paths:
+          - path: /keycloak
+            pathType: ImplementationSpecific
+  # Example TLS configuration
+  #   tls:
+  #     - hosts:
+  #         - keycloak.example.com
+  #       secretName: ""
 
-  keycloakConfigCli:
-    ## @param keycloakConfigCli.enabled Whether to enable keycloak-config-cli job
-    ## Must be set to true to apply settings below
-    enabled: true
-    existingConfigmap: flame-default-realm
+    # ingress for console only (/auth/admin)
+    console:
+      # If `true`, an Ingress is created for console path only
+      enabled: true
+      # The name of Ingress Class associated with the console ingress only
+      ingressClassName: ""
+      # Ingress annotations for console ingress only
+      # Useful to set nginx.ingress.kubernetes.io/whitelist-source-range particularly
+      annotations: {}
+      rules:
+        -
+          # Ingress host
+          host: frontend.semplitude.com
+          # Paths for the host
+          paths:
+            - path: /auth/admin/
+              pathType: ImplementationSpecific
+      # Console TLS configuration
+      tls: []
+  #      - hosts:
+  #          - console.keycloak.example.com
+  #        secretName: ""
+    
 
 # hub-api-adapter Values
 hubAdapter:
@@ -727,6 +764,7 @@ flame-node-data-store:
       size: 5Gi
 
 postgresql:
+  nameOverride:
 
   ## Optional service account
   serviceAccount:
@@ -785,17 +823,17 @@ postgresql:
     ## Name of the user database
     name:
     ##  Use secretKey when existingSecret was specified otherwise value
-      secretKey: dbName
+      secretKey: DB_DATABASE
       # value:
     ## Database user with full access rights
     ##  Use secretKey when existingSecret was specified otherwise value
     user:
-      secretKey: dbUser
+      secretKey: DB_USER
       # value:
     ## Password of the database user
     ##  Use secretKey when existingSecret was specified otherwise value
     password:
-      secretKey: dbPassword
+      secretKey: DB_PASSWORD
       # value:
 
   ## Storage parameters
