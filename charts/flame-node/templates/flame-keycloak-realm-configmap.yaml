@@ -87,7 +87,7 @@ data:
         "alwaysDisplayInConsole" : false,
         "clientAuthenticatorType" : "client-secret",
         "secret" : {{ include "ui.keycloak.clientSecret" . | b64dec | quote }},
-        "redirectUris" : [ {{ printf "%s/*" (include "node.ingress.hostname" .) | quote }} ],
+        "redirectUris" : {{ include "ui.keycloak.redirectUris" . }},
         "webOrigins" : [ "/*" ],
         "notBefore" : 0,
         "bearerOnly" : false,

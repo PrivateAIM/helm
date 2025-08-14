@@ -45,7 +45,7 @@ Return the secret containing the hub robot secret
 Return the endpoint for the internal keycloak instance with the (cleaned) relative path e.g. "/keycloak"
 */}}
 {{- define "keycloak.base.endpoint" -}}
-{{- printf "http://%s-keycloak.%s.svc.cluster.local:80/keycloak" .Release.Name .Release.Namespace -}}
+{{- printf "http://%s-keycloak-http.%s.svc.cluster.local:80/keycloak" .Release.Name .Release.Namespace -}}
 {{- end -}}
 
 {{/*
@@ -174,20 +174,32 @@ Generate a random clientSecret value for the node-ui client in keycloak if none 
 {{- else if .Values.ui.idp.clientSecret -}}
     {{- print .Values.ui.idp.clientSecret  | b64enc -}}
 {{- else -}}
-    {{- /* Create "node_ui_secret" dict inside ".Release" to store various stuff. */ -}}
-    {{- if not (index .Release "node_ui_secret") -}}
-        {{-   $_ := set .Release "node_ui_secret" dict -}}
-    {{- end -}}
-    {{- /* Some random ID of this password, in case there will be other random values alongside this instance. */ -}}
-    {{- $key := printf "%s_%s" .Release.Name "password" -}}
-    {{- /* If $key does not yet exist in .Release.node_ui_secret, then... */ -}}
-    {{- if not (index .Release.node_ui_secret $key) -}}
-        {{- /* ... store random password under the $key */ -}}
-        {{-   $_ := set .Release.node_ui_secret $key (randAlphaNum 32) -}}
-    {{- end -}}
-        {{- /* Retrieve previously generated value. */ -}}
-        {{- print (index .Release.node_ui_secret $key | b64enc) -}}
+    {{- $secretName := include "ui.keycloak.secretName" . -}}
+    {{- $secret := (lookup "v1" "Secret" .Release.Namespace $secretName) -}}
+    {{- if and $secret (hasKey $secret.data (include "ui.keycloak.secretKey" .)) }}
+        {{- index $secret.data (include "ui.keycloak.secretKey" .) }}
+    {{- else }}
+        {{- /* Create "ui_secret" dict inside ".Release" to store the secret during this template render */ -}}
+        {{- if not (index .Release "ui_secret") -}}
+            {{-   $_ := set .Release "ui_secret" dict -}}
+        {{- end -}}
+        {{- $key := printf "%s_%s" .Release.Name "ui_client_secret" -}}
+        {{- /* If $key does not yet exist in .Release.ui_secret, then generate and store it */ -}}
+        {{- if not (index .Release.ui_secret $key) -}}
+            {{-   $_ := set .Release.ui_secret $key (randAlphaNum 32) -}}
+        {{- end -}}
+        {{- /* Return the consistently generated value */ -}}
+        {{- print (index .Release.ui_secret $key | b64enc) -}}
+    {{- end }}
 {{- end -}}
+{{- end -}}
+
+{{/*
+Create valid redirect URIs for keycloak i.e. http & https
+*/}}
+{{- define "ui.keycloak.redirectUris" -}}
+{{- $hostnameStripped := regexReplaceAll "^https?://(.*)" (include "node.ingress.hostname" .) "${1}" -}}
+{{- printf "[ \"https://%s/*\", \"http://%s/*\" ]" $hostnameStripped $hostnameStripped -}}
 {{- end -}}
 
 {{/*Hub Adapter helpers*/}}
@@ -210,7 +222,7 @@ Return the endpoint for user authentication
 {{- if (include "userIdp.hostname" .) -}}
     {{- print (include "userIdp.hostname" .) -}}
 {{- else -}}
-    {{- printf "http://%s-keycloak:80/keycloak/realms/flame" .Release.Name -}}
+    {{- printf "http://%s-keycloak-http:80/keycloak/realms/flame" .Release.Name -}}
 {{- end -}}
 {{- end -}}
 
