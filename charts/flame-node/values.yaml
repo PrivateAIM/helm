@@ -1,4 +1,3 @@
-# Global values
 global:
   node:
     ingress:
@@ -34,8 +33,7 @@ ingress:
   ## You should generally use global.node.ingress.hostname instead
   hostname: ""
   ## @param ingress.pathType Ingress path type
-  ##
-  pathType: Exact
+  pathType: ImplementationSpecific
   ## @param ingress.path Default file path for the ingress hostname
   path: /
   ## @param ingress.annotations Additional annotations for the Ingress resource
@@ -221,22 +219,49 @@ resultService:
 keycloakx:
   ## @param keycloakx.enabled Whether to deploy the bundled Keycloak instance
   enabled: true
+  nameOverride: keycloak  # Otherwise uses "keycloakx", this keeps it backwards compatible
+
   http:
-    relativePath: /keycloak/
+    relativePath: /keycloak
 
-  command: ["/opt/keycloak/bin/kc.sh", "start-dev", "--import-realm", "--http-port=8080", "--hostname-strict=false"]
+  command: 
+   - "/opt/keycloak/bin/kc.sh"
+   - "start-dev"
+   - "--import-realm"
 
-  # database:
-  #   existingSecret: ""
-  #   existingSecretKey: ""
+  cache:
+    stack: "custom"  # Current default (kubernetes) is deprecated, setting to 'custom' leaves it unset and will go to 'jdbc-ping'
+
+  dbchecker:
+    enabled: true
+  
+  database:
+    vendor: postgres
+    hostname: flame-node-postgresql  # Fullname override defined in .Values.postgresql.fullnameOverride
+    port: 5432
 
   # Additional environment variables for Keycloak
   extraEnv: |
-    - name: KC_PROXY
-      value: "passthrough"
+    - name: KC_HOSTNAME
+      value: '{{ printf "%s%s" (tpl .Values.global.node.ingress.hostname $ | trimSuffix "/") .Values.http.relativePath }}'
     - name: JAVA_OPTS_APPEND
       value: >-
         -Djgroups.dns.query={{ include "keycloak.fullname" . }}-headless
+    - name: KC_DB_URL_DATABASE
+      valueFrom:
+        secretKeyRef:
+          name: postgres-credentials-secret
+          key: DB_DATABASE
+    - name: KC_DB_USERNAME
+      valueFrom:
+        secretKeyRef:
+          name: postgres-credentials-secret
+          key: DB_USER
+    - name: KC_DB_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: postgres-credentials-secret
+          key: DB_PASSWORD
 
   extraVolumes: |
     - name: flame-realm-json
@@ -251,25 +276,33 @@ keycloakx:
   extraEnvFrom: |
     - secretRef:
         name: flame-keycloak-credentials-secret
-    - secretRef:
-        name: postgres-credentials-secret
 
   ingress:
-    # If `true`, an Ingress is created
     enabled: true
-     # List of rules for the Ingress
     rules:
       -
         # Ingress host
-        host: frontend.semplitude.com
+        host: '{{ regexReplaceAll "^https?://(.*)" (tpl .Values.global.node.ingress.hostname $) "${1}" | trimSuffix "/" }}'
         paths:
           - path: '{{ tpl .Values.http.relativePath $ | trimSuffix "/" }}/'
-            pathType: Prefix
-  # Example TLS configuration
-    tls:
-      - hosts:
-          - frontend.semplitude.com
-    #     secretName: ""
+            pathType: ImplementationSpecific
+    
+    # TLS configuration
+    tls: []  # Must be set to empty if no TLS present otherwise will initialize with default example host
+    
+    console:
+      # If `true`, an Ingress is created for console path only
+      enabled: true
+      rules:
+        -
+          # Ingress host
+          host: '{{ regexReplaceAll "^https?://(.*)" (tpl .Values.global.node.ingress.hostname $) "${1}" | trimSuffix "/" }}'
+          paths:
+            - path: '{{ tpl .Values.http.relativePath $ | trimSuffix "/" }}/admin'
+              pathType: ImplementationSpecific
+
+      # Console TLS configuration KlpndHhf8K0Aj2R7JmNlSE2a7XJcSKPV
+      tls: []
 
     
 
@@ -391,6 +424,7 @@ podOrchestrator:
     NODE_NAME: flame
     NODE_KEY:
     NODE_KEY_PW:
+    NODE_PW:
 
     HARBOR_URL: dev-harbor.personalhealthtrain.de
     HARBOR_PW: test
@@ -742,6 +776,7 @@ flame-node-data-store:
 
 postgresql:
   nameOverride:
+  fullnameOverride: flame-node-postgresql  # Required so keycloak can enable database checker
 
   ## Optional service account
   serviceAccount:
