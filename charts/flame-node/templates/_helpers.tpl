@@ -175,9 +175,10 @@ Generate a random clientSecret value for the node-ui client in keycloak if none 
     {{- print .Values.ui.idp.clientSecret  | b64enc -}}
 {{- else -}}
     {{- $secretName := include "ui.keycloak.secretName" . -}}
+    {{- $secretKey := include "ui.keycloak.secretKey" . -}}
     {{- $secret := (lookup "v1" "Secret" .Release.Namespace $secretName) -}}
-    {{- if and $secret (hasKey $secret.data (include "ui.keycloak.secretKey" .)) }}
-        {{- index $secret.data (include "ui.keycloak.secretKey" .) }}
+    {{- if and $secret (hasKey $secret.data $secretKey) }}
+        {{- index $secret.data $secretKey }}
     {{- else }}
         {{- /* Create "ui_secret" dict inside ".Release" to store the secret during this template render */ -}}
         {{- if not (index .Release "ui_secret") -}}
@@ -247,20 +248,24 @@ Generate a random clientSecret value for the hub-adapter client in keycloak if n
 {{- else if .Values.hubAdapter.idp.clientSecret -}}
     {{- print .Values.hubAdapter.idp.clientSecret | b64enc -}}
 {{- else -}}
-{{/*    {{- print ( randAlphaNum 22 | b64enc | quote ) -}}*/}}
-    {{- /* Create "hub_secret" dict inside ".Release" to store various stuff. */ -}}
-    {{- if not (index .Release "hub_secret") -}}
-        {{-   $_ := set .Release "hub_secret" dict -}}
-    {{- end -}}
-    {{- /* Some random ID of this password, in case there will be other random values alongside this instance. */ -}}
-    {{- $key := printf "%s_%s" .Release.Name "password" -}}
-    {{- /* If $key does not yet exist in .Release.hub_secret, then... */ -}}
-    {{- if not (index .Release.hub_secret $key) -}}
-        {{- /* ... store random password under the $key */ -}}
-        {{-   $_ := set .Release.hub_secret $key (randAlphaNum 32) -}}
-    {{- end -}}
-        {{- /* Retrieve previously generated value. */ -}}
+    {{- $secretName := include "adapter.keycloak.secretName" . -}}
+    {{- $secretKey := include "adapter.keycloak.secretKey" . -}}
+    {{- $secret := (lookup "v1" "Secret" .Release.Namespace $secretName) -}}
+    {{- if and $secret (hasKey $secret.data $secretKey) }}
+        {{- index $secret.data $secretKey }}
+    {{- else }}
+        {{- /* Create "hub_secret" dict inside ".Release" to store the secret during this template render */ -}}
+        {{- if not (index .Release "hub_secret") -}}
+            {{-   $_ := set .Release "hub_secret" dict -}}
+        {{- end -}}
+        {{- $key := printf "%s_%s" .Release.Name "hub_client_secret" -}}
+        {{- /* If $key does not yet exist in .Release.hub_secret, then generate and store it */ -}}
+        {{- if not (index .Release.hub_secret $key) -}}
+            {{-   $_ := set .Release.hub_secret $key (randAlphaNum 32) -}}
+        {{- end -}}
+        {{- /* Return the consistently generated value */ -}}
         {{- print (index .Release.hub_secret $key | b64enc) -}}
+    {{- end }}
 {{- end -}}
 {{- end -}}
 
@@ -300,20 +305,24 @@ Generate a random clientSecret value for the PO client in keycloak if none provi
 {{- if .Values.podOrchestrator.idp.debug -}}
     {{- print "9dd01665c2f3f02f93c32d03bd854569f03cd62f439ccf9f0861c141b9d6330e" -}}
 {{- else -}}
-{{/*    {{- print ( randAlphaNum 22 | b64enc | quote ) -}}*/}}
-    {{- /* Create "po_secret" dict inside ".Release" to store various stuff. */ -}}
-    {{- if not (index .Release "po_secret") -}}
-        {{-   $_ := set .Release "po_secret" dict -}}
-    {{- end -}}
-    {{- /* Some random ID of this password, in case there will be other random values alongside this instance. */ -}}
-    {{- $key := printf "%s_%s" .Release.Name "password" -}}
-    {{- /* If $key does not yet exist in .Release.po_secret, then... */ -}}
-    {{- if not (index .Release.po_secret $key) -}}
-        {{- /* ... store random password under the $key */ -}}
-        {{-   $_ := set .Release.po_secret $key (randAlphaNum 32) -}}
-    {{- end -}}
-        {{- /* Retrieve previously generated value. */ -}}
+    {{- $secretName := printf "%s-po-keycloak-secret" .Release.Name -}}
+    {{- $secretKey := "podOrcClientSecret" -}}
+    {{- $secret := (lookup "v1" "Secret" .Release.Namespace $secretName) -}}
+    {{- if and $secret (hasKey $secret.data $secretKey) }}
+        {{- index $secret.data $secretKey }}
+    {{- else }}
+        {{- /* Create "po_secret" dict inside ".Release" to store the secret during this template render */ -}}
+        {{- if not (index .Release "po_secret") -}}
+            {{-   $_ := set .Release "po_secret" dict -}}
+        {{- end -}}
+        {{- $key := printf "%s_%s" .Release.Name "po_client_secret" -}}
+        {{- /* If $key does not yet exist in .Release.po_secret, then generate and store it */ -}}
+        {{- if not (index .Release.po_secret $key) -}}
+            {{-   $_ := set .Release.po_secret $key (randAlphaNum 32) -}}
+        {{- end -}}
+        {{- /* Return the consistently generated value */ -}}
         {{- print (index .Release.po_secret $key | b64enc) -}}
+    {{- end -}}
 {{- end -}}
 {{- end -}}
 
