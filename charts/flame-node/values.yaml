@@ -17,6 +17,8 @@ userIdp:
   ## @param userIdp.hostname Hostname for a separate IDP to manage users who can access the FLAME Node UI.
   ## Leave this blank unless you want to use your own IDP
   hostname:
+  ## @param userIdp.provider User auth provider. Can be 'keycloak', 'auth0', 'authentik', 'onelogin', 'okta', or 'zitadel'
+  provider: keycloak
 
 ## @param proxy Proxy URLs pertaining to `HTTP_PROXY`, `HTTPS_PROXY` and `NO_PROXY` environment variables
 proxy:
@@ -662,7 +664,7 @@ ui:
   image:
     repository: ghcr.io/privateaim/node-ui
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.2.15
+    tag: 0.2.16
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 

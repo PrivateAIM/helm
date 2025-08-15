@@ -147,7 +147,7 @@ Return the secret containing the Keycloak client secret
 {{- if and $secretName ( not .Values.ui.idp.debug ) -}}
     {{- printf "%s" (tpl $secretName $) -}}
 {{- else -}}
-    {{- printf "%s-node-ui-keycloak-secret" .Release.Name -}}
+    {{- printf "%s-keycloak-client-secrets" .Release.Name -}}
 {{- end -}}
 {{- end -}}
 
@@ -235,7 +235,7 @@ Return the secret containing the Keycloak client secret
 {{- if and $secretName ( not .Values.hubAdapter.idp.debug ) -}}
     {{- printf "%s" (tpl $secretName $) -}}
 {{- else -}}
-    {{- printf "%s-hub-adapter-keycloak-secret" .Release.Name -}}
+    {{- printf "%s-keycloak-client-secrets" .Release.Name -}}
 {{- end -}}
 {{- end -}}
 
@@ -305,7 +305,7 @@ Generate a random clientSecret value for the PO client in keycloak if none provi
 {{- if .Values.podOrchestrator.idp.debug -}}
     {{- print "9dd01665c2f3f02f93c32d03bd854569f03cd62f439ccf9f0861c141b9d6330e" -}}
 {{- else -}}
-    {{- $secretName := printf "%s-po-keycloak-secret" .Release.Name -}}
+    {{- $secretName := printf "%s-keycloak-client-secrets" .Release.Name -}}
     {{- $secretKey := "podOrcClientSecret" -}}
     {{- $secret := (lookup "v1" "Secret" .Release.Namespace $secretName) -}}
     {{- if and $secret (hasKey $secret.data $secretKey) }}
