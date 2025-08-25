@@ -348,7 +348,7 @@ hubAdapter:
   image:
     repository: ghcr.io/privateaim/node-hub-api-adapter
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.2.9
+    tag: 0.2.10
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -664,7 +664,7 @@ ui:
   image:
     repository: ghcr.io/privateaim/node-ui
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.2.16
+    tag: 0.2.17
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
