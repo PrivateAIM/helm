@@ -12,15 +12,6 @@ ingress:
     enabled: true
 
 ## services
-
-services:
-    vault: true
-    rabbitmq: true
-    minio: true
-    monitoring: true
-    mysql: true
-    redis: true
-
 vault:
     server:
         enabled: true
@@ -63,8 +54,60 @@ mysql:
             size: 16Gi
     architecture: "replication"
 
+grafana:
+    nameOverride: "grafana"
+    image:
+        pullPolicy: "Always"
+    admin:
+        password: "start123"
+    dashboardsProvider:
+        enabled: true
+    datasources:
+        secretName: grafana-datasources
+    config:
+        useGrafanaIniFile: true
+        grafanaIniConfigMap: grafana
 
-# Internal
+grafana-loki:
+    nameOverride: "loki"
+    image:
+        pullPolicy: "Always"
+
+prometheus:
+    nameOverride: "prometheus"
+    alertmanager:
+        service:
+            type: ClusterIP
+    server:
+        replicaCount: 2
+        service:
+            type: ClusterIP
+            ports:
+                http: 9090
+        image:
+            pullPolicy: "Always"
+        configuration: |
+            scrape_configs:
+              - job_name: prometheus
+                static_configs:
+                  - targets: ["http://localhost:9090"]
+              - job_name: flame-hub-server-core
+                static_configs:
+                  - targets: ["{{ .Release.Name }}-flame-hub-server-core:3000"]
+              - job_name: flame-hub-server-messenger
+                static_configs:
+                  - targets: ["{{ .Release.Name }}-flame-hub-server-messenger:3000"]
+              - job_name: flame-hub-server-storage
+                static_configs:
+                  - targets: ["{{ .Release.Name }}-flame-hub-server-storage:3000"]
+              - job_name: flame-hub-server-telemetry
+                static_configs:
+                  - targets: ["{{ .Release.Name }}-flame-hub-server-telemetry:3000"]
+              - job_name: authup-server-core
+                static_configs:
+                  - targets: ["{{ .Release.Name }}-authup-server-core:3000"]
+
+# internal services
 
 # todo - rename to clientUi
 ui:
@@ -100,6 +143,15 @@ serverMessenger:
         pathType: "Prefix"
 
 serverStorage:
+    hostname: ""
+    ssl: false
+    ingress:
+        enabled: false
+        hostname: ""
+        path: "/"
+        pathType: "Prefix"
+
+serverTelemetry:
     hostname: ""
     ssl: false
     ingress:
