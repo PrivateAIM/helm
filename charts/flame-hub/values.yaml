@@ -162,3 +162,23 @@ prometheus:
               - job_name: authup-server-core
                 static_configs:
                   - targets: ["{{ .Release.Name }}-authup-server-core:3000"]
+
+harbor:
+    enabled: false
+    nameOverride: "harbor"
+    adminPassword: "start123"
+    exposureType: "ingress"
+    externalURL: http://localhost
+    migration:
+        enabled: true
+    ingress:
+        core:
+            hostname: "localhost"
+            tls: true
+            selfSigned: true
+            # secrets:
+            #  - name <domain>-tls
+            #    certificate: |
+            #        ...
+            #    key: |
+            #       ...
