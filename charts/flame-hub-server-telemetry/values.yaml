@@ -7,3 +7,56 @@ ingress:
     hostname: ""
     path: "/"
     pathType: "Prefix"
+
+grafana:
+    nameOverride: "grafana"
+    image:
+        pullPolicy: "Always"
+    admin:
+        password: "start123"
+    dashboardsProvider:
+        enabled: true
+    datasources:
+        secretName: grafana-datasources
+    config:
+        useGrafanaIniFile: true
+        grafanaIniConfigMap: grafana
+
+grafana-loki:
+    nameOverride: "loki"
+    image:
+        pullPolicy: "Always"
+
+prometheus:
+    nameOverride: "prometheus"
+    alertmanager:
+        service:
+            type: ClusterIP
+    server:
+        replicaCount: 2
+        service:
+            type: ClusterIP
+            ports:
+                http: 9090
+        image:
+            pullPolicy: "Always"
+        configuration: |
+            scrape_configs:
+              - job_name: prometheus
+                static_configs:
+                  - targets: ["http://localhost:9090"]
+              - job_name: flame-hub-server-core
+                static_configs:
+                  - targets: ["{{ .Release.Name }}-flame-hub-server-core:3000"]
+              - job_name: flame-hub-server-messenger
+                static_configs:
+                  - targets: ["{{ .Release.Name }}-flame-hub-server-messenger:3000"]
+              - job_name: flame-hub-server-storage
+                static_configs:
+                  - targets: ["{{ .Release.Name }}-flame-hub-server-storage:3000"]
+              - job_name: flame-hub-server-telemetry
+                static_configs:
+                  - targets: ["{{ .Release.Name }}-flame-hub-server-telemetry:3000"]
+              - job_name: authup-server-core
+                static_configs:
+                  - targets: ["{{ .Release.Name }}-authup-server-core:3000"]

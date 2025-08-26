@@ -56,6 +56,7 @@ spec:
       containers:
         - name: "{{ .Release.Name }}-flame-hub-server-core"
           image: "ghcr.io/privateaim/hub:{{ .Chart.AppVersion }}"
+          args: ["core", "cli", "start"]
           imagePullPolicy: Always
           ports:
             - containerPort: 3000
@@ -69,6 +70,8 @@ spec:
                   value: "amqp://root:start123@{{ .Release.Name }}-rabbitmq"
               -   name: AUTHUP_URL
                   value: "http://{{ .Release.Name }}-authup-server-core:3000/"
+              -   name: TELEMETRY_URL
+                  value: "http://{{ .Release.Name }}-flame-hub-server-telemetry:3000/"
               -   name: SKIP_PROJECT_APPROVAL
                   value: "true"
               -   name: SKIP_ANALYSIS_APPROVAL
@@ -85,10 +88,6 @@ spec:
                   value: "core"
               -   name: MASTER_IMAGES_BRANCH
                   value: {{ .Values.env.masterImagesBranch | default "master" | quote }}
-              -   name: LOKI_COMPACTOR_URL
-                  value: "{{ .Release.Name }}-loki-compactor"
-              -   name: LOKI_QUERIER_URL
-                  value: "{{ .Release.Name }}-loki-query-frontend"
           resources:
               requests:
                   memory: "512Mi"

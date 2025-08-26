@@ -40,11 +40,6 @@ dependencies:
         version: 0.28.1
         repository: https://helm.releases.hashicorp.com
 
-    -   condition: services.monitoring
-        name: flame-hub-monitoring
-        repository: file://../flame-hub-monitoring
-        version: 0.1.0
-
     -   name: authup
         repository: file://../third-party/authup
         version: 0.1.0
