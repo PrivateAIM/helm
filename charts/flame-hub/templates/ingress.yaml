@@ -69,7 +69,4 @@ spec:
                             name: {{ .Release.Name }}-flame-hub-client-ui
                             port:
                                 number: 3000
-                  - path: /v2
-                    pathType: "ImplementationSpecific"
-                    backend: {{- include "common.ingress.backend" (dict "serviceName" (include "harbor.core" .) "servicePort" "http" "context" $) | nindent 14 }}
 {{- end }}

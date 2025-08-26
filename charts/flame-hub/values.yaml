@@ -164,7 +164,7 @@ prometheus:
                   - targets: ["{{ .Release.Name }}-authup-server-core:3000"]
 
 harbor:
-    enabled: false
+    enabled: true
     nameOverride: "harbor"
     adminPassword: "start123"
     exposureType: "ingress"
