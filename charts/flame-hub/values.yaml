@@ -102,3 +102,8 @@ serverMessenger:
 serverStorage:
     hostname: ""
     ssl: false
+    ingress:
+        enabled: false
+        hostname: ""
+        path: "/"
+        pathType: "Prefix"
