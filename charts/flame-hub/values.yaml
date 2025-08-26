@@ -78,14 +78,21 @@ authup:
     hostname: ""
     ssl: false
 
-core:
+serverCore:
+    hostname: ""
+    ssl: false
+    ingress:
+        enabled: false
+        hostname: ""
+        path: "/"
+        pathType: "Prefix"
+    env:
+        masterImagesBranch: ""
+
+serverMessenger:
     hostname: ""
     ssl: false
 
-messenger:
-    hostname: ""
-    ssl: false
-
-storage:
+serverStorage:
     hostname: ""
     ssl: false

@@ -87,7 +87,7 @@ spec:
               -   name: DB_DATABASE
                   value: "core"
               -   name: MASTER_IMAGES_BRANCH
-                  value: {{ .Values.env.masterImagesBranch | default "master" | quote }}
+                  value: {{ .Values.serverCore.env.masterImagesBranch | default "master" | quote }}
           resources:
               requests:
                   memory: "512Mi"
