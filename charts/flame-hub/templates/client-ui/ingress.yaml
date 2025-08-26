@@ -1,0 +1,37 @@
+{{- if .Values.clientUI.ingress.enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-flame-hub-client-ui-sub-paths
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  rules:
+    - host: {{ .Values.clientUI.ingress.hostname }}
+      http:
+        paths:
+          - path: {{ .Values.clientUI.ingress.path }}grafana(/|$)(.*)
+            pathType: "ImplementationSpecific"
+            backend:
+              service:
+                name: {{ .Release.Name }}-grafana
+                port:
+                  number: 3000
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+    name: {{ .Release.Name }}-flame-hub-client-ui
+spec:
+    rules:
+        - host: {{ .Values.clientUI.ingress.hostname }}
+          http:
+              paths:
+                  - path: {{ .Values.clientUI.ingress.path }}
+                    pathType: {{ .Values.clientUI.ingress.pathType }}
+                    backend:
+                        service:
+                            name: {{ .Release.Name }}-flame-hub-client-ui
+                            port:
+                                number: 3000
+{{- end }}
