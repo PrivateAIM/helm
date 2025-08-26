@@ -66,6 +66,7 @@ mysql:
 
 # Internal
 
+# todo - rename to clientUi
 ui:
     cookieDomain: ""
     ingress:
@@ -92,6 +93,11 @@ serverCore:
 serverMessenger:
     hostname: ""
     ssl: false
+    ingress:
+        enabled: false
+        hostname: ""
+        path: "/"
+        pathType: "Prefix"
 
 serverStorage:
     hostname: ""

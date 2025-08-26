@@ -1,15 +1,15 @@
-{{- if .Values.ingress.enabled -}}
+{{- if .Values.serverMessenger.ingress.enabled -}}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
     name: {{ .Release.Name }}-flame-hub-server-messenger
 spec:
     rules:
-        - host: {{ .Values.ingress.hostname }}
+        - host: {{ .Values.serverMessenger.ingress.hostname }}
           http:
               paths:
-                  - path: {{ .Values.ingress.path }}
-                    pathType: {{ .Values.ingress.pathType }}
+                  - path: {{ .Values.serverMessenger.ingress.path }}
+                    pathType: {{ .Values.serverMessenger.ingress.pathType }}
                     backend:
                         service:
                             name: {{ .Release.Name }}-flame-hub-server-messenger
