@@ -63,3 +63,29 @@ mysql:
             size: 16Gi
     architecture: "replication"
 
+
+# Internal
+
+ui:
+    cookieDomain: ""
+    ingress:
+        enabled: false
+        hostname: ""
+        path: "/"
+        pathType: "Prefix"
+
+authup:
+    hostname: ""
+    ssl: false
+
+core:
+    hostname: ""
+    ssl: false
+
+messenger:
+    hostname: ""
+    ssl: false
+
+storage:
+    hostname: ""
+    ssl: false
