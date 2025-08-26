@@ -4,12 +4,64 @@ global:
     redis:
         password: "start123"
 
-    hub:
-        ssl: false
-        hostname: "localhost"
+    flameHub:
+        ingress:
+            enabled: true
+            ssl: false
+            hostname: "localhost"
 
-ingress:
-    enabled: true
+image:
+    registry: ghcr.io
+    repository: privateaim/hub
+    tag: latest
+
+# internal services
+clientUI:
+    cookieDomain: ""
+    ingress:
+        enabled: false
+        hostname: ""
+        path: "/"
+        pathType: "Prefix"
+
+authup:
+    ingress:
+        hostname: ""
+        ssl: false
+
+serverCore:
+    ingress:
+        ssl: false
+        enabled: false
+        hostname: ""
+        path: "/"
+        pathType: "Prefix"
+    env:
+        masterImagesBranch: ""
+
+serverMessenger:
+    ingress:
+        ssl: false
+        enabled: false
+        hostname: ""
+        path: "/"
+        pathType: "Prefix"
+
+serverStorage:
+    ingress:
+        ssl: false
+        enabled: false
+        hostname: ""
+        path: "/"
+        pathType: "Prefix"
+
+serverTelemetry:
+    ingress:
+        ssl: false
+        enabled: false
+        hostname: ""
+        path: "/"
+        pathType: "Prefix"
 
 ## services
 vault:
@@ -72,6 +124,10 @@ grafana-loki:
     nameOverride: "loki"
     image:
         pullPolicy: "Always"
+    loki:
+        overrideConfiguration:
+            limits_config:
+                deletion_mode: "filter-and-delete"
 
 prometheus:
     nameOverride: "prometheus"
@@ -106,56 +162,3 @@ prometheus:
               - job_name: authup-server-core
                 static_configs:
                   - targets: ["{{ .Release.Name }}-authup-server-core:3000"]
-
-# internal services
-
-# todo - rename to clientUi
-ui:
-    cookieDomain: ""
-    ingress:
-        enabled: false
-        hostname: ""
-        path: "/"
-        pathType: "Prefix"
-
-authup:
-    hostname: ""
-    ssl: false
-
-serverCore:
-    hostname: ""
-    ssl: false
-    ingress:
-        enabled: false
-        hostname: ""
-        path: "/"
-        pathType: "Prefix"
-    env:
-        masterImagesBranch: ""
-
-serverMessenger:
-    hostname: ""
-    ssl: false
-    ingress:
-        enabled: false
-        hostname: ""
-        path: "/"
-        pathType: "Prefix"
-
-serverStorage:
-    hostname: ""
-    ssl: false
-    ingress:
-        enabled: false
-        hostname: ""
-        path: "/"
-        pathType: "Prefix"
-
-serverTelemetry:
-    hostname: ""
-    ssl: false
-    ingress:
-        enabled: false
-        hostname: ""
-        path: "/"
-        pathType: "Prefix"

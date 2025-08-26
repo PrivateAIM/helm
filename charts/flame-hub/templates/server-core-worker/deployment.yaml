@@ -41,7 +41,7 @@ spec:
               ]
       containers:
         - name: "{{ .Release.Name }}-flame-hub-server-core-worker"
-          image: "ghcr.io/privateaim/hub:{{ .Chart.AppVersion }}"
+          image: {{ include "flameHub.image" . | trim | quote }}
           args: ['analysis-manager', 'start']
           imagePullPolicy: Always
           ports:

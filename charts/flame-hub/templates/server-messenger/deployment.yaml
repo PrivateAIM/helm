@@ -41,7 +41,7 @@ spec:
                     ]
             containers:
                 -   name: "{{ .Release.Name }}-flame-hub-server-messenger"
-                    image: "ghcr.io/privateaim/hub:{{ .Chart.AppVersion }}"
+                    image: {{ include "flameHub.image" . | trim | quote }}
                     args: ["messenger", "start"]
                     imagePullPolicy: Always
                     ports:

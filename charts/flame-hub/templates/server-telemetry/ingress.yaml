@@ -1,4 +1,4 @@
-{{- if .Values.ingress.enabled -}}
+{{- if .Values.serverTelemetry.ingress.enabled -}}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -7,11 +7,11 @@ metadata:
       nginx.ingress.kubernetes.io/proxy-body-size: "0"
 spec:
     rules:
-        - host: {{ .Values.ingress.hostname }}
+        - host: {{ .Values.serverTelemetry.ingress.hostname }}
           http:
               paths:
-                  - path: {{ .Values.ingress.path }}
-                    pathType: {{ .Values.ingress.pathType }}
+                  - path: {{ .Values.serverTelemetry.ingress.path }}
+                    pathType: {{ .Values.serverTelemetry.ingress.pathType }}
                     backend:
                         service:
                             name: {{ .Release.Name }}-flame-hub-server-telemetry

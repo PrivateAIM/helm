@@ -1,18 +1,18 @@
 {{/*
 core publicURL
 */}}
-{{- define "core.publicURL" -}}
-{{- if .Values.core.hostname }}
-{{- if .Values.core.ssl }}
-https://{{- .Values.core.hostname }}
+{{- define "serverCore.publicURL" -}}
+{{- if .Values.serverCore.ingress.hostname }}
+{{- if .Values.serverCore.ingress.ssl }}
+https://{{- .Values.serverCore.ingress.hostname }}
 {{- else }}
-http://{{- .Values.core.hostname }}
+http://{{- .Values.serverCore.ingress.hostname }}
 {{- end }}
 {{- else }}
-{{- if .Values.core.ssl }}
-https://{{ .Values.global.hub.hostname }}/core/
+{{- if .Values.serverCore.ingress.ssl }}
+https://{{ .Values.global.flameHub.ingress.hostname }}/core/
 {{- else }}
-http://{{ .Values.global.hub.hostname }}/core/
+http://{{ .Values.global.flameHub.ingress.hostname }}/core/
 {{- end }}
 {{- end }}
 {{- end }}
@@ -20,18 +20,37 @@ http://{{ .Values.global.hub.hostname }}/core/
 {{/*
 storage publicURL
 */}}
-{{- define "storage.publicURL" -}}
-{{- if .Values.storage.hostname }}
-{{- if .Values.storage.ssl }}
-https://{{- .Values.storage.hostname }}
+{{- define "serverStorage.publicURL" -}}
+{{- if .Values.serverStorage.ingress.hostname }}
+{{- if .Values.serverStorage.ingress.ssl }}
+https://{{- .Values.serverStorage.ingress.hostname }}
 {{- else }}
-http://{{- .Values.storage.hostname }}
+http://{{- .Values.serverStorage.ingress.hostname }}
 {{- end }}
 {{- else }}
-{{- if .Values.global.hub.ssl }}
-https://{{ .Values.global.hub.hostname }}/storage/
+{{- if .Values.global.flameHub.ingress.ssl }}
+https://{{ .Values.global.flameHub.ingress.hostname }}/storage/
 {{- else }}
-http://{{ .Values.global.hub.hostname }}/storage/
+http://{{ .Values.global.flameHub.ingress.hostname }}/storage/
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{/*
+telemetry publicURL
+*/}}
+{{- define "serverTelemetry.publicURL" -}}
+{{- if .Values.serverTelemetry.ingress.hostname }}
+{{- if .Values.serverTelemetry.ingress.ssl }}
+https://{{- .Values.serverTelemetry.ingress.hostname }}
+{{- else }}
+http://{{- .Values.serverTelemetry.ingress.hostname }}
+{{- end }}
+{{- else }}
+{{- if .Values.global.flameHub.ingress.ssl }}
+https://{{ .Values.global.flameHub.ingress.hostname }}/telemetry/
+{{- else }}
+http://{{ .Values.global.flameHub.ingress.hostname }}/telemetry/
 {{- end }}
 {{- end }}
 {{- end }}
@@ -40,17 +59,17 @@ http://{{ .Values.global.hub.hostname }}/storage/
 authup publicURL
 */}}
 {{- define "authup.publicURL" -}}
-{{- if .Values.authup.hostname }}
-{{- if .Values.authup.ssl }}
-https://{{- .Values.authup.hostname }}
+{{- if .Values.authup.ingress.hostname }}
+{{- if .Values.authup.ingress.ssl }}
+https://{{- .Values.authup.ingress.hostname }}
 {{- else }}
-http://{{- .Values.authup.hostname }}
+http://{{- .Values.authup.ingress.hostname }}
 {{- end }}
 {{- else }}
-{{- if .Values.global.hub.ssl }}
-https://{{ .Values.global.hub.hostname }}/auth/
+{{- if .Values.global.flameHub.ingress.ssl }}
+https://{{ .Values.global.flameHub.ingress.hostname }}/auth/
 {{- else }}
-http://{{ .Values.global.hub.hostname }}/auth/
+http://{{ .Values.global.flameHub.ingress.hostname }}/auth/
 {{- end }}
 {{- end }}
 {{- end }}

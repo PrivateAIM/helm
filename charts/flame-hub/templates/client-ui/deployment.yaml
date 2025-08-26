@@ -19,25 +19,29 @@ spec:
       restartPolicy: Always
       containers:
         - name: "{{ .Release.Name }}-flame-hub-client-ui"
-          image: "ghcr.io/privateaim/hub:{{ .Chart.AppVersion }}"
+          image: {{ include "flameHub.image" . | trim | quote }}
           args: ["ui", "start"]
           imagePullPolicy: Always
           ports:
             - containerPort: 3000
               protocol: TCP
           env:
-            {{- with .Values.ui.cookieDomain }}
+            {{- with .Values.clientUI.cookieDomain }}
               -   name: NUXT_PUBLIC_COOKIE_DOMAIN
                   value: "{{- toString . | trim }}"
             {{- end }}
-              -   name: NUXT_STORAGE_URL
-                  value: "http://{{ .Release.Name }}-flame-hub-server-storage:3000/"
-              -   name: NUXT_PUBLIC_STORAGE_URL
-                  value: {{ include "storage.publicURL" . | trim | quote }}
               -   name: NUXT_CORE_URL
                   value: "http://{{ .Release.Name }}-flame-hub-server-core:3000/"
               -   name: NUXT_PUBLIC_CORE_URL
-                  value: {{ include "core.publicURL" . | trim | quote }}
+                  value: {{ include "serverCore.publicURL" . | trim | quote }}
+              -   name: NUXT_STORAGE_URL
+                  value: "http://{{ .Release.Name }}-flame-hub-server-storage:3000/"
+              -   name: NUXT_PUBLIC_STORAGE_URL
+                  value: {{ include "serverStorage.publicURL" . | trim | quote }}
+              -   name: NUXT_TELEMETRY_URL
+                  value: "http://{{ .Release.Name }}-flame-hub-server-telemetry:3000/"
+              -   name: NUXT_PUBLIC_TELEMETRY_URL
+                  value: {{ include "serverTelemetry.publicURL" . | trim | quote }}
               -   name: NUXT_AUTHUP_URL
                   value: "http://{{ .Release.Name }}-authup-server-core:3000/"
               -   name: NUXT_PUBLIC_AUTHUP_URL

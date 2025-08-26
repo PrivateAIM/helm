@@ -62,7 +62,7 @@ spec:
                   ]
             containers:
                 -   name: "{{ .Release.Name }}-flame-hub-server-telemetry"
-                    image: "ghcr.io/privateaim/hub:{{ .Chart.AppVersion }}"
+                    image: {{ include "flameHub.image" . | trim | quote }}
                     args: ["telemetry", "cli", "start"]
                     imagePullPolicy: Always
                     ports:

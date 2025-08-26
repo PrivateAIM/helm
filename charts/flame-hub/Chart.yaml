@@ -15,6 +15,10 @@ version: "0.1.0"
 appVersion: "0.1.0"
 
 dependencies:
+    -   name: common
+        version: 2.31.4
+        repository: https://charts.bitnami.com/bitnami
+
     -   name: mysql
         version: 12.3.3
         repository: https://charts.bitnami.com/bitnami
@@ -48,28 +52,4 @@ dependencies:
 
     -   name: authup
         repository: file://../third-party/authup
-        version: 0.1.0
-
-    -   name: flame-hub-client-ui
-        repository: file://../flame-hub-client-ui
-        version: 0.1.0
-
-    -   name: flame-hub-server-core
-        repository: file://../flame-hub-server-core
-        version: 0.1.0
-
-    -   name: flame-hub-server-messenger
-        repository: file://../flame-hub-server-messenger
-        version: 0.1.0
-
-    -   name: flame-hub-server-storage
-        repository: file://../flame-hub-server-storage
-        version: 0.1.0
-
-    -   name: flame-hub-server-telemetry
-        repository: file://../flame-hub-server-telemetry
-        version: 0.1.0
-
-    -   name: flame-hub-server-analysis-manager
-        repository: file://../flame-hub-server-analysis-manager
         version: 0.1.0

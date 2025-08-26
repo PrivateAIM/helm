@@ -55,7 +55,7 @@ spec:
                     ]
             containers:
                 -   name: "{{ .Release.Name }}-flame-hub-server-storage"
-                    image: "ghcr.io/privateaim/hub:{{ .Chart.AppVersion }}"
+                    image: {{ include "flameHub.image" . | trim | quote }}
                     args: ["storage", "start"]
                     imagePullPolicy: Always
                     ports:
