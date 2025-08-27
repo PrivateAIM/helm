@@ -79,6 +79,8 @@ spec:
                             value: "http://{{ .Release.Name }}-authup-server-core:3000/"
                         -   name: LOKI_COMPACTOR_URL
                             value: "http://{{ .Release.Name }}-loki-compactor:3100/"
+                        -   name: LOKI_DISTRIBUTOR_URL
+                            value: "http://{{ .Release.Name }}-loki-distributor:3100/"
                         -   name: LOKI_QUERIER_URL
                             value: "http://{{ .Release.Name }}-loki-query-frontend:3100/"
                         -   name: DB_TYPE
