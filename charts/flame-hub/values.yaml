@@ -26,6 +26,7 @@ clientUI:
 
 authup:
     ingress:
+        enabled: false
         hostname: ""
         ssl: false
 
