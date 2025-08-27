@@ -144,9 +144,6 @@ prometheus:
             pullPolicy: "Always"
         configuration: |
             scrape_configs:
-              - job_name: prometheus
-                static_configs:
-                  - targets: ["http://localhost:9090"]
               - job_name: flame-hub-server-core
                 static_configs:
                   - targets: ["{{ .Release.Name }}-flame-hub-server-core:3000"]
@@ -164,7 +161,7 @@ prometheus:
                   - targets: ["{{ .Release.Name }}-authup-server-core:3000"]
 
 harbor:
-    enabled: true
+    enabled: false
     nameOverride: "harbor"
     adminPassword: "start123"
     exposureType: "ingress"

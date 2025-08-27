@@ -42,7 +42,7 @@ spec:
       containers:
         - name: "{{ .Release.Name }}-flame-hub-server-core-worker"
           image: {{ include "flameHub.image" . | trim | quote }}
-          args: ['analysis-manager', 'start']
+          args: ['core-worker', 'start']
           imagePullPolicy: Always
           ports:
             - containerPort: 3000
