@@ -32,6 +32,13 @@ spec:
                         '-c',
                         'until nc -z -v -w30 {{ .Release.Name }}-redis-master 6379; do echo "Waiting for redis..."; sleep 5; done'
                     ]
+                -   name: wait-for-rabbitmq
+                    image: busybox
+                    command: [
+                        'sh',
+                        '-c',
+                        'until nc -z -v -w30 {{ .Release.Name }}-rabbitmq 5672; do echo "Waiting for rabbitmq..."; sleep 5; done'
+                    ]
                 -   name: wait-for-minio
                     image: busybox
                     command: [
@@ -64,6 +71,8 @@ spec:
                     env:
                         -   name: REDIS_CONNECTION_STRING
                             value: "redis://default:{{ .Values.global.redis.password }}@{{ .Release.Name }}-redis-master"
+                        -   name: RABBITMQ_CONNECTION_STRING
+                            value: "amqp://root:start123@{{ .Release.Name }}-rabbitmq"
                         -   name: VAULT_CONNECTION_STRING
                             value: "start123@http://{{ .Release.Name }}-vault:8200/v1/"
                         -   name: MINIO_CONNECTION_STRING
