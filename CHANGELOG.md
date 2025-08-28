@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.0.7](https://github.com/PrivateAIM/helm/compare/root-v0.0.6...root-v0.0.7) (2025-08-28)
+
+
+### Features
+
+* bump dependency versions ([5f55c6a](https://github.com/PrivateAIM/helm/commit/5f55c6a75726f27063b9019cb5aabaa8118e354b))
+* initial harbor integration ([64fe8ec](https://github.com/PrivateAIM/helm/commit/64fe8ecbf0a512afc07c2a0e675f2196f13353f9))
+* integrated telemetry service ([0290265](https://github.com/PrivateAIM/helm/commit/0290265b3a15dbaa5fd8ede3fd52804ca905a803))
+* **mb:** add new env vars for proxy ([927bb8d](https://github.com/PrivateAIM/helm/commit/927bb8d44b742f56450dff6a835a92db24c89a84))
+* merge hub charts ([#50](https://github.com/PrivateAIM/helm/issues/50)) ([3f82eac](https://github.com/PrivateAIM/helm/commit/3f82eacd2b385ff47ca2332c157c3312a288c691))
+* pass loki distributor url to telemetry service ([0c2f03e](https://github.com/PrivateAIM/helm/commit/0c2f03e3cdd57b3be496896b31e859b1c687ed39))
+* pass rabbitmq connection string to storage & messenger service ([9435dfd](https://github.com/PrivateAIM/helm/commit/9435dfd601ca79e8b79c43d9894fb1100762bc0b))
+* **ui:** add no proxy option to UI and values.yaml ([48ed48f](https://github.com/PrivateAIM/helm/commit/48ed48f4208ca0364dc53fe4a4cf17032ed2153c))
+
+
+### Bug Fixes
+
+* extend default values file ([2d7ee59](https://github.com/PrivateAIM/helm/commit/2d7ee59661bb024d68bbac75996c831dfd33c6fb))
+* image arg for core-worker & prometheus static config ([592b6d2](https://github.com/PrivateAIM/helm/commit/592b6d2e712749e1c41b3f11cf9dd2ec373c6ab3))
+* initContainers and urls for server-telemetry deployment ([0e86809](https://github.com/PrivateAIM/helm/commit/0e868095112d4e2d057f7e1dd665d7d33dadb623))
+* **mb:** remove proxy env vars if no proxy is set ([54dbc26](https://github.com/PrivateAIM/helm/commit/54dbc26a0a9733373a7699f757b687ceeac20184))
+* serving grafana ui ([2dc5582](https://github.com/PrivateAIM/helm/commit/2dc558281d575920c47e0bde6f559ea94435848f))
+* **svc:** use long form service names for backend calls ([c93566f](https://github.com/PrivateAIM/helm/commit/c93566fa4d3d30584908ee861da2dda19e6d8981))
+
 ## [0.0.6](https://github.com/PrivateAIM/helm/compare/root-v0.0.5...root-v0.0.6) (2025-08-04)
 
 
