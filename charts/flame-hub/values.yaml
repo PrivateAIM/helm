@@ -4,23 +4,67 @@ global:
     redis:
         password: "start123"
 
-    hub:
-        ssl: false
-        hostname: "localhost"
+    flameHub:
+        ingress:
+            enabled: true
+            ssl: false
+            hostname: "localhost"
 
-ingress:
-    enabled: true
+image:
+    registry: ghcr.io
+    repository: privateaim/hub
+    tag: latest
+
+# internal services
+clientUI:
+    cookieDomain: ""
+    ingress:
+        enabled: false
+        hostname: ""
+        path: "/"
+        pathType: "Prefix"
+
+authup:
+    ingress:
+        enabled: false
+        hostname: ""
+        ssl: false
+
+serverCore:
+    ingress:
+        ssl: false
+        enabled: false
+        hostname: ""
+        path: "/"
+        pathType: "Prefix"
+    env:
+        masterImagesBranch: ""
+
+serverMessenger:
+    ingress:
+        ssl: false
+        enabled: false
+        hostname: ""
+        path: "/"
+        pathType: "Prefix"
+
+serverStorage:
+    ingress:
+        ssl: false
+        enabled: false
+        hostname: ""
+        path: "/"
+        pathType: "Prefix"
+
+serverTelemetry:
+    ingress:
+        ssl: false
+        enabled: false
+        hostname: ""
+        path: "/"
+        pathType: "Prefix"
 
 ## services
-
-services:
-    vault: true
-    rabbitmq: true
-    minio: true
-    monitoring: true
-    mysql: true
-    redis: true
-
 vault:
     server:
         enabled: true
@@ -63,3 +107,76 @@ mysql:
             size: 16Gi
     architecture: "replication"
 
+grafana:
+    nameOverride: "grafana"
+    image:
+        pullPolicy: "Always"
+    admin:
+        password: "start123"
+    dashboardsProvider:
+        enabled: true
+    datasources:
+        secretName: grafana-datasources
+    config:
+        useGrafanaIniFile: true
+        grafanaIniConfigMap: grafana
+
+grafana-loki:
+    nameOverride: "loki"
+    image:
+        pullPolicy: "Always"
+    loki:
+        overrideConfiguration:
+            limits_config:
+                deletion_mode: "filter-and-delete"
+
+prometheus:
+    nameOverride: "prometheus"
+    alertmanager:
+        service:
+            type: ClusterIP
+    server:
+        replicaCount: 2
+        service:
+            type: ClusterIP
+            ports:
+                http: 9090
+        image:
+            pullPolicy: "Always"
+        configuration: |
+            scrape_configs:
+              - job_name: flame-hub-server-core
+                static_configs:
+                  - targets: ["{{ .Release.Name }}-flame-hub-server-core:3000"]
+              - job_name: flame-hub-server-messenger
+                static_configs:
+                  - targets: ["{{ .Release.Name }}-flame-hub-server-messenger:3000"]
+              - job_name: flame-hub-server-storage
+                static_configs:
+                  - targets: ["{{ .Release.Name }}-flame-hub-server-storage:3000"]
+              - job_name: flame-hub-server-telemetry
+                static_configs:
+                  - targets: ["{{ .Release.Name }}-flame-hub-server-telemetry:3000"]
+              - job_name: authup-server-core
+                static_configs:
+                  - targets: ["{{ .Release.Name }}-authup-server-core:3000"]
+
+harbor:
+    enabled: false
+    nameOverride: "harbor"
+    adminPassword: "start123"
+    exposureType: "ingress"
+    externalURL: http://localhost
+    migration:
+        enabled: true
+    ingress:
+        core:
+            hostname: "localhost"
+            tls: true
+            selfSigned: true
+            # secrets:
+            #  - name <domain>-tls
+            #    certificate: |
+            #        ...
+            #    key: |
+            #       ...
