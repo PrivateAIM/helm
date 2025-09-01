@@ -57,7 +57,7 @@ spec:
         - name: "{{ .Release.Name }}-flame-hub-server-core"
           image: {{ include "flameHub.image" . | trim | quote }}
           args: ["core", "cli", "start"]
-          imagePullPolicy: Always
+          imagePullPolicy: {{ .Values.image.pullPolicy | trim | quote }}
           ports:
             - containerPort: 3000
               protocol: TCP
