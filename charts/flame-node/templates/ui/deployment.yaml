@@ -14,7 +14,6 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/secrets: {{ include (print $.Template.BasePath "/ui/secret.yaml") . | sha256sum }}
         {{- with .Values.ui.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
@@ -56,15 +55,17 @@ spec:
               value: {{ include "ui.adapter.endpoint" . }}
             - name: NUXT_PUBLIC_ORIGIN
               value: {{ printf "%s/flame/api/auth" (include "node.ingress.hostname" .) }}
-            - name: NUXT_PUBLIC_KEYCLOAK_BASE_URL
+            - name: NUXT_PUBLIC_IDP_PROVIDER
+              value: {{ .Values.userIdp.provider | default "keycloak" | quote }}
+            - name: NUXT_PUBLIC_IDP_ISSUER
               value: {{ include "ui.userIdp.endpoint" . }}
-            - name: NUXT_KEYCLOAK_CLIENT_ID
+            - name: NUXT_IDP_CLIENT_ID
               value: {{ .Values.ui.idp.clientId | default "node-ui" | quote }}
-            {{ if or (contains "localhost" (include "ui.userIdp.endpoint" .)) .Values.offline }}
-            - name: NUXT_K8S_KEYCLOAK_ENDPOINT
+            {{ if or (contains "localhost" (include "ui.userIdp.endpoint" .)) .Values.userIdp.hostname .Values.offline }}
+            - name: NUXT_PUBLIC_INTERNAL_KEYCLOAK_URL
               value: {{ include "keycloak.service.endpoint" . }}
             {{ end }}
-            - name: NUXT_KEYCLOAK_CLIENT_SECRET
+            - name: NUXT_IDP_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
                   name: {{ include "ui.keycloak.secretName" . }}

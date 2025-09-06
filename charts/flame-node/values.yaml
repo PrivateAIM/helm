@@ -1,4 +1,3 @@
-# Global values
 global:
   node:
     ingress:
@@ -18,12 +17,21 @@ userIdp:
   ## @param userIdp.hostname Hostname for a separate IDP to manage users who can access the FLAME Node UI.
   ## Leave this blank unless you want to use your own IDP
   hostname:
+  ## @param userIdp.provider User auth provider. Can be 'keycloak', 'auth0', 'authentik', 'onelogin', 'okta', or 'zitadel'
+  provider: keycloak
 
 ## @param proxy Proxy URLs pertaining to `HTTP_PROXY`, `HTTPS_PROXY` and `NO_PROXY` environment variables
 proxy:
   httpProxy:
   httpsProxy:
   noProxy:
+
+# Headless service configuration
+headless:
+  ## @param headless.enabled Enable headless service for the Hub Adapter
+  enabled: false
+  ## @param headless.interval How often (in seconds) the Hub Adapter will probe the Hub for new analyses
+  interval: 60
 
 ## For defining ingress specific metadata
 ingress:
@@ -34,7 +42,6 @@ ingress:
   ## You should generally use global.node.ingress.hostname instead
   hostname: ""
   ## @param ingress.pathType Ingress path type
-  ##
   pathType: ImplementationSpecific
   ## @param ingress.path Default file path for the ingress hostname
   path: /
@@ -145,7 +152,7 @@ resultService:
     # Overrides the image tag whose default is the chart appVersion.
     tag: 0.1.3
     # This sets the pull policy for images.
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
 
   # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
   imagePullSecrets: [ ]
@@ -217,47 +224,96 @@ resultService:
   tolerations: [ ]
   affinity: { }
 
-# keycloak values
-keycloak:
-  ## @param keycloak.enabled Whether to deploy the bundled Keycloak instance
+# keycloakx values
+keycloakx:
+  ## @param keycloakx.enabled Whether to deploy the bundled Keycloak instance
   enabled: true
+  nameOverride: keycloak  # Otherwise uses "keycloakx", this keeps it backwards compatible
 
-  ## @param keycloak.httpRelativePath [string] Default (sub)path for the ingress record (evaluated as template)
-  ##
-  httpRelativePath: "/keycloak/"
+  http:
+    relativePath: /keycloak
 
-  auth:
-    adminUser: admin
-    adminPassword: admin
+  command: 
+   - "/opt/keycloak/bin/kc.sh"
+   - "start-dev"
+   - "--import-realm"
+
+  cache:
+    stack: "custom"  # Current default (kubernetes) is deprecated, setting to 'custom' leaves it unset and will go to 'jdbc-ping'
+
+  dbchecker:
+    enabled: true
+  
+  database:
+    vendor: postgres
+    hostname: flame-node-postgresql  # Fullname override defined in .Values.postgresql.fullnameOverride
+    port: 5432
+
+  # Additional environment variables for Keycloak
+  extraEnv: |
+    - name: KC_HOSTNAME
+      value: '{{ printf "%s%s" (tpl .Values.global.node.ingress.hostname $ | trimSuffix "/") .Values.http.relativePath }}'
+    - name: JAVA_OPTS_APPEND
+      value: >-
+        -Djgroups.dns.query={{ include "keycloak.fullname" . }}-headless
+    - name: KC_DB_URL_DATABASE
+      valueFrom:
+        secretKeyRef:
+          name: postgres-credentials-secret
+          key: DB_DATABASE
+    - name: KC_DB_USERNAME
+      valueFrom:
+        secretKeyRef:
+          name: postgres-credentials-secret
+          key: DB_USER
+    - name: KC_DB_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: postgres-credentials-secret
+          key: DB_PASSWORD
+
+  extraVolumes: |
+    - name: flame-realm-json
+      configMap:
+        name: flame-default-realm
+
+  extraVolumeMounts: |
+    - name: flame-realm-json
+      mountPath: "/opt/keycloak/data/import"
+      readOnly: true
+
+  extraEnvFrom: |
+    - secretRef:
+        name: flame-keycloak-credentials-secret
 
   ingress:
-    ## @param keycloak.ingress.enabled Enable ingress record generation for Keycloak
-    ##
-    enabled: false
-    ## @param keycloak.ingress.hostname Default host for the ingress record
-    ##
-    hostname: ""
-
-  ## @param keycloak.proxyHeaders Set Keycloak proxy headers to "forwarded" or "xforwarded"
-  ## If you are using a reverse proxy for anything other than https passthrough, then this needs to be set else 403
-  proxyHeaders: ""
-
-  postgresql:
     enabled: true
-    nameOverride: keycloak-postgresql
-    auth:
-      postgresPassword: # Not needed since secret is provided
-      username: keycloak # custom user
-      password: keycloak # custom user pwd
-      database: keycloak
-      existingSecret: kc-password-secret # admin password, requires "password" key in secret
-    architecture: standalone
+    rules:
+      -
+        # Ingress host
+        host: '{{ regexReplaceAll "^https?://(.*)" (tpl .Values.global.node.ingress.hostname $) "${1}" | trimSuffix "/" }}'
+        paths:
+          - path: '{{ tpl .Values.http.relativePath $ | trimSuffix "/" }}/'
+            pathType: ImplementationSpecific
+    
+    # TLS configuration
+    tls: []  # Must be set to empty if no TLS present otherwise will initialize with default example host
+    
+    console:
+      # If `true`, an Ingress is created for console path only
+      enabled: true
+      rules:
+        -
+          # Ingress host
+          host: '{{ regexReplaceAll "^https?://(.*)" (tpl .Values.global.node.ingress.hostname $) "${1}" | trimSuffix "/" }}'
+          paths:
+            - path: '{{ tpl .Values.http.relativePath $ | trimSuffix "/" }}/admin'
+              pathType: ImplementationSpecific
 
-  keycloakConfigCli:
-    ## @param keycloakConfigCli.enabled Whether to enable keycloak-config-cli job
-    ## Must be set to true to apply settings below
-    enabled: true
-    existingConfigmap: flame-default-realm
+      # Console TLS configuration KlpndHhf8K0Aj2R7JmNlSE2a7XJcSKPV
+      tls: []
+
+    
 
 # hub-api-adapter Values
 hubAdapter:
@@ -299,9 +355,9 @@ hubAdapter:
   image:
     repository: ghcr.io/privateaim/node-hub-api-adapter
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.2.9
+    tag: 0.2.11
     # This sets the pull policy for images.
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
 
   # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
   imagePullSecrets: []
@@ -377,6 +433,7 @@ podOrchestrator:
     NODE_NAME: flame
     NODE_KEY:
     NODE_KEY_PW:
+    NODE_PW:
 
     HARBOR_URL: dev-harbor.personalhealthtrain.de
     HARBOR_PW: test
@@ -520,7 +577,7 @@ messageBroker:
     # Overrides the image tag whose default is the chart appVersion.
     tag: 0.5.0
     # This sets the pull policy for images.
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
 
   # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
   imagePullSecrets: [ ]
@@ -614,9 +671,9 @@ ui:
   image:
     repository: ghcr.io/privateaim/node-ui
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.2.15
+    tag: 0.2.18
     # This sets the pull policy for images.
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
 
   # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
   imagePullSecrets: []
@@ -728,29 +785,96 @@ flame-node-data-store:
 
 postgresql:
   nameOverride:
-  fullnameOverride:
-  auth:
-    ## @param auth.enablePostgresUser Assign a password to the "postgres" admin user. Otherwise, remote access will be blocked for this user
-    ##
-    enablePostgresUser: true
-    ## @param auth.postgresPassword Password for the "postgres" admin user. Ignored if `auth.existingSecret` is provided
-    ##
-    postgresPassword: admin
-    username: postgres
-    password: postgres
-    database: postgres_db
-    existingSecret:
-    ## @param auth.secretKeys.adminPasswordKey Name of key in existing secret to use for PostgreSQL credentials. Only used when `auth.existingSecret` is set.
-    ## @param auth.secretKeys.userPasswordKey Name of key in existing secret to use for PostgreSQL credentials. Only used when `auth.existingSecret` is set.
-    ## @param auth.secretKeys.replicationPasswordKey Name of key in existing secret to use for PostgreSQL credentials. Only used when `auth.existingSecret` is set.
-    ##
-    secretKeys:
-      adminPasswordKey: postgres-password
-      userPasswordKey: password
-      replicationPasswordKey: replication-password
-    ## @param auth.usePasswordFiles Mount credentials as a files instead of using an environment variable
-    ##
-    usePasswordFiles: false
+  fullnameOverride: flame-node-postgresql  # Required so keycloak can enable database checker
+
+  ## Optional service account
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: false
+
+  ## Pod management policy
+  podManagementPolicy: OrderedReady
+
+  ## Pod update strategy
+  updateStrategyType: RollingUpdate
+
+  ## The postgres service configuration (Default is ClusterIP with port 5432)
+  service:
+    type: ClusterIP
+    port: 5432
+
+  resources: {}
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+
+  ## Use Kubernetes Deployment instead of StatefulSet
+  useDeployment: false
+
+  ## Database configuration
+  settings:
+    ## Optional existing secret for the Postgres superuser
+    existingSecret: postgres-credentials-secret
+
+    ## The default postgres superuser (default when nothing is set: "postgres")
+    superuser:
+    #  secretKey:
+    #  value:
+
+    ## The superuser password
+    superuserPassword:
+     secretKey: superPassword
+    #  value:
+
+    ## Postgres database authentication method
+    ## For example: "md5"
+    authMethod:
+
+    ## Optional init database arguments
+    ## For example: "--auth-local=md5"
+    initDbArgs:
+
+  ## Optional user database which is created during first startup with user and password
+  userDatabase:
+    ## Optional existing secret with database name, user and password
+    existingSecret: postgres-credentials-secret
+    ## Name of the user database
+    name:
+    ##  Use secretKey when existingSecret was specified otherwise value
+      secretKey: DB_DATABASE
+      # value:
+    ## Database user with full access rights
+    ##  Use secretKey when existingSecret was specified otherwise value
+    user:
+      secretKey: DB_USER
+      # value:
+    ## Password of the database user
+    ##  Use secretKey when existingSecret was specified otherwise value
+    password:
+      secretKey: DB_PASSWORD
+      # value:
+
+  ## Storage parameters
+  storage:
+
+    ## Internal volume name and prefix of a created PVC
+    volumeName: "postgres-data"
+
+    ## Alternative set requestedSize to define a size for a dynmaically created PVC
+    requestedSize: 8Gi
+
+    ## the storage class name
+    className:
+
+    ## Default access mode (ReadWriteOnce)
+    accessModes:
+      - ReadWriteOnce
+
+    ## Keep a created Persistent volume claim when uninstalling the helm chart (only for option useDeployment: true)
+    keepPvc: false
 
 minio:
   # All possible values can be found at https://github.com/minio/minio/blob/master/helm/minio/values.yaml
@@ -872,15 +996,17 @@ minio:
     size: 10Gi
 
 node-message-broker-db:
-  global:
-    defaultStorageClass: ""
-  architecture: "standalone"
-  useStatefulSet: true
-  replicaCount: 1
+  ## Pull secrets and name override options
+  imagePullSecrets: []
+  nameOverride: ""
+  fullnameOverride: ""
 
-  auth:
-    enabled: false
+  ## Optional service account
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: false
 
+  ## Resource limits and requests
   resources:
     requests:
       memory: 256Mi
@@ -888,12 +1014,23 @@ node-message-broker-db:
     limits:
       memory: 1Gi
 
-  persistence:
-    size: 100Mi
-    storageClass: ""
+  ## Use Kubernetes Deployment instead of StatefulSet when in Non-HA mode
+  useDeploymentWhenNonHA: false
 
-  serviceAccount:
-    create: false
+  settings:
+    ## The root username
+    rootUsername:
+    ## The root user password
+    rootPassword:
 
-  networkPolicy:
-    enabled: false
+  ## Optional user database which is created during first startup with user and password
+  userDatabase:
+    ## Name of the user database
+    name: messagebroker
+
+  storage:
+    ## Internal volume name and prefix of a created PVC
+    volumeName: "mongodb-volume"
+
+    ## Alternative set requestedSize to define a size for a dynamically created PVC
+    requestedSize: 100Mi

@@ -55,11 +55,20 @@ spec:
             - name: POSTGRES__HOST
               value: {{ include "postgresql.endpoint" . }}
             - name: POSTGRES__DB
-              value: {{ .Values.postgresql.auth.database }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "postgresql.user.secretName" . }}
+                  key: DB_DATABASE
             - name: POSTGRES__USER
-              value: {{ .Values.postgresql.auth.username }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "postgresql.user.secretName" . }}
+                  key: DB_USER
             - name: POSTGRES__PASSWORD
-              value: postgres
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "postgresql.user.secretName" . }}
+                  key: DB_PASSWORD
           {{- if .Values.proxy.httpProxy }}
             - name: PROXY__HTTP_URL
               value: {{ .Values.proxy.httpProxy }}
