@@ -4,7 +4,7 @@
 Certificate authority config map name
 */}}
 {{- define "tls.configMapName" -}}
-{{- $configMapName := .Values.tls.certificateConfigMap -}}
+{{- $configMapName := .Values.certificateConfigMap -}}
 {{- if $configMapName -}}
     {{- printf "%s" (tpl $configMapName $) -}}
 {{- else -}}

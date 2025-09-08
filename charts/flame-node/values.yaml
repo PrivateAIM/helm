@@ -52,12 +52,12 @@ ingress:
   # @param ingress.tlsSecretName Specify a tls secret to enable TLS for the given hostname
   tlsSecretName: ""
 
-## TLS configuration
-##
-tls:
-  ## @param tls.certificateConfigMap Name of an existing ConfigMap that contains additional CA certificates
-  ## The ConfigMap should contain a value called "certs.pem" which is a single PEM file with all the certificates concatenated
-  certificateConfigMap: ""
+## Add Custom CA certificate(s)
+## @param certificateConfigMap Name of an existing ConfigMap that contains additional CA certificates
+## The ConfigMap should contain a value called "certs.pem" which is a single PEM file with all the certificates concatenated
+## Alternatively, you can provide your own CA bundle in the "./certs/" directory and it will be included in the chart, preferably in one concatenated PEM file
+## Certificates must be in proper order, where the top certificate is the leaf and the bottom certificate is the top-most intermediate CA.
+certificateConfigMap: ""
 
 ## Hub services and data
 hub:
