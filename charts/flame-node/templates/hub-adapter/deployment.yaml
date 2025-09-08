@@ -1,3 +1,4 @@
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -77,7 +78,7 @@ spec:
             - name: HEADLESS_INTERVAL
               value: {{ .Values.headless.interval | default "60" | quote }}
             - name: EXTRA_CA_CERTS
-              value: ""
+              value: "/mnt/certs/certs.pem"
             - name: HUB_ROBOT_USER
               value: {{ required "A robot ID for the Hub is required." .Values.hub.auth.robotUser | quote }}  # To be properly filled in
             - name: HUB_ROBOT_SECRET
@@ -99,12 +100,29 @@ spec:
           resources:
             {{- toYaml .Values.hubAdapter.resources | nindent 12 }}
           volumeMounts:
-            {{- toYaml .Values.hubAdapter.volumeMounts | nindent 12 }}
+            - mountPath: "/mnt/certs/certs.pem"
+              name: additional-certs
+              subPath: "certs.pem"
+              readOnly: true
+            {{- with .Values.hubAdapter.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
       volumes:
-        {{- toYaml .Values.hubAdapter.volumes | nindent 8 }}
+        - name: additional-certs
+          configMap:
+            name: {{ include "tls.configMapName" . }}
+        {{- with .Values.hubAdapter.volumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.hubAdapter.nodeSelector }}
       nodeSelector:
-        {{- toYaml .Values.hubAdapter.nodeSelector | nindent 8 }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.hubAdapter.affinity }}
       affinity:
-        {{- toYaml .Values.hubAdapter.affinity | nindent 8 }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.hubAdapter.tolerations }}
       tolerations:
-        {{- toYaml .Values.hubAdapter.tolerations | nindent 8 }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

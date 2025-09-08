@@ -86,6 +86,8 @@ spec:
               value: "/opt/message-broker/crypto/private_key.pem"
             - name: SERVER_PORT
               value: "8080"
+            - name: NODE_EXTRA_CA_CERTS
+              value: "/mnt/certs/certs.pem"
             {{- with .Values.messageBroker.env }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
@@ -103,6 +105,10 @@ spec:
             - mountPath: "/opt/message-broker/crypto/private_key.pem"
               name: "crypto"
               subPath: "private_key.pem"
+              readOnly: true
+            - mountPath: "/mnt/certs/certs.pem"
+              name: additional-certs
+              subPath: "certs.pem"
               readOnly: true
             - mountPath: "/opt/message-broker/auth/robot_secret.txt"
               name: "auth"
@@ -124,6 +130,9 @@ spec:
             items:
               - key: "private_key.pem"
                 path: "private_key.pem"
+        - name: additional-certs
+          configMap:
+            name: {{ include "tls.configMapName" . }}
         - name: auth
           secret:
             secretName: {{ include "hub.secretName" . }}

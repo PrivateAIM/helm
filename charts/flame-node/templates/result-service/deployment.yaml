@@ -38,13 +38,6 @@ spec:
           ports:
             - containerPort: 8080
               name: http-result-srv
-          volumeMounts:
-            - name: crypto
-              mountPath: /etc/crypto
-              readOnly: true
-            {{- with .Values.resultService.volumeMounts }}
-            {{- toYaml . | nindent 12 }}
-            {{- end }}
           env:
             - name: CRYPTO__PROVIDER
               value: file
@@ -110,6 +103,8 @@ spec:
             # ignored. You will still need to set this variable for the service to start up correctly.
             - name: OIDC__SKIP_JWT_VALIDATION
               value: "0"
+            - name: EXTRA_CA_CERTS
+              value: "/mnt/certs/certs.pem"
             {{- with .Values.resultService.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
@@ -123,10 +118,24 @@ spec:
           {{- end }}
           resources:
             {{- toYaml .Values.resultService.resources | nindent 12 }}
+          volumeMounts:
+            - name: crypto
+              mountPath: /etc/crypto
+              readOnly: true
+            - mountPath: "/mnt/certs/certs.pem"
+              name: additional-certs
+              subPath: "certs.pem"
+              readOnly: true
+            {{- with .Values.resultService.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
       volumes:
         - name: crypto
           secret:
             secretName: {{ include "hub.crypto.privateKeySecretName" . }}
+        - name: additional-certs
+          configMap:
+            name: {{ include "tls.configMapName" . }}
         {{- with .Values.resultService.volumes }}
         {{- toYaml . | nindent 8 }}
         {{- end }}

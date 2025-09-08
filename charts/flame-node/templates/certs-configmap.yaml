@@ -1,0 +1,11 @@
+{{- if not .Values.tls.certificateConfigMap }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-additional-certs
+data:
+  certs.pem: |
+{{- range $path, $_ :=  .Files.Glob  "certs/**.pem" }}
+{{ $.Files.Get $path | toString | trim | indent 4 -}}
+{{- end }}
+{{- end }}

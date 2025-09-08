@@ -120,6 +120,8 @@ spec:
               value: {{ .Values.podOrchestrator.env.NODE_PW}}
             - name: NODE_KEY_PW
               value: {{ .Values.podOrchestrator.env.NODE_KEY_PW}}
+            - name: EXTRA_CA_CERTS
+              value: "/mnt/certs/certs.pem"
             {{- with .Values.podOrchestrator.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
@@ -134,9 +136,20 @@ spec:
           resources:
             {{- toYaml .Values.podOrchestrator.resources | nindent 12 }}
           volumeMounts:
-            {{- toYaml .Values.podOrchestrator.volumeMounts | nindent 12 }}
+            - mountPath: "/mnt/certs/certs.pem"
+              name: additional-certs
+              subPath: "certs.pem"
+              readOnly: true
+            {{- with .Values.podOrchestrator.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
       volumes:
-        {{- toYaml .Values.podOrchestrator.volumes | nindent 8 }}
+        - name: additional-certs
+          configMap:
+            name: {{ include "tls.configMapName" . }}
+        {{- with .Values.podOrchestrator.volumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       nodeSelector:
         {{- toYaml .Values.podOrchestrator.nodeSelector | nindent 8 }}
       affinity:

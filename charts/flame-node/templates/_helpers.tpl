@@ -1,6 +1,18 @@
 {{/*Global Helpers*/}}
 
 {{/*
+Certificate authority config map name
+*/}}
+{{- define "tls.configMapName" -}}
+{{- $configMapName := .Values.tls.certificateConfigMap -}}
+{{- if $configMapName -}}
+    {{- printf "%s" (tpl $configMapName $) -}}
+{{- else -}}
+    {{- printf "%s-additional-certs" .Release.Name -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Set the hostname of the Node UI. Assumes if global ingress enabled then global hostname is supplied
 */}}
 {{- define "node.ingress.hostname" -}}

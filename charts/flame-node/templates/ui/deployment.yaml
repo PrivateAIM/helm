@@ -72,6 +72,8 @@ spec:
                   key: {{ include "ui.keycloak.secretKey" . }}
             - name: NUXT_AUTH_SECRET
               value: {{ randAlphaNum 32 | b64enc }}
+            - name: NODE_EXTRA_CA_CERTS
+              value: "/mnt/certs/certs.pem"
             {{- with .Values.ui.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
@@ -86,9 +88,20 @@ spec:
           resources:
             {{- toYaml .Values.ui.resources | nindent 12 }}
           volumeMounts:
-            {{- toYaml .Values.ui.volumeMounts | nindent 12 }}
+            - mountPath: "/mnt/certs/certs.pem"
+              name: additional-certs
+              subPath: "certs.pem"
+              readOnly: true
+            {{- with .Values.ui.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
       volumes:
-        {{- toYaml .Values.ui.volumes | nindent 8 }}
+        - name: additional-certs
+          configMap:
+            name: {{ include "tls.configMapName" . }}
+        {{- with .Values.ui.volumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       nodeSelector:
         {{- toYaml .Values.ui.nodeSelector | nindent 8 }}
       affinity:
