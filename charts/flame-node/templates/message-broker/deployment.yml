@@ -86,7 +86,7 @@ spec:
               value: "/opt/message-broker/crypto/private_key.pem"
             - name: SERVER_PORT
               value: "8080"
-            - name: NODE_EXTRA_CA_CERTS
+            - name: SECURITY_ADDITIONAL_TRUSTED_CERTS_FILE
               value: "/mnt/certs/certs.pem"
             {{- with .Values.messageBroker.env }}
             {{- toYaml . | nindent 12 }}
