@@ -59,7 +59,7 @@ ingress:
 ##       kubectl create configmap CONFIGMAP_NAME --from-file=./certs.pem
 ## Alternatively, you can provide your own CA bundle in the "./certs/" directory of this helm chart and it will be included in the chart, preferably in one concatenated PEM file
 ## Certificates must be in proper order, where the top certificate is the leaf and the bottom certificate is the top-most intermediate CA.
-certificateConfigMap: "fake-cert"
+certificateConfigMap: ""
 
 ## Hub services and data
 hub:

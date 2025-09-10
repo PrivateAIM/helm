@@ -232,10 +232,10 @@ Set the API's root path. If ingress is enabled, defaults to "/api" else remains 
 Return the endpoint for user authentication
 */}}
 {{- define "adapter.userIdp.endpoint" -}}
-{{- if (include "userIdp.hostname" .) -}}
+{{- if .Values.userIdp.hostname -}}
     {{- print (include "userIdp.hostname" .) -}}
 {{- else -}}
-    {{- printf "http://%s-keycloak-http:80/keycloak/realms/flame" .Release.Name -}}
+    {{- print (include "keycloak.service.endpoint" .) -}}
 {{- end -}}
 {{- end -}}
 
