@@ -52,6 +52,15 @@ ingress:
   # @param ingress.tlsSecretName Specify a tls secret to enable TLS for the given hostname
   tlsSecretName: ""
 
+## Add Custom CA certificate(s)
+## @param certificateConfigMap Name of an existing ConfigMap that contains additional CA certificates
+## The ConfigMap should contain a value called "certs.pem" which is a single PEM file with all the certificates concatenated
+## You can create a configmap using the command below (file MUST be named certs.pem):
+##       kubectl create configmap CONFIGMAP_NAME --from-file=./certs.pem
+## Alternatively, you can provide your own CA bundle in the "./certs/" directory of this helm chart and it will be included in the chart, preferably in one concatenated PEM file
+## Certificates must be in proper order, where the top certificate is the leaf and the bottom certificate is the top-most intermediate CA.
+certificateConfigMap: ""
+
 ## Hub services and data
 hub:
   endpoints:
@@ -150,7 +159,7 @@ resultService:
   image:
     repository: ghcr.io/privateaim/node-result-service
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.1.3
+    tag: 0.1.4
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -355,7 +364,7 @@ hubAdapter:
   image:
     repository: ghcr.io/privateaim/node-hub-api-adapter
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.2.11
+    tag: 0.2.12
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -459,9 +468,9 @@ podOrchestrator:
   image:
     repository: ghcr.io/privateaim/node-pod-orchestration
     # Overrides the image tag whose default is the chart appVersion.
-    tag: latest
+    tag: sha-93c4bfd
     # This sets the pull policy for images.
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
 
   # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
   imagePullSecrets: []
@@ -535,7 +544,7 @@ podOrchestrator:
       # Overrides the image tag whose default is the chart appVersion.
       tag: 1.37
       # This sets the pull policy for images.
-      pullPolicy: Always
+      pullPolicy: IfNotPresent
 
     securityContext:
       runAsNonRoot: true
@@ -671,7 +680,7 @@ ui:
   image:
     repository: ghcr.io/privateaim/node-ui
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.2.18
+    tag: 0.2.19
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 

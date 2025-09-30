@@ -1,3 +1,4 @@
+{{- $hasCerts := include "tls.hasCerts" . -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -68,6 +69,8 @@ spec:
               value: {{ printf "http://%s-po-service.%s.svc.cluster.local:8000" .Release.Name .Release.Namespace }}
             - name: KONG_ADMIN_SERVICE_URL
               value: {{ printf "http://%s-kong-admin.%s.svc.cluster.local:80" .Release.Name .Release.Namespace }}
+            - name: KONG_PROXY_SERVICE_URL
+              value: {{ printf "http://%s-kong-proxy.%s.svc.cluster.local:80" .Release.Name .Release.Namespace }}
             - name: HUB_SERVICE_URL
               value: {{ .Values.hub.endpoints.core | default "https://core.privateaim.dev" | quote }}
             - name: HUB_AUTH_SERVICE_URL
@@ -76,8 +79,10 @@ spec:
               value: {{ .Values.headless.enabled | default "false" | quote }}
             - name: HEADLESS_INTERVAL
               value: {{ .Values.headless.interval | default "60" | quote }}
+            {{- if $hasCerts }}
             - name: EXTRA_CA_CERTS
-              value: ""
+              value: "/mnt/certs/certs.pem"
+            {{- end }}
             - name: HUB_ROBOT_USER
               value: {{ required "A robot ID for the Hub is required." .Values.hub.auth.robotUser | quote }}  # To be properly filled in
             - name: HUB_ROBOT_SECRET
@@ -99,12 +104,33 @@ spec:
           resources:
             {{- toYaml .Values.hubAdapter.resources | nindent 12 }}
           volumeMounts:
-            {{- toYaml .Values.hubAdapter.volumeMounts | nindent 12 }}
+            {{- if $hasCerts }}
+            - mountPath: "/mnt/certs/certs.pem"
+              name: additional-certs
+              subPath: "certs.pem"
+              readOnly: true
+            {{- end }}
+            {{- with .Values.hubAdapter.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
       volumes:
-        {{- toYaml .Values.hubAdapter.volumes | nindent 8 }}
+        {{- if $hasCerts }}
+        - name: additional-certs
+          configMap:
+            name: {{ include "tls.configMapName" . }}
+        {{- end }}
+        {{- with .Values.hubAdapter.volumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.hubAdapter.nodeSelector }}
       nodeSelector:
-        {{- toYaml .Values.hubAdapter.nodeSelector | nindent 8 }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.hubAdapter.affinity }}
       affinity:
-        {{- toYaml .Values.hubAdapter.affinity | nindent 8 }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.hubAdapter.tolerations }}
       tolerations:
-        {{- toYaml .Values.hubAdapter.tolerations | nindent 8 }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

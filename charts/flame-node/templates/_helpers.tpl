@@ -1,6 +1,29 @@
 {{/*Global Helpers*/}}
 
 {{/*
+Certificate authority config map name
+*/}}
+{{- define "tls.configMapName" -}}
+{{- $configMapName := .Values.certificateConfigMap -}}
+{{- if $configMapName -}}
+    {{- printf "%s" (tpl $configMapName $) -}}
+{{- else -}}
+    {{- printf "%s-additional-certs" .Release.Name -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return whether there are any certificates provided either via config map or files. 
+Returns either "true" or empty string
+*/}}
+{{- define "tls.hasCerts" -}}
+{{- $certFiles := .Files.Glob "certs/**.pem" -}}
+{{- if or .Values.certificateConfigMap (gt (len $certFiles) 0) -}}
+true
+{{- end -}}
+{{- end -}}
+
+{{/*
 Set the hostname of the Node UI. Assumes if global ingress enabled then global hostname is supplied
 */}}
 {{- define "node.ingress.hostname" -}}
@@ -220,10 +243,10 @@ Set the API's root path. If ingress is enabled, defaults to "/api" else remains 
 Return the endpoint for user authentication
 */}}
 {{- define "adapter.userIdp.endpoint" -}}
-{{- if (include "userIdp.hostname" .) -}}
+{{- if .Values.userIdp.hostname -}}
     {{- print (include "userIdp.hostname" .) -}}
 {{- else -}}
-    {{- printf "http://%s-keycloak-http:80/keycloak/realms/flame" .Release.Name -}}
+    {{- print (include "keycloak.service.endpoint" .) -}}
 {{- end -}}
 {{- end -}}
 

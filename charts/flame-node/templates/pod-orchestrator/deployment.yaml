@@ -1,14 +1,17 @@
+{{- $hasCerts := include "tls.hasCerts" . -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Release.Name }}-po
+  labels:
+    component: flame-po
 spec:
-  replicas: {{ .Values.podOrchestrator.replicaCount }}
   selector:
     matchLabels:
       component: flame-po
       version: {{ .Chart.AppVersion }}
       deployment-id:  {{ .Release.Name }}
+  replicas: {{ .Values.hubAdapter.replicaCount }}
   template:
     metadata:
       annotations:
@@ -120,6 +123,10 @@ spec:
               value: {{ .Values.podOrchestrator.env.NODE_PW}}
             - name: NODE_KEY_PW
               value: {{ .Values.podOrchestrator.env.NODE_KEY_PW}}
+            {{- if $hasCerts }}
+            - name: EXTRA_CA_CERTS
+              value: "/mnt/certs/certs.pem"
+            {{- end }}
             {{- with .Values.podOrchestrator.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
@@ -134,9 +141,24 @@ spec:
           resources:
             {{- toYaml .Values.podOrchestrator.resources | nindent 12 }}
           volumeMounts:
-            {{- toYaml .Values.podOrchestrator.volumeMounts | nindent 12 }}
+            {{- if $hasCerts }}
+            - mountPath: "/mnt/certs/certs.pem"
+              name: additional-certs
+              subPath: "certs.pem"
+              readOnly: true
+            {{- end }}
+            {{- with .Values.podOrchestrator.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
       volumes:
-        {{- toYaml .Values.podOrchestrator.volumes | nindent 8 }}
+        {{- if $hasCerts }}
+        - name: additional-certs
+          configMap:
+            name: {{ include "tls.configMapName" . }}
+        {{- end }}
+        {{- with .Values.podOrchestrator.volumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       nodeSelector:
         {{- toYaml .Values.podOrchestrator.nodeSelector | nindent 8 }}
       affinity:
