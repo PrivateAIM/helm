@@ -1,3 +1,4 @@
+{{- $hasCerts := include "tls.hasCerts" . -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -78,8 +79,10 @@ spec:
               value: {{ .Values.headless.enabled | default "false" | quote }}
             - name: HEADLESS_INTERVAL
               value: {{ .Values.headless.interval | default "60" | quote }}
+            {{- if $hasCerts }}
             - name: EXTRA_CA_CERTS
               value: "/mnt/certs/certs.pem"
+            {{- end }}
             - name: HUB_ROBOT_USER
               value: {{ required "A robot ID for the Hub is required." .Values.hub.auth.robotUser | quote }}  # To be properly filled in
             - name: HUB_ROBOT_SECRET
@@ -101,17 +104,21 @@ spec:
           resources:
             {{- toYaml .Values.hubAdapter.resources | nindent 12 }}
           volumeMounts:
+            {{- if $hasCerts }}
             - mountPath: "/mnt/certs/certs.pem"
               name: additional-certs
               subPath: "certs.pem"
               readOnly: true
+            {{- end }}
             {{- with .Values.hubAdapter.volumeMounts }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
       volumes:
+        {{- if $hasCerts }}
         - name: additional-certs
           configMap:
             name: {{ include "tls.configMapName" . }}
+        {{- end }}
         {{- with .Values.hubAdapter.volumes }}
         {{- toYaml . | nindent 8 }}
         {{- end }}

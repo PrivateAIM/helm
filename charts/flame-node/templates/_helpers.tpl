@@ -13,6 +13,17 @@ Certificate authority config map name
 {{- end -}}
 
 {{/*
+Return whether there are any certificates provided either via config map or files. 
+Returns either "true" or empty string
+*/}}
+{{- define "tls.hasCerts" -}}
+{{- $certFiles := .Files.Glob "certs/**.pem" -}}
+{{- if or .Values.certificateConfigMap (gt (len $certFiles) 0) -}}
+true
+{{- end -}}
+{{- end -}}
+
+{{/*
 Set the hostname of the Node UI. Assumes if global ingress enabled then global hostname is supplied
 */}}
 {{- define "node.ingress.hostname" -}}

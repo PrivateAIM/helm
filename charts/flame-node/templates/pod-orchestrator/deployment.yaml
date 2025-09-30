@@ -1,3 +1,4 @@
+{{- $hasCerts := include "tls.hasCerts" . -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -122,8 +123,10 @@ spec:
               value: {{ .Values.podOrchestrator.env.NODE_PW}}
             - name: NODE_KEY_PW
               value: {{ .Values.podOrchestrator.env.NODE_KEY_PW}}
+            {{- if $hasCerts }}
             - name: EXTRA_CA_CERTS
               value: "/mnt/certs/certs.pem"
+            {{- end }}
             {{- with .Values.podOrchestrator.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
@@ -138,17 +141,21 @@ spec:
           resources:
             {{- toYaml .Values.podOrchestrator.resources | nindent 12 }}
           volumeMounts:
+            {{- if $hasCerts }}
             - mountPath: "/mnt/certs/certs.pem"
               name: additional-certs
               subPath: "certs.pem"
               readOnly: true
+            {{- end }}
             {{- with .Values.podOrchestrator.volumeMounts }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
       volumes:
+        {{- if $hasCerts }}
         - name: additional-certs
           configMap:
             name: {{ include "tls.configMapName" . }}
+        {{- end }}
         {{- with .Values.podOrchestrator.volumes }}
         {{- toYaml . | nindent 8 }}
         {{- end }}

@@ -159,7 +159,7 @@ resultService:
   image:
     repository: ghcr.io/privateaim/node-result-service
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.1.3
+    tag: dev-20250923t152721z
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -364,7 +364,7 @@ hubAdapter:
   image:
     repository: ghcr.io/privateaim/node-hub-api-adapter
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.2.11
+    tag: 0.2.12
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -468,9 +468,9 @@ podOrchestrator:
   image:
     repository: ghcr.io/privateaim/node-pod-orchestration
     # Overrides the image tag whose default is the chart appVersion.
-    tag: latest
+    tag: sha-93c4bfd
     # This sets the pull policy for images.
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
 
   # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
   imagePullSecrets: []
@@ -544,7 +544,7 @@ podOrchestrator:
       # Overrides the image tag whose default is the chart appVersion.
       tag: 1.37
       # This sets the pull policy for images.
-      pullPolicy: Always
+      pullPolicy: IfNotPresent
 
     securityContext:
       runAsNonRoot: true
@@ -680,7 +680,7 @@ ui:
   image:
     repository: ghcr.io/privateaim/node-ui
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.2.18
+    tag: 0.2.19
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
