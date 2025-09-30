@@ -1,4 +1,3 @@
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -69,6 +68,8 @@ spec:
               value: {{ printf "http://%s-po-service.%s.svc.cluster.local:8000" .Release.Name .Release.Namespace }}
             - name: KONG_ADMIN_SERVICE_URL
               value: {{ printf "http://%s-kong-admin.%s.svc.cluster.local:80" .Release.Name .Release.Namespace }}
+            - name: KONG_PROXY_SERVICE_URL
+              value: {{ printf "http://%s-kong-proxy.%s.svc.cluster.local:80" .Release.Name .Release.Namespace }}
             - name: HUB_SERVICE_URL
               value: {{ .Values.hub.endpoints.core | default "https://core.privateaim.dev" | quote }}
             - name: HUB_AUTH_SERVICE_URL

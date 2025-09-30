@@ -2,13 +2,15 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Release.Name }}-po
+  labels:
+    component: flame-po
 spec:
-  replicas: {{ .Values.podOrchestrator.replicaCount }}
   selector:
     matchLabels:
       component: flame-po
       version: {{ .Chart.AppVersion }}
       deployment-id:  {{ .Release.Name }}
+  replicas: {{ .Values.hubAdapter.replicaCount }}
   template:
     metadata:
       annotations:
