@@ -159,7 +159,7 @@ resultService:
   image:
     repository: ghcr.io/privateaim/node-result-service
     # Overrides the image tag whose default is the chart appVersion.
-    tag: dev-20250923t152721z
+    tag: 0.1.4
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
