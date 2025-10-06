@@ -104,6 +104,22 @@ kong:
     database: postgres
     # The default values for admin_listen include both ipv4 and ipv6 - if cluster does not support ipv6, it should be defined (minikube does not support ipv6)
     # admin_listen: "127.0.0.1:8001"
+    pg_host: flame-node-kong-postgresql
+    pg_database:
+      valueFrom:
+        secretKeyRef:
+          name: postgres-kong-credentials-secret
+          key: kongDbName
+    pg_user:
+      valueFrom:
+        secretKeyRef:
+          name: postgres-kong-credentials-secret
+          key: kongDbUser
+    pg_password:
+      valueFrom:
+        secretKeyRef:
+          name: postgres-kong-credentials-secret
+          key: kongDbPassword
 
   admin:
     enabled: true
@@ -137,13 +153,7 @@ kong:
 
   # Sub-chart
   postgresql:
-    enabled: true
-    nameOverride: kong-postgresql
-    auth:
-      database: kong
-      username: kong
-      password: kong
-      postgresPassword: supersecretpassword
+    enabled: false
 
 resultService:
   env:
@@ -255,7 +265,7 @@ keycloakx:
   
   database:
     vendor: postgres
-    hostname: flame-node-postgresql  # Fullname override defined in .Values.postgresql.fullnameOverride
+    hostname: flame-node-keycloak-postgresql
     port: 5432
 
   # Additional environment variables for Keycloak
@@ -268,18 +278,18 @@ keycloakx:
     - name: KC_DB_URL_DATABASE
       valueFrom:
         secretKeyRef:
-          name: postgres-credentials-secret
-          key: DB_DATABASE
+          name: postgres-keycloak-credentials-secret
+          key: keycloakDbName
     - name: KC_DB_USERNAME
       valueFrom:
         secretKeyRef:
-          name: postgres-credentials-secret
-          key: DB_USER
+          name: postgres-keycloak-credentials-secret
+          key: keycloakDbUser
     - name: KC_DB_PASSWORD
       valueFrom:
         secretKeyRef:
-          name: postgres-credentials-secret
-          key: DB_PASSWORD
+          name: postgres-keycloak-credentials-secret
+          key: keycloakDbPassword
 
   extraVolumes: |
     - name: flame-realm-json
@@ -796,34 +806,9 @@ flame-node-data-store:
 
 postgresql:
   nameOverride:
-  fullnameOverride: flame-node-postgresql  # Required so keycloak can enable database checker
-
-  ## Optional service account
-  serviceAccount:
-    # Specifies whether a service account should be created
-    create: false
-
-  ## Pod management policy
-  podManagementPolicy: OrderedReady
-
-  ## Pod update strategy
-  updateStrategyType: RollingUpdate
-
-  ## The postgres service configuration (Default is ClusterIP with port 5432)
-  service:
-    type: ClusterIP
-    port: 5432
+  fullnameOverride:
 
   resources: {}
-    # limits:
-    #   cpu: 100m
-    #   memory: 128Mi
-    # requests:
-    #   cpu: 100m
-    #   memory: 128Mi
-
-  ## Use Kubernetes Deployment instead of StatefulSet
-  useDeployment: false
 
   ## Database configuration
   settings:
@@ -838,15 +823,6 @@ postgresql:
     ## The superuser password
     superuserPassword:
      secretKey: superPassword
-    #  value:
-
-    ## Postgres database authentication method
-    ## For example: "md5"
-    authMethod:
-
-    ## Optional init database arguments
-    ## For example: "--auth-local=md5"
-    initDbArgs:
 
   ## Optional user database which is created during first startup with user and password
   userDatabase:
@@ -880,12 +856,59 @@ postgresql:
     ## the storage class name
     className:
 
-    ## Default access mode (ReadWriteOnce)
-    accessModes:
-      - ReadWriteOnce
+kong-postgresql:
+  nameOverride:
+  fullnameOverride: flame-node-kong-postgresql
 
-    ## Keep a created Persistent volume claim when uninstalling the helm chart (only for option useDeployment: true)
-    keepPvc: false
+  resources: {}
+
+  ## Database configuration
+  settings:
+    ## Optional existing secret for the Postgres superuser
+    existingSecret: postgres-kong-credentials-secret
+    superuser:
+    superuserPassword:
+     secretKey: superPassword
+
+  userDatabase:
+    existingSecret: postgres-kong-credentials-secret
+    name:
+      secretKey: kongDbName
+    user:
+      secretKey: kongDbUser
+    password:
+      secretKey: kongDbPassword
+
+  storage:
+    volumeName: "postgres-data-kong"
+    requestedSize: 2Gi
+
+keycloak-postgresql:
+  nameOverride:
+  fullnameOverride: flame-node-keycloak-postgresql    # Required so keycloak can enable database checker
+
+  resources: {}
+
+  ## Database configuration
+  settings:
+    ## Optional existing secret for the Postgres superuser
+    existingSecret: postgres-keycloak-credentials-secret
+    superuser:
+    superuserPassword:
+     secretKey: superPassword
+
+  userDatabase:
+    existingSecret: postgres-keycloak-credentials-secret
+    name:
+      secretKey: keycloakDbName
+    user:
+      secretKey: keycloakDbUser
+    password:
+      secretKey: keycloakDbPassword
+
+  storage:
+    volumeName: "postgres-data-keycloak"
+    requestedSize: 8Gi
 
 minio:
   # All possible values can be found at https://github.com/minio/minio/blob/master/helm/minio/values.yaml

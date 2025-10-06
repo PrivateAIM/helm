@@ -34,11 +34,19 @@ dependencies:
     condition: flame-node-data-store.enabled
   - name: kong
     repository: https://charts.konghq.com
-    version: 2.38.0
+    version: 2.52.0
   - name: postgres
     repository: https://groundhog2k.github.io/helm-charts
-    version: 1.5.5
+    version: 1.5.8
     alias: postgresql
+  - name: postgres
+    repository: https://groundhog2k.github.io/helm-charts
+    version: 1.5.8
+    alias: kong-postgresql
+  - name: postgres
+    repository: https://groundhog2k.github.io/helm-charts
+    version: 1.5.8
+    alias: keycloak-postgresql
   - name: minio
     version: 5.1.0
     repository: https://charts.min.io/
