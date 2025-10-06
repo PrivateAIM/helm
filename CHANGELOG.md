@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.0.8](https://github.com/PrivateAIM/helm/compare/root-v0.0.7...root-v0.0.8) (2025-10-06)
+
+
+### Features
+
+* **certs:** add support for providing additional CA certs ([c5850ba](https://github.com/PrivateAIM/helm/commit/c5850ba212e53ba6a6f86a39555ea675b88aeeb2))
+* harden chart dependency image versions ([9832584](https://github.com/PrivateAIM/helm/commit/98325849ca719c5724647601fb9b58e807369ffc))
+* **headless:** add headless mode to HA and values ([a5b4250](https://github.com/PrivateAIM/helm/commit/a5b42502f4a9f36cb86986b9d282bdb282d3b189))
+* **kong:** use self-managed postgres instance rather than sub-chart ([935d11c](https://github.com/PrivateAIM/helm/commit/935d11c2f1f49fc865f5841e616321de32f6cdcf))
+* manage pull-policy via values.yaml configuration ([d5fe904](https://github.com/PrivateAIM/helm/commit/d5fe904ac84ed0d79fe7a9a50919c2d11542dd76))
+
+
+### Bug Fixes
+
+* **certs:** make certs configmap mount conditional ([17786ef](https://github.com/PrivateAIM/helm/commit/17786efa8fdb54726462fad09d6f6f4e49e309d0))
+* **certs:** update MB envVar ([10ff742](https://github.com/PrivateAIM/helm/commit/10ff742f05a202e4ac85bc9c1752c02d7d0ca7cc))
+* grafana-loki memcached image repository & tag ([f570494](https://github.com/PrivateAIM/helm/commit/f5704943464005d72a4a0e02c6047746a1ea3ae4))
+* **ha:** set default idp endpoint to use k8s URI ([e35d57b](https://github.com/PrivateAIM/helm/commit/e35d57b74da7274f8cf3851fb6bc55c5d9d38405))
+* **keycloak:** add clientRoles for service1 in kc configmap ([3c9eee0](https://github.com/PrivateAIM/helm/commit/3c9eee010bc20e065062572221f893257b585469))
+* set alloy image repository & tag ([8f6bb0e](https://github.com/PrivateAIM/helm/commit/8f6bb0efb19c27376f05f3d954723386054b92a7))
+* set memcachedchunks repository of grafana-loki ([9a7a124](https://github.com/PrivateAIM/helm/commit/9a7a1245d68f70ece6b9822709ed2bba93dcee10))
+* **values:** update image tag and pull policy ([f7ef056](https://github.com/PrivateAIM/helm/commit/f7ef0560d9fd0559149660dd1fb7026a7f0de27f))
+
 ## [0.0.7](https://github.com/PrivateAIM/helm/compare/root-v0.0.6...root-v0.0.7) (2025-08-28)
 
 
