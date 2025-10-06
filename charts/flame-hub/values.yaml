@@ -163,6 +163,15 @@ grafana-loki:
         image:
             repository: "bitnamilegacy/memcached"
             tag: "1.6.39-debian-12-r0"
+    grafanaalloy:
+        alloy:
+            image:
+                repository: "bitnamilegacy/grafana-alloy"
+                tag: "1.10.1-debian-12-r1"
+        configReloader:
+            image:
+                repository: "bitnamilegacy/configmap-reload"
+                tag: "0.15.0-debian-12-r12"
 
 prometheus:
     nameOverride: "prometheus"
