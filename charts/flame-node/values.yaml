@@ -810,6 +810,10 @@ postgresql:
 
   resources: {}
 
+  service:
+    type: ClusterIP
+    port: 5432
+
   ## Database configuration
   settings:
     ## Optional existing secret for the Postgres superuser
@@ -862,6 +866,10 @@ kong-postgresql:
 
   resources: {}
 
+  service:
+    type: ClusterIP
+    port: 5432
+
   ## Database configuration
   settings:
     ## Optional existing secret for the Postgres superuser
@@ -888,6 +896,10 @@ keycloak-postgresql:
   fullnameOverride: flame-node-keycloak-postgresql    # Required so keycloak can enable database checker
 
   resources: {}
+
+  service:
+    type: ClusterIP
+    port: 5432
 
   ## Database configuration
   settings:
