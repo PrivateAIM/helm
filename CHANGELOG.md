@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.9](https://github.com/PrivateAIM/helm/compare/root-v0.0.8...root-v0.0.9) (2025-10-14)
+
+
+### Bug Fixes
+
+* **node:** add postgres port value to keep PO happy ([5a7cb4d](https://github.com/PrivateAIM/helm/commit/5a7cb4dcfbd69affd8028ddef676a848d5290600))
+
 ## [0.0.8](https://github.com/PrivateAIM/helm/compare/root-v0.0.7...root-v0.0.8) (2025-10-06)
 
 
