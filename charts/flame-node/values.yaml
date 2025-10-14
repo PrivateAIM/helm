@@ -26,11 +26,11 @@ proxy:
   httpsProxy:
   noProxy:
 
-# Headless service configuration
-headless:
-  ## @param headless.enabled Enable headless service for the Hub Adapter
+# Autostart service configuration
+autostart:
+  ## @param autostart.enabled Enable autostart service for the Hub Adapter
   enabled: false
-  ## @param headless.interval How often (in seconds) the Hub Adapter will probe the Hub for new analyses
+  ## @param autostart.interval How often (in seconds) the Hub Adapter will probe the Hub for new analyses
   interval: 60
 
 ## For defining ingress specific metadata
@@ -374,7 +374,7 @@ hubAdapter:
   image:
     repository: ghcr.io/privateaim/node-hub-api-adapter
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.2.13
+    tag: 0.2.14
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 

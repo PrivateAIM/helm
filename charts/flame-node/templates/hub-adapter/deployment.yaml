@@ -75,10 +75,10 @@ spec:
               value: {{ .Values.hub.endpoints.core | default "https://core.privateaim.dev" | quote }}
             - name: HUB_AUTH_SERVICE_URL
               value: {{ .Values.hub.endpoints.auth | default "https://auth.privateaim.dev" | quote }}
-            - name: HEADLESS
-              value: {{ .Values.headless.enabled | default "false" | quote }}
-            - name: HEADLESS_INTERVAL
-              value: {{ .Values.headless.interval | default "60" | quote }}
+            - name: AUTOSTART
+              value: {{ .Values.autostart.enabled | default "false" | quote }}
+            - name: AUTOSTART_INTERVAL
+              value: {{ .Values.autostart.interval | default "60" | quote }}
             {{- if $hasCerts }}
             - name: EXTRA_CA_CERTS
               value: "/mnt/certs/certs.pem"
