@@ -245,8 +245,6 @@ resultService:
 
 # keycloakx values
 keycloakx:
-  ## @param keycloakx.enabled Whether to deploy the bundled Keycloak instance
-  enabled: true
   nameOverride: keycloak  # Otherwise uses "keycloakx", this keeps it backwards compatible
 
   http:

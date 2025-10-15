@@ -1,9 +1,13 @@
 {
-  "release-type": "simple",
+  "release-type": "helm",
   "bump-minor-pre-major": true,
   "bump-patch-for-minor-pre-major": true,
+  "skip-github-release": true,
   "packages": {
-    ".": {"component": "root"}
+    "charts/flame-hub": {"component": "flame-hub"},
+    "charts/flame-node": {"component": "flame-node"},
+    "charts/third-party/authup": {"component": "authup"}
   },
-  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json"
+  "separate-pull-requests": true,
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json" 
 }
