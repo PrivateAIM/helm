@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     branches:
-      - master
+      - main
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
@@ -18,11 +18,12 @@ defaults:
 
 jobs:
   release:
-    name: Update chart versions
+    name: Update and create release
     runs-on: ubuntu-latest
     outputs:
       releases_created: ${{ steps.release.outputs.releases_created }}
-      
+      paths_released: ${{ steps.release.outputs.paths_released }}
+      tag: ${{ steps.tag.outputs.tag }}
     steps:
       - uses: googleapis/release-please-action@v4
         name: release-please
@@ -30,10 +31,20 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set release tag name
+        id: tag
+        # Because the name has a "/" in it, we have to do this dance to get the output
+        env:
+          FLAME_NODE: ${{ steps.release.outputs['charts/flame-node--tag_name'] }}
+          FLAME_HUB: ${{ steps.release.outputs['charts/flame-hub--tag_name'] }}
+          AUTHUP: ${{ steps.release.outputs['charts/third-party/authup--tag_name'] }}
+        run: |
+          echo tag="${FLAME_NODE:-${FLAME_HUB:-${AUTHUP}}}" >> $GITHUB_OUTPUT
+
   publish-charts:
     needs: release
     name: Publish charts
-    if: ${{ needs.release.outputs.releases_created }}
+    if: ${{ needs.release.outputs.releases_created == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -49,10 +60,25 @@ jobs:
       - name: Set up Helm
         uses: azure/setup-helm@v4
 
-      - name: Release chart
+      - name: Package helm chart
         uses: helm/chart-releaser-action@v1.7.0
         with:
           charts_dir: charts
           skip_existing: true
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: Upload chart to existing release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.release.outputs.tag }}
+        run: |
+          CHART_FILE="./.cr-release-packages/${TAG}.tgz"
+
+          echo "Uploading $CHART_FILE to release '$TAG'"
+          gh release upload "$TAG" "$CHART_FILE" --repo ${{ github.repository }} --clobber
+
+      - name: Update chart index
+        run: |
+          echo "Updating index..."
+          cr index --owner "${{ github.repository_owner }}" --git-repo "${{ github.event.repository.name }}" --push  
