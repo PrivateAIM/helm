@@ -27,7 +27,6 @@ dependencies:
   - name: keycloakx
     repository: oci://ghcr.io/codecentric/helm-charts
     version: 7.1.1
-    condition: keycloakx.enabled
   - name: flame-node-data-store
     repository: file://./flame-node-data-store
     version: 0.1.0
