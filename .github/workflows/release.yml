@@ -8,8 +8,8 @@ on:
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 permissions:
-  contents: write
   packages: write
+  contents: write
   pull-requests: write
 
 defaults:
@@ -18,66 +18,32 @@ defaults:
 
 jobs:
   release:
-    name: Update and create release
+    name: Release
     runs-on: ubuntu-latest
-    outputs:
-      releases_created: ${{ steps.release.outputs.releases_created }}
-      paths_released: ${{ steps.release.outputs.paths_released }}
-      tag: ${{ steps.tag.outputs.tag }}
-    steps:
-      - uses: googleapis/release-please-action@v4
-        name: release-please
-        id: release
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set release tag name
-        id: tag
-        # Because the name has a "/" in it, we have to do this dance to get the output
-        env:
-          FLAME_NODE: ${{ steps.release.outputs['charts/flame-node--tag_name'] }}
-          FLAME_HUB: ${{ steps.release.outputs['charts/flame-hub--tag_name'] }}
-        run: |
-          echo tag="${FLAME_NODE:-${FLAME_HUB}}" >> $GITHUB_OUTPUT
-
-  publish-charts:
-    needs: release
-    name: Publish charts
-    if: ${{ needs.release.outputs.releases_created == 'true' }}
-    runs-on: ubuntu-latest
     steps:
+      -   uses: googleapis/release-please-action@v4
+          id: release
+          with:
+            token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Checkout
+        if: steps.release.outputs.releases_created == 'true'
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Configure Git
+        if: steps.release.outputs.releases_created == 'true'
         run: |
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
 
-      - name: Set up Helm
-        uses: azure/setup-helm@v4
-
-      - name: Package helm chart
-        uses: helm/chart-releaser-action@v1.7.0
+      - uses: tada5hi/hevi-action@v1.4
+        if: steps.release.outputs.releases_created == 'true'
         with:
-          charts_dir: charts
-          skip_existing: true
-        env:
-          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-
-      - name: Upload chart to existing release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ needs.release.outputs.tag }}
-        run: |
-          CHART_FILE="./.cr-release-packages/${TAG}.tgz"
-
-          echo "Uploading $CHART_FILE to release '$TAG'"
-          gh release upload "$TAG" "$CHART_FILE" --repo ${{ github.repository }} --clobber
-
-      - name: Update chart index
-        run: |
-          echo "Updating index..."
-          cr index --owner "${{ github.repository_owner }}" --git-repo "${{ github.event.repository.name }}" --push  
+          directory: charts
+          versionize: true
+          versionize_version: ${{ steps.release.outputs['major'] }}.${{ steps.release.outputs['minor'] }}.${{ steps.release.outputs['patch'] }}
+          package: true
+          release: true

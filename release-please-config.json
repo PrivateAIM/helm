@@ -1,16 +1,36 @@
 {
-  "release-type": "helm",
+  "release-type": "simple",
   "bump-minor-pre-major": true,
   "bump-patch-for-minor-pre-major": true,
   "include-v-in-tag": false,
   "packages": {
+    ".": {
+      "component": "root"
+    },
     "charts/flame-hub": {
-      "component": "flame-hub"
+      "component": "flame-hub",
+      "release-type": "helm"
     },
     "charts/flame-node": {
-      "component": "flame-node"
+      "component": "flame-node",
+      "release-type": "helm"
+    },
+    "charts/authup": {
+      "component": "authup",
+      "release-type": "helm"
     }
   },
-  "separate-pull-requests": true,
-  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json" 
+  "plugins": [
+    {
+      "type": "linked-versions",
+      "groupName": "global",
+      "components": [
+        "root",
+        "flame-hub",
+        "flame-node",
+        "authup"
+      ]
+    }
+  ],
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json"
 }
