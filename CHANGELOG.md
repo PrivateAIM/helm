@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.0.9](https://github.com/PrivateAIM/helm/compare/root-v0.0.8...root-0.0.9) (2025-10-16)
+
+
+### Bug Fixes
+
+* annoying punkt ([fa44f34](https://github.com/PrivateAIM/helm/commit/fa44f343f119ee2790f815195013796c78bb6be6))
+* annoying punkt ([e38c441](https://github.com/PrivateAIM/helm/commit/e38c441ddefc0390ea5eed35c67566028c299fcb))
+* **node:** add postgres port value to keep PO happy ([5a7cb4d](https://github.com/PrivateAIM/helm/commit/5a7cb4dcfbd69affd8028ddef676a848d5290600))
+* **node:** remove optional keycloak disable ([b18a139](https://github.com/PrivateAIM/helm/commit/b18a1395e82a31d5d5b0cd8a6fda29755fbe88ca))
+* skip github release for charts ([c1fce07](https://github.com/PrivateAIM/helm/commit/c1fce0766c40ecb17d40c0835cdcb08363db7b87))
+* update release-please manifest file ([148df94](https://github.com/PrivateAIM/helm/commit/148df9471c92986524450c29604d9ccf8e854c11))
+
 ## [0.0.8](https://github.com/PrivateAIM/helm/compare/root-v0.0.7...root-v0.0.8) (2025-10-06)
 
 
