@@ -1039,7 +1039,7 @@ minio:
     accessMode: ReadWriteOnce
     size: 10Gi
 
-node-message-broker-db:
+mongodb:
   ## Pull secrets and name override options
   imagePullSecrets: []
   nameOverride: ""
@@ -1077,4 +1077,6 @@ node-message-broker-db:
     volumeName: "mongodb-volume"
 
     ## Alternative set requestedSize to define a size for a dynamically created PVC
-    requestedSize: 100Mi
+    requestedSize: 500Mi
+
+    className:

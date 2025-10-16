@@ -1,4 +1,3 @@
-{{- if .Values.keycloakx.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -121,4 +120,3 @@ data:
         "publicClient" : false
       } ]
     }
-{{- end }}
