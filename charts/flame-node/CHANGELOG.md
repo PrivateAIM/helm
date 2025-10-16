@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.2](https://github.com/PrivateAIM/helm/compare/flame-node-0.2.1...flame-node-0.2.2) (2025-10-16)
+
+
+### Bug Fixes
+
+* annoying punkt ([fa44f34](https://github.com/PrivateAIM/helm/commit/fa44f343f119ee2790f815195013796c78bb6be6))
+* annoying punkt ([e38c441](https://github.com/PrivateAIM/helm/commit/e38c441ddefc0390ea5eed35c67566028c299fcb))
+
 ## [0.2.1](https://github.com/PrivateAIM/helm/compare/flame-node-v0.2.0...flame-node-v0.2.1) (2025-10-15)
 
 
