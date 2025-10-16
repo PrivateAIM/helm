@@ -33,7 +33,7 @@ jobs:
           CHART_FILE="./charts/flame-node/Chart.yaml"
           echo "chart_path=$CHART_FILE" >> $GITHUB_ENV
           echo "Processing flame-node chart file ..."
-          current_version=$(grep '^appVersion:' $CHART_FILE | awk '{print $2}')
+          current_version=$(awk '/^appVersion:/ {gsub(/"/, "", $2); print $2}' $CHART_FILE)
           echo "current_version=$current_version" >> $GITHUB_ENV
 
       - name: Bump Version
