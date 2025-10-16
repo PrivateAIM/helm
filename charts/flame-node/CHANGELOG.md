@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.0.9](https://github.com/PrivateAIM/helm/compare/flame-node-0.0.8...flame-node-0.0.9) (2025-10-16)
+
+
+### Bug Fixes
+
+* annoying punkt ([fa44f34](https://github.com/PrivateAIM/helm/commit/fa44f343f119ee2790f815195013796c78bb6be6))
+* annoying punkt ([e38c441](https://github.com/PrivateAIM/helm/commit/e38c441ddefc0390ea5eed35c67566028c299fcb))
+* **node:** add postgres port value to keep PO happy ([5a7cb4d](https://github.com/PrivateAIM/helm/commit/5a7cb4dcfbd69affd8028ddef676a848d5290600))
+* **node:** remove optional keycloak disable ([b18a139](https://github.com/PrivateAIM/helm/commit/b18a1395e82a31d5d5b0cd8a6fda29755fbe88ca))
+* update mongodb pvc size ([ad354a4](https://github.com/PrivateAIM/helm/commit/ad354a42c916d2da9b60c77f619fedb3c186fb2c))
+* update mongodb pvc size ([cdf93bc](https://github.com/PrivateAIM/helm/commit/cdf93bc0fcfe9ee7e0153cc687f4cadc233f23f0))
+
 ## [0.2.1](https://github.com/PrivateAIM/helm/compare/flame-node-v0.2.0...flame-node-v0.2.1) (2025-10-15)
 
 
