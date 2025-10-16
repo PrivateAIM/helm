@@ -1,0 +1,62 @@
+name: Increment App Version
+on:
+  pull_request:
+    types:
+      - closed
+    paths:
+      - charts/flame-node/templates/**
+      - charts/flame-node/Chart.yaml
+      - charts/flame-node/values.yaml
+
+jobs:
+  bump-app-version:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      pull-requests: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+      - name: Get Latest appVersion
+        id: current-appVersion
+        run: |
+          CHART_FILE="./charts/flame-node/Chart.yaml"
+          echo "chart_path=$CHART_FILE" >> $GITHUB_ENV
+          echo "Processing flame-node chart file ..."
+          current_version=$(awk '/^appVersion:/ {gsub(/"/, "", $2); print $2}' $CHART_FILE)
+          echo "current_version=$current_version" >> $GITHUB_ENV
+
+      - name: Bump Version
+        id: bump
+        uses: cbrgm/semver-bump-action@main
+        with:
+          current-version: ${{ env.current_version }}
+          bump-level: patch
+
+      - name: Increment appVersion
+        env:
+          CURRENT: ${{ env.current_version }}
+          NEW: ${{ steps.bump.outputs.new_version }}
+        run: |
+            echo "Updating "charts/flame-node/Chart.yaml": $CURRENT → $NEW"
+            sed -i "s/^appVersion: .*/appVersion: \"$NEW\"/" ${{ env.chart_path }}
+
+      - name: Commit and push changes
+        run: |
+          if [[ -n $(git status -s) ]]; then
+            git add charts/**/Chart.yaml
+            git commit -m "chore: increment flame-node chart appVersion"
+            git push
+          else
+            echo "No changes to commit"
+          fi
