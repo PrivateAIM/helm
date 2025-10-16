@@ -17,7 +17,7 @@
       "release-type": "helm",
       "skip-github-release": true
     },
-    "charts/authup": {
+    "charts/third-party/authup": {
       "component": "authup",
       "release-type": "helm",
       "skip-github-release": true
