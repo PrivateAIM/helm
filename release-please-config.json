@@ -9,9 +9,6 @@
     },
     "charts/flame-node": {
       "component": "flame-node"
-    },
-    "charts/third-party/authup": {
-      "component": "authup"
     }
   },
   "separate-pull-requests": true,

@@ -37,9 +37,8 @@ jobs:
         env:
           FLAME_NODE: ${{ steps.release.outputs['charts/flame-node--tag_name'] }}
           FLAME_HUB: ${{ steps.release.outputs['charts/flame-hub--tag_name'] }}
-          AUTHUP: ${{ steps.release.outputs['charts/third-party/authup--tag_name'] }}
         run: |
-          echo tag="${FLAME_NODE:-${FLAME_HUB:-${AUTHUP}}}" >> $GITHUB_OUTPUT
+          echo tag="${FLAME_NODE:-${FLAME_HUB}}" >> $GITHUB_OUTPUT
 
   publish-charts:
     needs: release
