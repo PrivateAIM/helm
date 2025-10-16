@@ -66,7 +66,7 @@ spec:
             - name: PERSISTENCE_DATABASE_NAME
               value: "message-broker"
             - name: PERSISTENCE_HOSTNAME
-              value: {{ .Release.Name }}-node-message-broker-db
+              value: {{ .Release.Name }}-mongodb
             - name: PERSISTENCE_PORT
               value: "27017"
             {{- if or .Values.proxy.httpProxy .Values.proxy.httpsProxy }}
