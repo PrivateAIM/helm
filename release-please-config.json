@@ -9,15 +9,18 @@
     },
     "charts/flame-hub": {
       "component": "flame-hub",
-      "release-type": "helm"
+      "release-type": "helm",
+      "skip-github-release": true
     },
     "charts/flame-node": {
       "component": "flame-node",
-      "release-type": "helm"
+      "release-type": "helm",
+      "skip-github-release": true
     },
     "charts/authup": {
       "component": "authup",
-      "release-type": "helm"
+      "release-type": "helm",
+      "skip-github-release": true
     }
   },
   "plugins": [
