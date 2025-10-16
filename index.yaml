@@ -697,46 +697,6 @@ entries:
   flame-node:
   - apiVersion: v2
     appVersion: 0.2.0
-    created: "2025-10-15T08:07:38.290164734Z"
-    dependencies:
-    - name: keycloakx
-      repository: oci://ghcr.io/codecentric/helm-charts
-      version: 7.1.1
-    - condition: flame-node-data-store.enabled
-      name: flame-node-data-store
-      repository: file://./flame-node-data-store
-      version: 0.1.0
-    - name: kong
-      repository: https://charts.konghq.com
-      version: 2.52.0
-    - alias: postgresql
-      name: postgres
-      repository: https://groundhog2k.github.io/helm-charts
-      version: 1.5.8
-    - alias: kong-postgresql
-      name: postgres
-      repository: https://groundhog2k.github.io/helm-charts
-      version: 1.5.8
-    - alias: keycloak-postgresql
-      name: postgres
-      repository: https://groundhog2k.github.io/helm-charts
-      version: 1.5.8
-    - name: minio
-      repository: https://charts.min.io/
-      version: 5.1.0
-    - alias: node-message-broker-db
-      name: mongodb
-      repository: https://groundhog2k.github.io/helm-charts
-      version: 0.7.1
-    description: A Helm chart for deploying the Flame Node
-    digest: 78b7694d5d584960843b12301265d56cd07357e71ef05d0eda8593ac6f3a33d5
-    name: flame-node
-    type: application
-    urls:
-    - https://github.com/PrivateAIM/helm/releases/download/flame-node-0.2.1/flame-node-0.2.1.tgz
-    version: 0.2.1
-  - apiVersion: v2
-    appVersion: 0.2.0
     created: "2025-10-15T08:02:36.440502151Z"
     dependencies:
     - name: keycloakx
