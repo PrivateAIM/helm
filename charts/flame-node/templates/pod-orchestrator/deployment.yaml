@@ -61,12 +61,6 @@ spec:
           ports:
             - containerPort: 8080
           env:
-            - name: MINIO_ENDPOINT
-              value: {{ .Values.podOrchestrator.minio.endpoint }}
-            - name: MINIO_ACCESS_KEY
-              value: {{ .Values.podOrchestrator.minio.accessKey }}
-            - name: MINIO_SECRET_KEY
-              value: {{ .Values.podOrchestrator.minio.secretKey }}
             - name: POSTGRES_HOST
               value: {{ coalesce .Values.podOrchestrator.env.POSTGRES_HOST (include "postgresql.endpoint" .) }}
             - name: POSTGRES_DB
@@ -74,7 +68,6 @@ spec:
                 secretKeyRef:
                   name: {{ include "postgresql.user.secretName" . }}
                   key: DB_DATABASE
-              ## TODO: add _helpers.tpl in case we want to use secret instead for postgres user/pwd
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
@@ -100,16 +93,10 @@ spec:
               value: {{ include "keycloak.base.endpoint" . }}
             - name: KEYCLOAK_REALM
               value: {{ .Values.podOrchestrator.env.KEYCLOAK_REALM }}
-            - name: HARBOR_URL
-              value: {{ .Values.podOrchestrator.env.HARBOR_URL }}
-            - name: HARBOR_USER
-              value: {{ .Values.podOrchestrator.env.HARBOR_USER }}
-            - name: HARBOR_PW
-              value: {{ .Values.podOrchestrator.env.HARBOR_PW }}
             - name: HUB_URL_AUTH
-              value: {{ .Values.hub.endpoints.auth | default "https://auth.privateaim.net" | quote }}
+              value: {{ .Values.hub.endpoints.auth | default "https://auth.privateaim.dev" | quote }}
             - name: HUB_URL_CORE
-              value: {{ .Values.hub.endpoints.core | default "https://core.privateaim.net" | quote }}
+              value: {{ .Values.hub.endpoints.core | default "https://core.privateaim.dev" | quote }}
             - name: HUB_ROBOT_USER
               value:  {{ required "A robot ID for the Hub is required." .Values.hub.auth.robotUser | quote }}
             - name: HUB_ROBOT_SECRET
@@ -117,12 +104,6 @@ spec:
                 secretKeyRef:
                   name: {{ include "hub.secretName" . }}
                   key: robotSecret
-            - name: NODE_NAME
-              value: {{ .Values.podOrchestrator.env.NODE_NAME}}
-            - name: NODE_PW
-              value: {{ .Values.podOrchestrator.env.NODE_PW}}
-            - name: NODE_KEY_PW
-              value: {{ .Values.podOrchestrator.env.NODE_KEY_PW}}
             {{- if $hasCerts }}
             - name: EXTRA_CA_CERTS
               value: "/mnt/certs/certs.pem"
