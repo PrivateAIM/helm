@@ -36,4 +36,6 @@ proxy:
   httpsProxy:
   noProxy:
 
-  
+## If enabled, this will deploy a FHIR and MinIO server that can be used for testing
+flame-node-data-store:
+  enabled: false
