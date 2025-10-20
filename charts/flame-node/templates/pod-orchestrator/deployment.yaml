@@ -40,7 +40,7 @@ spec:
             {{- toYaml .Values.podOrchestrator.waitForPostgres.securityContext | nindent 12 }}
           image: "{{ .Values.podOrchestrator.waitForPostgres.image.repository }}:{{ .Values.podOrchestrator.waitForPostgres.image.tag | default "latest" }}"
           imagePullPolicy: {{ .Values.podOrchestrator.waitForPostgres.image.pullPolicy }}
-          command: ['sh', '-c', "until nc -vz {{ coalesce .Values.podOrchestrator.env.POSTGRES_HOST (include "postgresql.endpoint" .) }}.{{ .Release.Namespace }}.svc {{ .Values.postgresql.service.port }}; do echo waiting for postgres; sleep 2; done"]
+          command: ['sh', '-c', "until nc -vz {{ include "postgresql.endpoint" . }}.{{ .Release.Namespace }}.svc {{ .Values.postgresql.service.port }}; do echo waiting for postgres; sleep 2; done"]
           {{- with .Values.podOrchestrator.waitForPostgres.env }}
           env:
             {{- toYaml . | nindent 12 }}
@@ -62,7 +62,7 @@ spec:
             - containerPort: 8080
           env:
             - name: POSTGRES_HOST
-              value: {{ coalesce .Values.podOrchestrator.env.POSTGRES_HOST (include "postgresql.endpoint" .) }}
+              value: {{ include "postgresql.endpoint" . }}
             - name: POSTGRES_DB
               valueFrom:
                 secretKeyRef:
@@ -83,7 +83,7 @@ spec:
             - name: PO_HTTPS_PROXY
               value: {{ .Values.proxy.httpsProxy | default "" }}
             - name: RESULT_CLIENT_ID
-              value: {{ .Values.podOrchestrator.env.RESULT_CLIENT_ID }}
+              value: "service1"
             - name: RESULT_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
@@ -92,7 +92,7 @@ spec:
             - name: KEYCLOAK_URL
               value: {{ include "keycloak.base.endpoint" . }}
             - name: KEYCLOAK_REALM
-              value: {{ .Values.podOrchestrator.env.KEYCLOAK_REALM }}
+              value: "flame"
             - name: HUB_URL_AUTH
               value: {{ .Values.hub.endpoints.auth | default "https://auth.privateaim.dev" | quote }}
             - name: HUB_URL_CORE

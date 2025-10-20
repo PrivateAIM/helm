@@ -440,19 +440,11 @@ hubAdapter:
   tolerations: []
   affinity: {}
 
+## Pod Orchestrator Values
+## Settings for the postgres database for this service can be found under .Values.postgresql
 podOrchestrator:
   idp:
     debug: false
-  
-  env:
-    KEYCLOAK_URL:
-    KEYCLOAK_REALM: flame
-
-    RESULT_CLIENT_ID: service1
-    RESULT_CLIENT_SECRET:
-
-    # TODO postgres options needed for user/pwd?
-    POSTGRES_HOST:
 
   # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
   replicaCount: 1
@@ -787,6 +779,7 @@ flame-node-data-store:
       annotations:
         helm.sh/resource-policy: keep
 
+## Used by the pod orchestrator for storing information on the analysis pods
 postgresql:
   nameOverride:
   fullnameOverride:
