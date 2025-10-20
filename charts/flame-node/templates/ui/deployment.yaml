@@ -1,4 +1,5 @@
 {{- $hasCerts := include "tls.hasCerts" . -}}
+{{- $ingressDisabled := not (or .Values.global.node.ingress.enabled .Values.ingress.enabled) -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -51,18 +52,18 @@ spec:
             - name: NO_PROXY
               value: {{ .Values.proxy.noProxy | default "" | quote }}
             - name: NUXT_PUBLIC_BASE_URL
-              value: {{ include "node.ingress.hostname" . }}
+              value: {{ include "node.ingress.hostname" . | default "http://localhost:3000" }}
             - name: NUXT_PUBLIC_HUB_ADAPTER_URL
               value: {{ include "ui.adapter.endpoint" . }}
             - name: NUXT_PUBLIC_ORIGIN
-              value: {{ printf "%s/flame/api/auth" (include "node.ingress.hostname" .) }}
+              value: {{ printf "%s/flame/api/auth" (include "node.ingress.hostname" .) | default "http://localhost:3000/flame/api/auth" }}
             - name: NUXT_PUBLIC_IDP_PROVIDER
               value: {{ .Values.userIdp.provider | default "keycloak" | quote }}
             - name: NUXT_PUBLIC_IDP_ISSUER
               value: {{ include "ui.userIdp.endpoint" . }}
             - name: NUXT_IDP_CLIENT_ID
               value: {{ .Values.ui.idp.clientId | default "node-ui" | quote }}
-            {{ if or (contains "localhost" (include "ui.userIdp.endpoint" .)) .Values.userIdp.hostname .Values.offline }}
+            {{ if and (or (contains "localhost" (include "ui.userIdp.endpoint" .)) $ingressDisabled) (not .Values.userIdp.hostname) }}
             - name: NUXT_PUBLIC_INTERNAL_KEYCLOAK_URL
               value: {{ include "keycloak.service.endpoint" . }}
             {{ end }}
