@@ -8,6 +8,11 @@ global:
       ## This overrides ingress.hostname and is also supplied to the bundled keycloak helm chart
       hostname:
 
+## @param offline Forces the UI and hub adapter to use the internal service endpoint for authentication
+## this is useful for when you are using a locally resolveable domain i.e. localhost or similar as defined in /etc/hosts
+## Overrides hubAdapter.idp.jwks and enables NUXT_PUBLIC_INTERNAL_KEYCLOAK_URL for the UI
+offline: false
+
 ## @param userIdp The following settings are used to configure a separate IDP for the Node UI other than the default keycloak instance
 userIdp:
   ## @param userIdp.hostname Hostname for a separate IDP to manage users who can access the FLAME Node UI.

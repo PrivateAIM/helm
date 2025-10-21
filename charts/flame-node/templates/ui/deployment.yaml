@@ -1,5 +1,4 @@
 {{- $hasCerts := include "tls.hasCerts" . -}}
-{{- $ingressDisabled := not (or .Values.global.node.ingress.enabled .Values.ingress.enabled) -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -63,10 +62,10 @@ spec:
               value: {{ include "ui.userIdp.endpoint" . }}
             - name: NUXT_IDP_CLIENT_ID
               value: {{ .Values.ui.idp.clientId | default "node-ui" | quote }}
-            {{ if and (or (contains "localhost" (include "ui.userIdp.endpoint" .)) $ingressDisabled) (not .Values.userIdp.hostname) }}
+            {{- if (eq (include "ui.auth.internal" .) "true") }}
             - name: NUXT_PUBLIC_INTERNAL_KEYCLOAK_URL
               value: {{ include "keycloak.service.endpoint" . }}
-            {{ end }}
+            {{- end }}
             - name: NUXT_IDP_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
