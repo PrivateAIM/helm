@@ -141,6 +141,23 @@ Return the endpoint for user authentication
 {{- end -}}
 
 {{/*
+Return whether to enable internal routing to Keycloak for the UI
+If offline is true - true, else if external IDP hostname is provided - false, else if ingress disabled or localhost used - true, else false
+*/}}
+{{- define "ui.auth.internal" -}}
+{{- $ingressDisabled := not (or .Values.global.node.ingress.enabled .Values.ingress.enabled) -}}
+{{- if .Values.offline -}}
+    true
+{{- else if .Values.userIdp.hostname -}}
+    false
+{{- else if or (contains "localhost" (include "ui.userIdp.endpoint" .)) $ingressDisabled -}}
+    true
+{{- else -}}
+    false
+{{- end -}}
+{{- end -}}
+
+{{/*
 Return the hub adapter endpoint
 */}}
 {{- define "ui.adapter.endpoint" -}}
@@ -309,7 +326,9 @@ Return the secret key that contains the Keycloak client secret
 Return the JWKS endpoint for user and client authentication which overrides what is fetched by the API.
 */}}
 {{- define "adapter.jwks.endpoint" -}}
-{{- if .Values.hubAdapter.idp.jwks -}}
+{{- if .Values.offline -}}
+    {{- print (include "keycloak.jwks.endpoint" .) -}}
+{{- else if .Values.hubAdapter.idp.jwks -}}
     {{- print .Values.hubAdapter.idp.jwks -}}
 {{- else -}}
     {{- print "" -}}
