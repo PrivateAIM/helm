@@ -8,10 +8,6 @@ global:
       ## This overrides ingress.hostname and is also supplied to the bundled keycloak helm chart
       hostname:
 
-## @param offline Forces the UI and hub adapter to use the internal service endpoint for authentication
-## Overrides hubAdapter.idp.jwks
-offline: false
-
 ## @param userIdp The following settings are used to configure a separate IDP for the Node UI other than the default keycloak instance
 userIdp:
   ## @param userIdp.hostname Hostname for a separate IDP to manage users who can access the FLAME Node UI.
@@ -268,8 +264,10 @@ keycloakx:
 
   # Additional environment variables for Keycloak
   extraEnv: |
+    {{- if or .Values.global.node.ingress.hostname .Values.ingress.hostname }}
     - name: KC_HOSTNAME
-      value: '{{ printf "%s%s" (tpl .Values.global.node.ingress.hostname $ | trimSuffix "/") .Values.http.relativePath }}'
+      value: '{{ printf "%s%s" (tpl (coalesce .Values.global.node.ingress.hostname .Values.ingress.hostname) $ | trimSuffix "/") .Values.http.relativePath }}'
+    {{- end }}
     - name: JAVA_OPTS_APPEND
       value: >-
         -Djgroups.dns.query={{ include "keycloak.fullname" . }}-headless
@@ -308,7 +306,7 @@ keycloakx:
     rules:
       -
         # Ingress host
-        host: '{{ regexReplaceAll "^https?://(.*)" (tpl .Values.global.node.ingress.hostname $) "${1}" | trimSuffix "/" }}'
+        host: '{{ regexReplaceAll "^https?://(.*)" (tpl (coalesce .Values.global.node.ingress.hostname .Values.ingress.hostname "localhost") $) "${1}" | trimSuffix "/" }}'
         paths:
           - path: '{{ tpl .Values.http.relativePath $ | trimSuffix "/" }}/'
             pathType: ImplementationSpecific
@@ -322,7 +320,7 @@ keycloakx:
       rules:
         -
           # Ingress host
-          host: '{{ regexReplaceAll "^https?://(.*)" (tpl .Values.global.node.ingress.hostname $) "${1}" | trimSuffix "/" }}'
+          host: '{{ regexReplaceAll "^https?://(.*)" (tpl (coalesce .Values.global.node.ingress.hostname .Values.ingress.hostname "localhost") $) "${1}" | trimSuffix "/" }}'
           paths:
             - path: '{{ tpl .Values.http.relativePath $ | trimSuffix "/" }}/admin'
               pathType: ImplementationSpecific
@@ -665,7 +663,7 @@ ui:
   image:
     repository: ghcr.io/privateaim/node-ui
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.2.19
+    tag: 0.2.20
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
