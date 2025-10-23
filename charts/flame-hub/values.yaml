@@ -8,7 +8,7 @@ global:
         ingress:
             enabled: true
             ssl: false
-            hostname: "localhost"
+            hostname: "hub.local"
 
 image:
     registry: ghcr.io
@@ -21,7 +21,7 @@ clientUI:
     cookieDomain: ""
     ingress:
         enabled: false
-        hostname: ""
+        hostname: "hub.local"
         path: "/"
         pathType: "Prefix"
 
@@ -211,45 +211,38 @@ prometheus:
                   - targets: ["{{ .Release.Name }}-authup-server-core:3000"]
 
 harbor:
-    enabled: false
+    enabled: true
     nameOverride: "harbor"
     adminPassword: "start123"
-    exposureType: "ingress"
-    externalURL: http://localhost
+    exposureType: "none"
+    externalURL: http://hub.local/harbor
     migration:
-        enabled: true
-    ingress:
-        core:
-            hostname: "localhost"
-            tls: true
-            selfSigned: true
-            # secrets:
-            #  - name <domain>-tls
-            #    certificate: |
-            #        ...
-            #    key: |
-            #       ...
+        enabled: false
     nginx:
-        image:
-            #repository: "tada5hi/nginx"
-            repository: "bitnamilegacy/nginx"
-            tag: "1.29.1-debian-12-r0"
+        enabled: false
     portal:
+        secret: "start123"
         image:
             #repository: "tada5hi/harbor-portal"
             repository: "bitnamilegacy/harbor-portal"
             tag: "2.13.2-debian-12-r1"
     core:
+        secret: "start123"
+        xsrfKey: "start123"
+        csrfKey: "start123"
+        secretKey: "start123"
         image:
             #repository: "tada5hi/harbor-core"
             repository: "bitnamilegacy/harbor-core"
             tag: "2.13.2-debian-12-r3"
     jobservice:
+        secret: "start123"
         image:
             #repository: "tada5hi/harbor-jobservice"
             repository: "bitnamilegacy/harbor-jobservice"
             tag: "2.13.2-debian-12-r3"
     registry:
+        secret: "start123"
         server:
             image:
                 #repository: "tada5hi/harbor-registry"
@@ -265,5 +258,17 @@ harbor:
             #repository: "tada5hi/harbor-adapter-trivy"
             repository: "bitnamilegacy/harbor-adapter-trivy"
             tag: "2.13.2-debian-12-r2"
-
-
+    postgresql:
+        image:
+            repository: "bitnamilegacy/postgresql"
+            tag: "13.7.0-debian-11-r9"
+    redis:
+        enabled: false
+    externalRedis:
+        host: "hub-redis-master.default.svc.cluster.local"
+        port: 6379
+        password: "start123"
+        coreDatabaseIndex: "0"
+        jobserviceDatabaseIndex: "1"
+        registryDatabaseIndex: "2"
+        trivyAdapterDatabaseIndex: "5"
