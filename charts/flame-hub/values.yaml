@@ -9,6 +9,9 @@ global:
             enabled: true
             ssl: false
             hostname: "hub.local"
+    harbor:
+        ingress:
+            hostname: "harbor.hub.local"
 
 image:
     registry: ghcr.io
@@ -215,7 +218,7 @@ harbor:
     nameOverride: "harbor"
     adminPassword: "start123"
     exposureType: "none"
-    externalURL: http://hub.local/harbor
+    externalURL: https://harbor.hub.local/
     migration:
         enabled: false
     nginx:
