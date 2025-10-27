@@ -56,61 +56,6 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-    name: {{ .Release.Name }}-harbor-ingress
-    annotations:
-        nginx.ingress.kubernetes.io/proxy-body-size: "0"
-        nginx.ingress.kubernetes.io/proxy-request-buffering: "off"
-spec:
-    rules:
-        - host: {{ .Values.global.harbor.ingress.hostname }}
-          http:
-              paths:
-                  - path: /api
-                    pathType: "Prefix"
-                    backend:
-                        service:
-                            name: {{ .Release.Name }}-harbor-core
-                            port:
-                                number: 80
-                  - path: /chartrepo
-                    pathType: "Prefix"
-                    backend:
-                        service:
-                            name: {{ .Release.Name }}-harbor-core
-                            port:
-                                number: 80
-                  - path: /v2
-                    pathType: "Prefix"
-                    backend:
-                        service:
-                            name: {{ .Release.Name }}-harbor-core
-                            port:
-                                number: 80
-                  - path: /service
-                    pathType: "Prefix"
-                    backend:
-                        service:
-                            name: {{ .Release.Name }}-harbor-core
-                            port:
-                                number: 80
-                  - path: /c
-                    pathType: "Prefix"
-                    backend:
-                        service:
-                            name: {{ .Release.Name }}-harbor-core
-                            port:
-                                number: 80
-                  - path: /
-                    pathType: "Prefix"
-                    backend:
-                        service:
-                            name: {{ .Release.Name }}-harbor-portal
-                            port:
-                                number: 80
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
     name: {{ .Release.Name }}-flame-hub-root-path
 spec:
     rules:

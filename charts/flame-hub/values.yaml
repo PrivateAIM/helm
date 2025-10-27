@@ -9,9 +9,6 @@ global:
             enabled: true
             ssl: false
             hostname: "hub.local"
-    harbor:
-        ingress:
-            hostname: "harbor.hub.local"
 
 image:
     registry: ghcr.io
@@ -67,6 +64,19 @@ serverTelemetry:
         hostname: ""
         path: "/"
         pathType: "Prefix"
+
+serverCoreWorker:
+    harbor:
+        enabled: true
+        # Use a docker-in-docker sidecar so we can manage CA trust inside the pod
+        useSidecarDinD: true
+        # Trust Harbor's cert by mounting a Secret containing ca.crt
+        caCrtSecretName: "harbor.hub.local-tls"
+        hostAliases:
+            enabled: true
+            ip: "192.168.49.2"
+            hostnames:
+                - "harbor.hub.local"
 
 ## services
 vault:
@@ -217,29 +227,32 @@ harbor:
     enabled: true
     nameOverride: "harbor"
     adminPassword: "start123"
-    exposureType: "none"
+    exposureType: "ingress"
+    ingress:
+        core:
+            tls: true
+            selfSigned: true
+            hostname: "harbor.hub.local"
     externalURL: https://harbor.hub.local/
     migration:
         enabled: false
-    nginx:
-        enabled: false
     portal:
-        secret: "start123"
+        # secret: "start123"
         image:
             #repository: "tada5hi/harbor-portal"
             repository: "bitnamilegacy/harbor-portal"
             tag: "2.13.2-debian-12-r1"
     core:
-        secret: "start123"
-        xsrfKey: "start123"
-        csrfKey: "start123"
-        secretKey: "start123"
+        # secret: "start123"
+        # xsrfKey: "86d877a5d71973ce2029f9d0c4e88516"
+        # csrfKey: "86d877a5d71973ce2029f9d0c4e88516"
+        # secretKey: "start123"
         image:
             #repository: "tada5hi/harbor-core"
             repository: "bitnamilegacy/harbor-core"
             tag: "2.13.2-debian-12-r3"
     jobservice:
-        secret: "start123"
+        # secret: "start123"
         image:
             #repository: "tada5hi/harbor-jobservice"
             repository: "bitnamilegacy/harbor-jobservice"
