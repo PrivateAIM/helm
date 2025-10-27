@@ -108,6 +108,8 @@ spec:
             - name: EXTRA_CA_CERTS
               value: "/mnt/certs/certs.pem"
             {{- end }}
+            - name: HUB_ADAPTER_CLIENT_ID
+              value: {{ .Values.hubAdapter.idp.clientId | default "hub-adapter" | quote }}
             {{- with .Values.resultService.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
