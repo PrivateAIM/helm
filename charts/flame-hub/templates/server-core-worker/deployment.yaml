@@ -98,6 +98,40 @@ spec:
                   port: 3000
               periodSeconds: 10
               timeoutSeconds: 10
+        {{- if and .Values.serverCoreWorker.harbor .Values.serverCoreWorker.harbor.useSidecarDinD }}
+        # Docker-in-Docker sidecar to allow Harbor TLS trust via mounted CA
+        - name: docker-dind
+          image: "docker:27.3-dind"
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            privileged: true
+          env:
+            - name: DOCKER_TLS_CERTDIR
+              value: ""
+          {{- with .Values.serverCoreWorker.harbor }}
+          {{- if .caCrtSecretName }}
+          command: ["/bin/sh","-c"]
+          args:
+            - >-
+              update-ca-certificates || true;
+              exec /usr/local/bin/dockerd-entrypoint.sh;
+          volumeMounts:
+            - name: docker-graph-storage
+              mountPath: /var/lib/docker
+            - name: harbor-ca
+              mountPath: /usr/local/share/ca-certificates/harbor-ca.crt
+              subPath: ca.crt
+            - name: docker-socket
+              mountPath: /var/run
+          {{- else }}
+          volumeMounts:
+            - name: docker-graph-storage
+              mountPath: /var/lib/docker
+            - name: docker-socket
+              mountPath: /var/run
+          {{- end }}
+          {{- end }}
+        {{- end }}
       volumes:
           {{- if and .Values.serverCoreWorker.harbor .Values.serverCoreWorker.harbor.useSidecarDinD }}
           - name: docker-graph-storage
@@ -121,39 +155,6 @@ spec:
                   type: "Socket"
           {{- end }}
 
-      {{- if and .Values.serverCoreWorker.harbor .Values.serverCoreWorker.harbor.useSidecarDinD }}
-      # Docker-in-Docker sidecar to allow Harbor TLS trust via mounted CA
-      - name: docker-dind
-        image: "docker:27.3-dind"
-        imagePullPolicy: IfNotPresent
-        securityContext:
-          privileged: true
-        env:
-          - name: DOCKER_TLS_CERTDIR
-            value: ""
-        {{- with .Values.serverCoreWorker.harbor }}
-        {{- if .caCrtSecretName }}
-        command: ["/bin/sh","-c"]
-        args:
-          - >-
-            update-ca-certificates || true;
-            exec /usr/local/bin/dockerd-entrypoint.sh;
-        volumeMounts:
-          - name: docker-graph-storage
-            mountPath: /var/lib/docker
-          - name: harbor-ca
-            mountPath: /usr/local/share/ca-certificates/harbor-ca.crt
-            subPath: ca.crt
-          - name: docker-socket
-            mountPath: /var/run
-        {{- else }}
-        volumeMounts:
-          - name: docker-graph-storage
-            mountPath: /var/lib/docker
-          - name: docker-socket
-            mountPath: /var/run
-        {{- end }}
-        {{- end }}
-      {{- end }}
+      
 
 
