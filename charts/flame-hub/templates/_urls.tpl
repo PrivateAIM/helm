@@ -9,7 +9,7 @@ https://{{- .Values.serverCore.ingress.hostname }}
 http://{{- .Values.serverCore.ingress.hostname }}
 {{- end }}
 {{- else }}
-{{- if .Values.serverCore.ingress.ssl }}
+{{- if .Values.global.flameHub.ingress.ssl }}
 https://{{ .Values.global.flameHub.ingress.hostname }}/core/
 {{- else }}
 http://{{ .Values.global.flameHub.ingress.hostname }}/core/
