@@ -74,11 +74,6 @@ serverCoreWorker:
     useSidecarDinD: true
     # Trust Harbor's cert by mounting a Secret containing ca.crt
     caCrtSecretName: "harbor.hub.local-tls"
-    hostAliases:
-        enabled: true
-        ip: "192.168.49.2"
-        hostnames:
-            - "harbor.hub.local"
 
 ## services
 vault:
