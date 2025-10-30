@@ -7,7 +7,7 @@ global:
     flameHub:
         ingress:
             enabled: true
-            ssl: false
+            ssl: true
             hostname: "hub.local"
 
 image:
@@ -39,7 +39,10 @@ serverCore:
         path: "/"
         pathType: "Prefix"
     env:
-        masterImagesBranch: ""
+        masterImagesBranch: "develop"
+    harbor:
+        username: "admin"
+        password: "start123"
 
 serverMessenger:
     ingress:
@@ -66,17 +69,16 @@ serverTelemetry:
         pathType: "Prefix"
 
 serverCoreWorker:
-    harbor:
+    enabled: true
+    # Use a docker-in-docker sidecar so we can manage CA trust inside the pod
+    useSidecarDinD: true
+    # Trust Harbor's cert by mounting a Secret containing ca.crt
+    caCrtSecretName: "harbor.hub.local-tls"
+    hostAliases:
         enabled: true
-        # Use a docker-in-docker sidecar so we can manage CA trust inside the pod
-        useSidecarDinD: true
-        # Trust Harbor's cert by mounting a Secret containing ca.crt
-        caCrtSecretName: "harbor.hub.local-tls"
-        hostAliases:
-            enabled: true
-            ip: "192.168.49.2"
-            hostnames:
-                - "harbor.hub.local"
+        ip: "192.168.49.2"
+        hostnames:
+            - "harbor.hub.local"
 
 ## services
 vault:

@@ -88,6 +88,8 @@ spec:
                   value: "core"
               -   name: MASTER_IMAGES_BRANCH
                   value: {{ .Values.serverCore.env.masterImagesBranch | default "master" | quote }}
+              -   name: HARBOR_URL
+                  value: "{{ .Values.serverCore.harbor.username }}:{{ .Values.serverCore.harbor.password }}@{{ .Values.harbor.ingress.core.hostname }}"
           resources:
               requests:
                   memory: "512Mi"
