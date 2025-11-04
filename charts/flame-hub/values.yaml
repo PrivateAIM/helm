@@ -7,8 +7,8 @@ global:
     flameHub:
         ingress:
             enabled: true
-            ssl: true
-            hostname: "hub.local"
+            ssl: false
+            hostname: "localhost"
 
 image:
     registry: ghcr.io
@@ -21,7 +21,7 @@ clientUI:
     cookieDomain: ""
     ingress:
         enabled: false
-        hostname: "hub.local"
+        hostname: ""
         path: "/"
         pathType: "Prefix"
 
@@ -41,8 +41,8 @@ serverCore:
     env:
         masterImagesBranch: "develop"
     harbor:
-        username: "admin"
-        password: "start123"
+        username: "{{ .Values.harbor.adminUsername }}"
+        password: "{{ .Values.harbor.adminPassword }}"
 
 serverMessenger:
     ingress:
@@ -71,9 +71,11 @@ serverTelemetry:
 serverCoreWorker:
     enabled: true
     # Use a docker-in-docker sidecar so we can manage CA trust inside the pod
+    # Required if the internal harbor is used. Alternatively you can manually add the CA cert to k8s nodes' /etc/docker/certs.d/harbor.hub.local/ca.crt
+    # so the host docker daemon can trust the harbor's cert.
     useSidecarDinD: true
     # Trust Harbor's cert by mounting a Secret containing ca.crt
-    caCrtSecretName: "harbor.hub.local-tls"
+    caCrtSecretName: "" # get the secret name from the harbor ingress resource(kubectl describe ingress hub-harbor-ingress)
 
 ## services
 vault:
@@ -223,17 +225,19 @@ prometheus:
 harbor:
     enabled: true
     nameOverride: "harbor"
+    adminUsername: "admin"
     adminPassword: "start123"
     exposureType: "ingress"
     ingress:
         core:
             tls: true
             selfSigned: true
-            hostname: "harbor.hub.local"
-    externalURL: https://harbor.hub.local/
+            hostname: "" # (subdomain of hub -> e.g. harbor.hub.local)
+    externalURL: "" # e.g. "https://harbor.hub.local". Used by the Harbor subchart to set external URL. For pointing components in this chart to an external Harbor, use externalHarbor.url instead.
     migration:
         enabled: false
     portal:
+        # defining explicit secrets for the following fields is not required if a chart installation is triggered by helm
         # secret: "start123"
         image:
             #repository: "tada5hi/harbor-portal"
@@ -285,3 +289,7 @@ harbor:
         jobserviceDatabaseIndex: "1"
         registryDatabaseIndex: "2"
         trivyAdapterDatabaseIndex: "5"
+
+externalHarbor:
+    enabled: false
+    url: "" # Full URL to an external Harbor (e.g., https://harbor.example.com). When enabled, templates will use this URL instead of the internal Harbor ingress hostname.

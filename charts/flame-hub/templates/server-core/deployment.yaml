@@ -53,6 +53,13 @@ spec:
                   '-c',
                   'until nc -z -v -w30 {{ .Release.Name }}-authup-server-core 3000; do echo "Waiting for authup..."; sleep 5; done'
               ]
+          -   name: wait-for-harbor
+              image: busybox
+              command: [
+                  'sh',
+                  '-c',
+                  'until wget --no-check-certificate -qO- {{ include "harbor.baseURL" . }}/api/v2.0/ping; do echo "Waiting for harbor..."; sleep 5; done'
+              ]
       containers:
         - name: "{{ .Release.Name }}-flame-hub-server-core"
           image: {{ include "flameHub.image" . | trim | quote }}
@@ -89,7 +96,7 @@ spec:
               -   name: MASTER_IMAGES_BRANCH
                   value: {{ .Values.serverCore.env.masterImagesBranch | default "master" | quote }}
               -   name: HARBOR_URL
-                  value: "{{ .Values.serverCore.harbor.username }}:{{ .Values.serverCore.harbor.password }}@{{ .Values.harbor.ingress.core.hostname }}"
+                  value: "{{ .Values.serverCore.harbor.username }}:{{ .Values.serverCore.harbor.password }}@{{ include "harbor.host" . }}"
           resources:
               requests:
                   memory: "512Mi"

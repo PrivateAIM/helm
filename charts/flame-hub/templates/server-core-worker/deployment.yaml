@@ -39,6 +39,13 @@ spec:
                   '-c',
                   'until nc -z -v -w30 {{ .Release.Name }}-authup-server-core 3000; do echo "Waiting for authup..."; sleep 5; done'
               ]
+          -   name: wait-for-harbor
+              image: busybox
+              command: [
+                  'sh',
+                  '-c',
+                  'until wget --no-check-certificate -qO- {{ include "harbor.baseURL" . }}/api/v2.0/ping; do echo "Waiting for harbor..."; sleep 5; done'
+              ]
       containers:
         - name: "{{ .Release.Name }}-flame-hub-server-core-worker"
           image: {{ include "flameHub.image" . | trim | quote }}
@@ -94,7 +101,7 @@ spec:
             - name: "{{ .Release.Name }}-docker-sidecar-graph-storage"
               mountPath: /var/lib/docker
             - name: "{{ .Release.Name }}-harbor-ca"
-              mountPath: /etc/docker/certs.d/{{ .Values.harbor.ingress.core.hostname }}/ca.crt
+              mountPath: /etc/docker/certs.d/{{ include "harbor.host" . }}/ca.crt
               subPath: ca.crt
             - name: "{{ .Release.Name }}-docker-sidecar-socket"
               mountPath: /var/run
