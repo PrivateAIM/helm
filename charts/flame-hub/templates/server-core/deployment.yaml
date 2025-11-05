@@ -17,6 +17,13 @@ spec:
         appGroup: "{{ .Release.Name }}-flame-hub"
     spec:
       restartPolicy: Always
+      {{- $ingressIP := include "flameHub.ingressControllerIP" . }}
+      {{- if and $ingressIP (include "harbor.host" .) }}
+      hostAliases:
+        - ip: {{ $ingressIP | quote }}
+          hostnames:
+            - {{ include "harbor.host" . | quote }}
+      {{- end }}
       initContainers:
           -   name: wait-for-db
               image: busybox

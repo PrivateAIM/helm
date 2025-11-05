@@ -10,6 +10,11 @@ global:
             ssl: false
             hostname: "localhost"
 
+# Ingress controller configuration for hostAliases resolution (needed for internal harbor via https)
+ingressController:
+    namespace: "ingress-nginx"
+    serviceName: "ingress-nginx-controller"
+
 image:
     registry: ghcr.io
     repository: privateaim/hub
@@ -232,8 +237,8 @@ harbor:
         core:
             tls: true
             selfSigned: true
-            hostname: "" # (subdomain of hub -> e.g. harbor.hub.local)
-    externalURL: "" # e.g. "https://harbor.hub.local". Used by the Harbor subchart to set external URL. For pointing components in this chart to an external Harbor, use externalHarbor.url instead.
+            hostname: "" # subdomain of hub -> e.g. harbor.hub.local
+    externalURL: "" # Required by Harbor, e.g. https://harbor.hub.local
     migration:
         enabled: false
     portal:
@@ -292,4 +297,4 @@ harbor:
 
 externalHarbor:
     enabled: false
-    url: "" # Full URL to an external Harbor (e.g., https://harbor.example.com). When enabled, templates will use this URL instead of the internal Harbor ingress hostname.
+    hostname: "" # (hostname only, without https://)

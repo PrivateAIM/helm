@@ -48,7 +48,7 @@ This guide outlines the steps to install a local instance of Flame-Hub for devel
         ingress:
             core:
                 hostname: "harbor.hub.local" # <-- Make sure this resolves locally
-        externalURL: "[https://harbor.hub.local/](https://harbor.hub.local/)"
+        externalURL: "https://harbor.hub.local/
     ```
 
 ---

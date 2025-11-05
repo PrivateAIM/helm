@@ -65,3 +65,27 @@ Create the name of the service account to use
 {{- define "flameHub.image" -}}
 {{ include "common.images.image" (dict "imageRoot" .Values.image "global" .Values.global) }}
 {{- end -}}
+
+{{/*
+Get the ingress controller's IP for hostAliases (handles both ClusterIP and NodePort modes)
+*/}}
+{{- define "flameHub.ingressControllerIP" -}}
+{{- $svc := lookup "v1" "Service" .Values.ingressController.namespace .Values.ingressController.serviceName -}}
+{{- if $svc -}}
+  {{- if eq $svc.spec.type "NodePort" -}}
+    {{- /* For NodePort, get the first node's InternalIP address */ -}}
+    {{- $nodes := lookup "v1" "Node" "" "" -}}
+    {{- if and $nodes $nodes.items -}}
+      {{- $firstNode := index $nodes.items 0 -}}
+      {{- range $firstNode.status.addresses -}}
+        {{- if eq .type "InternalIP" -}}
+          {{- .address -}}
+        {{- end -}}
+      {{- end -}}
+    {{- end -}}
+  {{- else -}}
+    {{- /* For ClusterIP/LoadBalancer, use the service ClusterIP */ -}}
+    {{- $svc.spec.clusterIP -}}
+  {{- end -}}
+{{- end -}}
+{{- end -}}

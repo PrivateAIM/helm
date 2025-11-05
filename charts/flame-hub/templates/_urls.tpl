@@ -75,26 +75,19 @@ http://{{ .Values.global.flameHub.ingress.hostname }}/auth/
 {{- end }}
 
 {{/*
-Harbor baseURL (scheme + host, no trailing slash)
+Harbor host
 */}}
-{{- define "harbor.baseURL" -}}
-{{- if and .Values.externalHarbor .Values.externalHarbor.enabled -}}
-{{ .Values.externalHarbor.url }}
+{{- define "harbor.host" -}}
+{{- if .Values.harbor.ingress.core.hostname -}}
+{{ .Values.harbor.ingress.core.hostname }}
 {{- else -}}
-{{ .Values.harbor.externalURL }}
+{{ .Values.externalHarbor.hostname }}
 {{- end -}}
 {{- end }}
 
 {{/*
-Harbor host (extract host from harbor.baseURL)
+Harbor baseURL (scheme + host, no trailing slash)
 */}}
-{{- define "harbor.host" -}}
-{{- $url := include "harbor.baseURL" . -}}
-{{- if hasPrefix "http://" $url -}}
-{{- regexReplaceAll "^http://([^/]+).*" $url "${1}" -}}
-{{- else if hasPrefix "https://" $url -}}
-{{- regexReplaceAll "^https://([^/]+).*" $url "${1}" -}}
-{{- else -}}
-{{- $url -}}
-{{- end -}}
+{{- define "harbor.baseURL" -}}
+https://{{ include "harbor.host" . }}
 {{- end }}
