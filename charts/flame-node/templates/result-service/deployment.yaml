@@ -5,12 +5,20 @@ metadata:
   name: {{ .Release.Name }}-node-result-deployment
   labels:
     component: flame-result-service
+    app.kubernetes.io/name: flame-result-service
+    app.kubernetes.io/component: results
+    app.kubernetes.io/part-of: flame-node
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
   replicas: {{ .Values.resultService.replicaCount }}
   selector:
     matchLabels:
       component: flame-result-service
-      app: {{ .Release.Name }}-node-result
+      app.kubernetes.io/name: flame-result-service
+      app.kubernetes.io/component: results
+      app.kubernetes.io/part-of: flame-node
+      app.kubernetes.io/instance: {{ .Release.Name }}
   template:
     metadata:
       annotations:
@@ -19,7 +27,11 @@ spec:
         {{- end }}
       labels:
         component: flame-result-service
-        app: {{ .Release.Name }}-node-result
+        app.kubernetes.io/name: flame-result-service
+        app.kubernetes.io/component: results
+        app.kubernetes.io/part-of: flame-node
+        app.kubernetes.io/version: {{ .Chart.AppVersion }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
         {{- with .Values.resultService.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}

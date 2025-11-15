@@ -6,20 +6,21 @@ metadata:
   name: {{ .Release.Name }}-node-message-broker
   labels:
     component: flame-message-broker
-    app.kubernetes.io/name: {{ .Release.Name }}-node-message-broker
+    app.kubernetes.io/name: flame-message-broker
     app.kubernetes.io/component: server
-    app.kubernetes.io/part-of: flame
+    app.kubernetes.io/part-of: flame-node
     app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
   replicas: {{ .Values.messageBroker.replicaCount }}
   revisionHistoryLimit: 3
   selector:
     matchLabels:
       component: flame-message-broker
-      app.kubernetes.io/name: {{ .Release.Name }}-node-message-broker
+      app.kubernetes.io/name: flame-message-broker
       app.kubernetes.io/component: server
-      app.kubernetes.io/part-of: flame
-      app.kubernetes.io/version: {{ .Chart.AppVersion }}
+      app.kubernetes.io/part-of: flame-node
+      app.kubernetes.io/instance: {{ .Release.Name }}
   template:
     metadata:
       annotations:
@@ -28,10 +29,11 @@ spec:
         {{- end }}
       labels:
         component: flame-message-broker
-        app.kubernetes.io/name: {{ .Release.Name }}-node-message-broker
+        app.kubernetes.io/name: flame-message-broker
         app.kubernetes.io/component: server
-        app.kubernetes.io/part-of: flame
+        app.kubernetes.io/part-of: flame-node
         app.kubernetes.io/version: {{ .Chart.AppVersion }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
         {{- with .Values.messageBroker.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}

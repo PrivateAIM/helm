@@ -5,12 +5,19 @@ metadata:
   name: {{ .Release.Name }}-po
   labels:
     component: flame-po
+    app.kubernetes.io/name: flame-po
+    app.kubernetes.io/component: orchestartor
+    app.kubernetes.io/part-of: flame-node
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
   selector:
     matchLabels:
       component: flame-po
-      version: {{ .Chart.AppVersion }}
-      deployment-id:  {{ .Release.Name }}
+      app.kubernetes.io/name: flame-po
+      app.kubernetes.io/component: orchestartor
+      app.kubernetes.io/part-of: flame-node
+      app.kubernetes.io/instance: {{ .Release.Name }}
   replicas: {{ .Values.hubAdapter.replicaCount }}
   template:
     metadata:
@@ -20,8 +27,11 @@ spec:
         {{- end }}
       labels:
         component: flame-po
-        version: {{ .Chart.AppVersion }}
-        deployment-id: {{ .Release.Name }}
+        app.kubernetes.io/name: flame-po
+        app.kubernetes.io/component: orchestartor
+        app.kubernetes.io/part-of: flame-node
+        app.kubernetes.io/version: {{ .Chart.AppVersion }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
         {{- with .Values.podOrchestrator.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
