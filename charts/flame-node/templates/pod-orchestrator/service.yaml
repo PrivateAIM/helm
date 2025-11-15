@@ -4,10 +4,18 @@ metadata:
   name: {{ .Release.Name }}-po-service
   labels:
     component: flame-po
+    app.kubernetes.io/name: flame-po
+    app.kubernetes.io/component: orchestartor
+    app.kubernetes.io/part-of: flame-node
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
   ports:
   - name: api
     port: 8000
   selector:
     component: flame-po
-    deployment-id: {{ .Release.Name }}
+    app.kubernetes.io/name: flame-po
+    app.kubernetes.io/component: orchestartor
+    app.kubernetes.io/part-of: flame-node
+    app.kubernetes.io/instance: {{ .Release.Name }}

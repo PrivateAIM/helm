@@ -5,12 +5,19 @@ metadata:
   name: {{ .Release.Name }}-hub-adapter-deployment
   labels:
     component: flame-hub-adapter
+    app.kubernetes.io/name: flame-hub-adapter
+    app.kubernetes.io/component: gateway
+    app.kubernetes.io/part-of: flame-node
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
   selector:
     matchLabels:
       component: flame-hub-adapter
-      version: {{ .Chart.AppVersion }}
-      deployment-id:  {{ .Release.Name }}
+      app.kubernetes.io/name: flame-hub-adapter
+      app.kubernetes.io/component: gateway
+      app.kubernetes.io/part-of: flame-node
+      app.kubernetes.io/instance: {{ .Release.Name }}
   replicas: {{ .Values.hubAdapter.replicaCount }}
   template:
     metadata:
@@ -20,8 +27,11 @@ spec:
         {{- end }}
       labels:
         component: flame-hub-adapter
-        version: {{ .Chart.AppVersion }}
-        deployment-id:  {{ .Release.Name }}
+        app.kubernetes.io/name: flame-hub-adapter
+        app.kubernetes.io/component: gateway
+        app.kubernetes.io/part-of: flame-node
+        app.kubernetes.io/version: {{ .Chart.AppVersion }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
         {{- with .Values.hubAdapter.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
