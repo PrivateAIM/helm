@@ -668,7 +668,7 @@ ui:
   image:
     repository: ghcr.io/privateaim/node-ui
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.3.0
+    tag: 0.3.1
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
