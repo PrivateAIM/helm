@@ -4,9 +4,18 @@ metadata:
   name: {{ .Release.Name }}-node-result-service
   labels:
     component: flame-result-service
+    app.kubernetes.io/name: flame-result-service
+    app.kubernetes.io/component: results
+    app.kubernetes.io/part-of: flame-node
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
   selector:
-    app: {{ .Release.Name }}-node-result
+    component: flame-result-service
+    app.kubernetes.io/name: flame-result-service
+    app.kubernetes.io/component: results
+    app.kubernetes.io/part-of: flame-node
+    app.kubernetes.io/instance: {{ .Release.Name }}
   ports:
     - protocol: TCP
       port: 8080
