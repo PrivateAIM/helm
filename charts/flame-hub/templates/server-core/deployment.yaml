@@ -17,10 +17,9 @@ spec:
         appGroup: "{{ .Release.Name }}-flame-hub"
     spec:
       restartPolicy: Always
-      {{- $ingressIP := include "flameHub.ingressControllerIP" . }}
-      {{- if and $ingressIP (include "harbor.host" .) }}
+      {{- if not .Values.harbor.externalHarbor }}
       hostAliases:
-        - ip: {{ $ingressIP | quote }}
+        - ip: "127.0.0.1"
           hostnames:
             - {{ include "harbor.host" . | quote }}
       {{- end }}
@@ -65,7 +64,7 @@ spec:
               command: [
                   'sh',
                   '-c',
-                  'until wget --no-check-certificate -qO- {{ include "harbor.baseURL" . }}/api/v2.0/ping; do echo "Waiting for harbor..."; sleep 5; done'
+                  'until wget --no-check-certificate -qO- https://{{ include "harbor.internalHost" . }}/api/v2.0/ping; do echo "Waiting for harbor..."; sleep 5; done'
               ]
       containers:
         - name: "{{ .Release.Name }}-flame-hub-server-core"
@@ -123,5 +122,12 @@ spec:
               failureThreshold: 3
               periodSeconds: 60
               initialDelaySeconds: 90
-
+        {{- if not .Values.harbor.externalHarbor }}
+        - name: harbor-proxy-sidecar
+          image: alpine/socat
+          args: ["TCP-LISTEN:443,fork,bind=127.0.0.1", "TCP:{{ include "harbor.internalHost" . }}:443"]
+          securityContext:
+            capabilities:
+              add: ["NET_BIND_SERVICE"]
+        {{- end }}
 

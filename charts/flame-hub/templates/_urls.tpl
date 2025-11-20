@@ -78,10 +78,11 @@ http://{{ .Values.global.flameHub.ingress.hostname }}/auth/
 Harbor host
 */}}
 {{- define "harbor.host" -}}
-{{- if .Values.harbor.ingress.core.hostname -}}
-{{ .Values.harbor.ingress.core.hostname }}
+{{- if .Values.harbor.externalURL -}}
+{{- $parsedURL := urlParse .Values.harbor.externalURL -}}
+{{- $parsedURL.host -}}
 {{- else -}}
-{{ .Values.externalHarbor.hostname }}
+{{ .Values.externalHarbor.URL }}
 {{- end -}}
 {{- end }}
 
@@ -89,5 +90,21 @@ Harbor host
 Harbor baseURL (scheme + host, no trailing slash)
 */}}
 {{- define "harbor.baseURL" -}}
-https://{{ include "harbor.host" . }}
+{{- if .Values.harbor.externalURL -}}
+{{- trimSuffix "/" .Values.harbor.externalURL -}}
+{{- else -}}
+{{- trimSuffix "/" .Values.externalHarbor.URL -}}
+{{- end -}}
+{{- end }}
+
+
+{{/*
+Harbor internalHost (host, no trailing slash)
+*/}}
+{{- define "harbor.internalHost" -}}
+{{- if .Values.externalHarbor.enabled -}}
+{{ include "harbor.host" . }}
+{{- else -}}
+{{ .Release.Name }}-harbor
+{{- end }}
 {{- end }}

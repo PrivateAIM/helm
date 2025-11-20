@@ -10,11 +10,6 @@ global:
             ssl: false
             hostname: "localhost"
 
-# Ingress controller configuration for hostAliases resolution (needed for internal harbor via https)
-ingressController:
-    namespace: "ingress-nginx"
-    serviceName: "ingress-nginx-controller"
-
 image:
     registry: ghcr.io
     repository: privateaim/hub
@@ -46,8 +41,8 @@ serverCore:
     env:
         masterImagesBranch: "develop"
     harbor:
-        username: "{{ .Values.harbor.adminUsername }}"
-        password: "{{ .Values.harbor.adminPassword }}"
+        username: "admin"
+        password: "start123"
 
 serverMessenger:
     ingress:
@@ -79,8 +74,6 @@ serverCoreWorker:
     # Required if the internal harbor is used. Alternatively you can manually add the CA cert to k8s nodes' /etc/docker/certs.d/harbor.hub.local/ca.crt
     # so the host docker daemon can trust the harbor's cert.
     useSidecarDinD: true
-    # Trust Harbor's cert by mounting a Secret containing ca.crt
-    caCrtSecretName: "" # get the secret name from the harbor ingress resource(kubectl describe ingress hub-harbor-ingress)
 
 ## services
 vault:
@@ -232,15 +225,18 @@ harbor:
     nameOverride: "harbor"
     adminUsername: "admin"
     adminPassword: "start123"
-    exposureType: "ingress"
-    ingress:
-        core:
-            tls: true
-            selfSigned: true
-            hostname: "" # subdomain of hub -> e.g. harbor.hub.local
+    exposureType: "proxy"
     externalURL: "" # Required by Harbor, e.g. https://harbor.hub.local
     migration:
         enabled: false
+
+    nginx:
+        behindReverseProxy: true
+        tls:
+            enabled: true
+        image:
+            repository: "bitnamilegacy/nginx"
+            tag: "1.29.1-debian-12-r0"
     portal:
         # defining explicit secrets for the following fields is not required if a chart installation is triggered by helm
         # secret: "start123"
@@ -297,4 +293,4 @@ harbor:
 
 externalHarbor:
     enabled: false
-    hostname: "" # (hostname only, without https://)
+    URL: ""
