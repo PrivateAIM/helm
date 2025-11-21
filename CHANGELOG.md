@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.0.10](https://github.com/PrivateAIM/helm/compare/root-0.0.9...root-0.0.10) (2025-11-21)
+
+
+### Features
+
+* **node:** add statusLoopInterval to podOrc values ([66fc9a1](https://github.com/PrivateAIM/helm/commit/66fc9a1d973f7bbb5a034cbd3b00e597a867d7ba))
+
+
+### Bug Fixes
+
+* **node:** add default empty string to robotSecret so b64enc works ([cd51b71](https://github.com/PrivateAIM/helm/commit/cd51b71f896156e424c25954df488b9d461b8af2))
+* **node:** remove "offline" value and fix sign in when ingress disabled ([64feebd](https://github.com/PrivateAIM/helm/commit/64feebde5e613109d9d3f8900b68b9f738da32a5))
+
+
+### Performance Improvements
+
+* **node:** change podorc image pullPolicy to IfNotPresent ([f8203ed](https://github.com/PrivateAIM/helm/commit/f8203ed5b8760b3a841f8ed23924e364e7287f5c))
+
+
+### Reverts
+
+* **node:** add offline back to values ([04b4c1b](https://github.com/PrivateAIM/helm/commit/04b4c1bd05303008a8ee0f5ba58720e402c5b570))
+
 ## [0.0.9](https://github.com/PrivateAIM/helm/compare/root-v0.0.8...root-0.0.9) (2025-10-16)
 
 

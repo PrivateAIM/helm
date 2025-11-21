@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.10](https://github.com/PrivateAIM/helm/compare/flame-hub-0.0.9...flame-hub-0.0.10) (2025-11-21)
+
+
+### Miscellaneous Chores
+
+* **flame-hub:** Synchronize global versions
+
 ## [0.0.9](https://github.com/PrivateAIM/helm/compare/flame-hub-0.0.8...flame-hub-0.0.9) (2025-10-16)
 
 
