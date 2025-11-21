@@ -1,6 +1,6 @@
 {
-  ".": "0.0.9",
-  "charts/flame-hub": "0.0.9",
-  "charts/flame-node": "0.0.9",
-  "charts/third-party/authup": "0.0.9"
+  ".": "0.0.10",
+  "charts/flame-hub": "0.0.10",
+  "charts/flame-node": "0.0.10",
+  "charts/third-party/authup": "0.0.10"
 }
