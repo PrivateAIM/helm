@@ -100,6 +100,7 @@ Harbor baseURL (scheme + host, no trailing slash)
 
 {{/*
 Harbor internalHost (host, no trailing slash)
+This is used by pods to access harbor. If ExternalHarbor is used, this will be the external harbor host.
 */}}
 {{- define "harbor.internalHost" -}}
 {{- if .Values.externalHarbor.enabled -}}

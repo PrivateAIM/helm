@@ -99,6 +99,7 @@ spec:
               timeoutSeconds: 10
         - name: harbor-proxy-sidecar
           image: alpine/socat
+          # Proxy HTTPS traffic to the internal harbor. This is a workaround to avoid static hostAliases.
           args: ["TCP-LISTEN:443,fork,bind=127.0.0.1", "TCP:{{ include "harbor.internalHost" . }}:443"]
           securityContext:
             capabilities:
@@ -110,7 +111,11 @@ spec:
           securityContext:
             privileged: true
           {{- if not .Values.harbor.externalHarbor }}
-          args: ["--insecure-registry", "{{ include "harbor.host" . }}"]
+          # Microk8s Calico CNI defaults to 1400 MTU, but dind defaults to 1500.
+          # This might be different on other k8s providers. If you get mysterious connection errors, check your MTU.
+          args: ["--insecure-registry", "{{ include "harbor.host" . }}:443", "--mtu", "1350"]
+          {{- else }}
+          args: ["--mtu", "1350"]
           {{- end }}
           volumeMounts:
             - name: "{{ .Release.Name }}-docker-sidecar-graph-storage"
