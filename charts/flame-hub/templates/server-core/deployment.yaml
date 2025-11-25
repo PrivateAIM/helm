@@ -17,7 +17,7 @@ spec:
         appGroup: "{{ .Release.Name }}-flame-hub"
     spec:
       restartPolicy: Always
-      {{- if not .Values.harbor.externalHarbor }}
+      {{- if not .Values.externalHarbor.enabled }}
       hostAliases:
         - ip: "127.0.0.1"
           hostnames:
@@ -122,7 +122,7 @@ spec:
               failureThreshold: 3
               periodSeconds: 60
               initialDelaySeconds: 90
-        {{- if not .Values.harbor.externalHarbor }}
+        {{- if not .Values.externalHarbor.enabled }}
         - name: harbor-proxy-sidecar
           image: alpine/socat
           args: ["TCP-LISTEN:443,fork,bind=127.0.0.1", "TCP:{{ include "harbor.internalHost" . }}:443"]
