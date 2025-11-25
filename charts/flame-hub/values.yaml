@@ -39,7 +39,7 @@ serverCore:
         path: "/"
         pathType: "Prefix"
     env:
-        masterImagesBranch: "develop"
+        masterImagesBranch: ""
     harbor:
         username: "admin"
         password: "start123"
@@ -70,9 +70,7 @@ serverTelemetry:
 
 serverCoreWorker:
     enabled: true
-    # Use a docker-in-docker sidecar so we can manage CA trust inside the pod
-    # Required if the internal harbor is used. Alternatively you can manually add the CA cert to k8s nodes' /etc/docker/certs.d/harbor.hub.local/ca.crt
-    # so the host docker daemon can trust the harbor's cert.
+    # Use a docker-in-docker sidecar container instead of mounting the docker socket from the host
     useSidecarDinD: true
 
 ## services
