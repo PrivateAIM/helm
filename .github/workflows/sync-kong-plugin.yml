@@ -92,13 +92,16 @@ jobs:
       - name: Check for changes
         id: check-changes
         run: |
-          if git diff --quiet charts/flame-node/templates/kong/minio-gateway-plugin-configmap.yaml; then
+          # Add all files to staging to detect new files
+          git add charts/flame-node/templates/kong/minio-gateway-plugin-configmap.yaml
+          
+          if git diff --cached --quiet charts/flame-node/templates/kong/minio-gateway-plugin-configmap.yaml; then
             echo "has_changes=false" >> $GITHUB_OUTPUT
             echo "No changes detected in plugin files"
           else
             echo "has_changes=true" >> $GITHUB_OUTPUT
             echo "Changes detected in plugin files"
-            git diff charts/flame-node/templates/kong/minio-gateway-plugin-configmap.yaml
+            git diff --cached charts/flame-node/templates/kong/minio-gateway-plugin-configmap.yaml
           fi
 
       - name: Create Pull Request
