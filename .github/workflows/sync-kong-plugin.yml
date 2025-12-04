@@ -6,6 +6,12 @@ on:
   # Triggered by repository_dispatch from kong-plugin-minio-gateway repo
   repository_dispatch:
     types: [sync-kong-plugin]
+  # TODO: Remove this trigger after testing - only for branch testing
+  push:
+    branches:
+      - kong-minio-plugin
+    paths:
+      - '.github/workflows/sync-kong-plugin.yml'
 
 permissions:
   contents: write
