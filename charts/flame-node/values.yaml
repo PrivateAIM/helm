@@ -156,6 +156,12 @@ kong:
   postgresql:
     enabled: false
 
+  # Custom plugins loaded via ConfigMap
+  plugins:
+    configMaps:
+      - name: kong-plugin-minio-gateway
+        pluginName: minio-gateway
+
 resultService:
   env:
     MINIO_USE_SSL: false
