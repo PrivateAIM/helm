@@ -225,6 +225,8 @@ harbor:
     adminPassword: "start123"
     exposureType: "proxy"
     externalURL: "" # Required by Harbor, e.g. https://harbor.hub.local
+    ingress:
+        enabled: true # Harbor always needs its own hostname, this is independent of global path-based ingress
     migration:
         enabled: true
 
