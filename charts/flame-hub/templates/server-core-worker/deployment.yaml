@@ -97,6 +97,7 @@ spec:
                   port: 3000
               periodSeconds: 10
               timeoutSeconds: 10
+        {{- if not .Values.externalHarbor.enabled }}
         - name: harbor-proxy-sidecar
           image: alpine/socat
           # Proxy HTTPS traffic to the internal harbor. This is a workaround to avoid static hostAliases.
@@ -104,6 +105,7 @@ spec:
           securityContext:
             capabilities:
               add: ["NET_BIND_SERVICE"]
+        {{- end }}
         {{- if .Values.serverCoreWorker.useSidecarDinD }}
         - name: "{{ .Release.Name }}-docker-sidecar-dind"
           image: "docker:28-dind"
@@ -122,12 +124,6 @@ spec:
               mountPath: /var/lib/docker
             - name: "{{ .Release.Name }}-docker-sidecar-socket"
               mountPath: /var/run
-        {{- else }}
-          volumeMounts:
-            - name: "{{ .Release.Name }}-docker-sidecar-graph-storage"
-              mountPath: /var/lib/docker
-            - name: "{{ .Release.Name }}-docker-sidecar-socket"
-              mountPath: /var/run
         {{- end }}
       volumes:
           {{- if .Values.serverCoreWorker.useSidecarDinD }}
@@ -141,7 +137,3 @@ spec:
                   path: "/var/run/docker.sock"
                   type: "Socket"
           {{- end }}
-
-      
-
-
