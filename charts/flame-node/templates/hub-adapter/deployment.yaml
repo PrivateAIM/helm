@@ -89,6 +89,14 @@ spec:
               value: {{ .Values.autostart.enabled | default "false" | quote }}
             - name: AUTOSTART_INTERVAL
               value: {{ .Values.autostart.interval | default "60" | quote }}
+            - name: ROLE_CLAIM_NAME
+              value: {{ .Values.rbac.roleClaimName | default "" | quote }}
+            - name: ADMIN_ROLE
+              value: {{ .Values.rbac.adminRole | default "" | quote }}
+            - name: STEWARD_ROLE
+              value: {{ .Values.rbac.stewardRole | default "" | quote }}
+            - name: RESEARCHER_ROLE
+              value: {{ .Values.rbac.researcherRole | default "" | quote }}
             {{- if $hasCerts }}
             - name: EXTRA_CA_CERTS
               value: "/mnt/certs/certs.pem"
