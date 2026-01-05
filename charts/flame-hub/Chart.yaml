@@ -47,6 +47,10 @@ dependencies:
     version: 6.0.6
     repository: https://charts.bitnami.com/bitnami
 
+  - name: victoria-logs-cluster
+    version: 0.0.24
+    repository: https://victoriametrics.github.io/helm-charts/
+
   - name: prometheus
     version: 2.1.23
     repository: https://charts.bitnami.com/bitnami
@@ -58,4 +62,4 @@ dependencies:
 
   - name: authup
     repository: file://../third-party/authup
-    version: 0.0.9
+    version: 0.0.10
