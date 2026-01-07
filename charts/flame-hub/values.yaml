@@ -147,6 +147,14 @@ grafana:
     config:
         useGrafanaIniFile: true
         grafanaIniConfigMap: grafana
+    plugins:
+    - https://github.com/VictoriaMetrics/victorialogs-datasource/releases/download/v0.23.2/victoriametrics-logs-datasource-v0.23.2.zip;victoriametrics-logs-datasource
+
+victoria-logs-cluster:
+    nameOverride: "victoria-logs"
+    vlstorage:
+        retentionPeriod: "100y"
+        retentionDiskSpaceUsage: "50GiB"
 
 grafana-loki:
     nameOverride: "loki"

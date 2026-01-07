@@ -53,12 +53,12 @@ spec:
                         '-c',
                         'until nc -z -v -w30 {{ .Release.Name }}-authup-server-core 3000; do echo "Waiting for authup..."; sleep 5; done'
                     ]
-                - name: wait-for-loki
+                - name: wait-for-vl
                   image: busybox
                   command: [
                     'sh',
                     '-c',
-                    'until nc -z -v -w30 {{ .Release.Name }}-loki-query-frontend 3100; do echo "Waiting for loki..."; sleep 5; done'
+                    'until nc -z -v -w30 {{ .Release.Name }}-victoria-logs-vlinsert 9481; do echo "Waiting for victoria-logs..."; sleep 5; done'
                   ]
             containers:
                 -   name: "{{ .Release.Name }}-flame-hub-server-telemetry"
@@ -77,12 +77,10 @@ spec:
                             value: "start123@http://{{ .Release.Name }}-vault:8200/v1/"
                         -   name: AUTHUP_URL
                             value: "http://{{ .Release.Name }}-authup-server-core:3000/"
-                        -   name: LOKI_COMPACTOR_URL
-                            value: "http://{{ .Release.Name }}-loki-compactor:3100/"
-                        -   name: LOKI_DISTRIBUTOR_URL
-                            value: "http://{{ .Release.Name }}-loki-distributor:3100/"
-                        -   name: LOKI_QUERIER_URL
-                            value: "http://{{ .Release.Name }}-loki-query-frontend:3100/"
+                        -   name: VICTORIA_LOGS_INGESTOR_URL
+                            value: "http://{{ .Release.Name }}-victoria-logs-vlinsert:9481/"
+                        -   name: VICTORIA_LOGS_QUERIER_URL
+                            value: "http://{{ .Release.Name }}-victoria-logs-vlselect:9471/"
                         -   name: DB_TYPE
                             value: "mysql"
                         -   name: DB_HOST
