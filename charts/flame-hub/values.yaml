@@ -148,7 +148,7 @@ grafana:
         useGrafanaIniFile: true
         grafanaIniConfigMap: grafana
     plugins:
-    - https://github.com/VictoriaMetrics/victorialogs-datasource/releases/download/v0.23.2/victoriametrics-logs-datasource-v0.23.2.zip;victoriametrics-logs-datasource
+        - https://github.com/VictoriaMetrics/victorialogs-datasource/releases/download/v0.23.2/victoriametrics-logs-datasource-v0.23.2.zip;victoriametrics-logs-datasource
 
 victoria-logs-cluster:
     nameOverride: "victoria-logs"
@@ -294,7 +294,7 @@ harbor:
     redis:
         enabled: false
     externalRedis:
-        host: "hub-redis-master.default.svc.cluster.local"
+        host: "redis-internal"
         port: 6379
         password: "start123"
         coreDatabaseIndex: "0"
