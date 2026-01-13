@@ -1,9 +1,6 @@
 global:
     imagePullPolicy: "IfNotPresent"
 
-    redis:
-        password: "start123"
-
     flameHub:
         ingress:
             enabled: true
@@ -93,6 +90,7 @@ redis:
     nameOverride: "redis"
     auth:
         enabled: true
+        password: "start123"
     image:
         #repository: "tada5hi/redis"
         repository: "bitnamilegacy/redis"
@@ -147,8 +145,8 @@ grafana:
     config:
         useGrafanaIniFile: true
         grafanaIniConfigMap: grafana
-    plugins:
-        - https://github.com/VictoriaMetrics/victorialogs-datasource/releases/download/v0.23.2/victoriametrics-logs-datasource-v0.23.2.zip;victoriametrics-logs-datasource
+    # plugins:
+    #     - https://github.com/VictoriaMetrics/victorialogs-datasource/releases/download/v0.23.2/victoriametrics-logs-datasource-v0.23.2.zip;victoriametrics-logs-datasource
 
 victoria-logs-cluster:
     nameOverride: "victoria-logs"
@@ -292,15 +290,14 @@ harbor:
             # See https://github.com/bitnami/containers/issues/2680#issue-1334211988
             tag: "13.7.0-debian-11-r9"
     redis:
-        enabled: false
-    externalRedis:
-        host: "redis-internal"
-        port: 6379
-        password: "start123"
-        coreDatabaseIndex: "0"
-        jobserviceDatabaseIndex: "1"
-        registryDatabaseIndex: "2"
-        trivyAdapterDatabaseIndex: "5"
+        enabled: true
+        nameOverride: "harbor-redis"
+        auth:
+            enabled: true
+            password: "start123"
+        image:
+            repository: "bitnamilegacy/redis"
+            tag: "8.2.1-debian-12-r0"
 
 externalHarbor:
     enabled: false
