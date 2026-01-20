@@ -49,7 +49,7 @@ data:
         "requiredActions" : [ ],
         "realmRoles" : [ "default-roles-flame" ],
         "clientRoles" : {
-          "node-ui" : [ "admin" ]
+          "node-ui" : [ {{ .Values.rbac.adminRole | default "admin" | quote }} ]
         },
         "notBefore" : 0,
         "groups" : [ ]

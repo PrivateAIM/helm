@@ -388,7 +388,7 @@ hubAdapter:
   image:
     repository: ghcr.io/privateaim/node-hub-api-adapter
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.3.4
+    tag: 0.3.5
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -798,7 +798,7 @@ flame-node-data-store:
       annotations:
         helm.sh/resource-policy: keep
 
-## Used by the pod orchestrator for storing information on the analysis pods
+## Used by the node components for storing information on the analysis pods and logging events
 postgresql:
   nameOverride:
   fullnameOverride:
