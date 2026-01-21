@@ -152,7 +152,7 @@ grafana:
         useGrafanaIniFile: true
         grafanaIniConfigMap: grafana
     plugins:
-    - https://github.com/VictoriaMetrics/victorialogs-datasource/releases/download/v0.23.2/victoriametrics-logs-datasource-v0.23.2.zip;victoriametrics-logs-datasource
+        - https://github.com/VictoriaMetrics/victorialogs-datasource/releases/download/v0.23.2/victoriametrics-logs-datasource-v0.23.2.zip;victoriametrics-logs-datasource
 
 victoria-logs-cluster:
     nameOverride: "victoria-logs"
@@ -286,4 +286,22 @@ harbor:
             repository: "bitnamilegacy/harbor-adapter-trivy"
             tag: "2.13.2-debian-12-r2"
 
-
+openebs:
+    # OpenEBS provides mayastor for replicated storage (off by default)
+    engines:
+        local:
+            lvm:
+                enabled: false
+            zfs:
+                enabled: false
+        replicated:
+            # Enable Mayastor for replicated storage (3+ node cluster)
+            mayastor:
+                enabled: false
+                # If you want to use Mayastor you may need to set the kubeletDir (default is /var/lib/kubelet)
+                # For MicroK8s, the kubeletDir is /var/snap/microk8s/common/var/lib/kubelet/
+                # csi:
+                #     node:
+                #         kubeletDir: /var/snap/microk8s/common/var/lib/kubelet/
+    loki:
+        enabled: false
