@@ -1,0 +1,19 @@
+{{- if .Values.openebs.engines.replicated.mayastor.enabled }}
+{{- range .Values.openebs.mayastorConfig.storageClasses }}
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: {{ .name }}
+  {{- if .default }}
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+  {{- end }}
+parameters:
+  protocol: {{ .protocol | default "nvmf" }}
+  repl: {{ .replicationFactor | default 1 | quote }}
+provisioner: io.openebs.csi-mayastor
+allowVolumeExpansion: true
+volumeBindingMode: Immediate
+{{- end }}
+{{- end }}

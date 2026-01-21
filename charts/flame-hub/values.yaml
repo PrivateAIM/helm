@@ -298,10 +298,30 @@ openebs:
             # Enable Mayastor for replicated storage (3+ node cluster)
             mayastor:
                 enabled: false
-                # If you want to use Mayastor you may need to set the kubeletDir (default is /var/lib/kubelet)
-                # For MicroK8s, the kubeletDir is /var/snap/microk8s/common/var/lib/kubelet/
-                # csi:
-                #     node:
-                #         kubeletDir: /var/snap/microk8s/common/var/lib/kubelet/
+    # mayastor:
+    #     # If you want to use Mayastor you may need to set the kubeletDir (default is /var/lib/kubelet)
+    #     # For MicroK8s, the kubeletDir is /var/snap/microk8s/common/var/lib/kubelet/
+    #     csi:
+    #         node:
+    #             kubeletDir: /var/snap/microk8s/common/var/lib/kubelet/
     loki:
         enabled: false
+
+    # Mayastor configuration (only used when mayastor.enabled is true)
+    mayastorConfig:
+        # StorageClasses to create
+        storageClasses:
+            - name: mayastor-replicated
+              replicationFactor: 3
+              protocol: nvmf
+              default: false
+
+        # DiskPools to create - one per node with dedicated block device
+        # Use: kubectl mayastor get block-devices <node-name> to find device paths
+        # Example:
+        # diskPools:
+        #     - name: pool-on-node-1
+        #       node: worker-node-1
+        #       disks:
+        #           - "aio:///dev/disk/by-id/<device-id>"
+        diskPools: []
