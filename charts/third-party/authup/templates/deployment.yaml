@@ -75,11 +75,16 @@ spec:
                   memory: "512Mi"
               limits:
                   memory: "2048Mi"
+          startupProbe:
+              httpGet:
+                  path: "/"
+                  port: 3000
+              failureThreshold: 90
+              periodSeconds: 10 # Allows up to 15 minutes (90 * 10s) for initial startup/migration
           readinessProbe:
               httpGet:
                   path: "/"
                   port: 3000
-              initialDelaySeconds: 60
               periodSeconds: 5
               timeoutSeconds: 10
           livenessProbe:
@@ -88,6 +93,5 @@ spec:
                   port: 3000
               failureThreshold: 3
               periodSeconds: 60
-              initialDelaySeconds: 90
 
 

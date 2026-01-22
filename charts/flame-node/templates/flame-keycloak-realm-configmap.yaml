@@ -11,6 +11,26 @@ data:
       "accessTokenLifespan" : 7200,
       "enabled" : true,
       "requiredCredentials" : [ "password" ],
+      "roles" : {
+        "client" : {
+          "node-ui" : [ {
+            "name" : {{ .Values.rbac.adminRole | default "admin" | quote }},
+            "description" : "Has full access to UI and its functions.",
+            "composite" : false,
+            "clientRole" : true
+          }, {
+            "name" : {{ .Values.rbac.stewardRole | default "steward" | quote }},
+            "description" : "Can create and modify data stores, but not modify analyses.",
+            "composite" : false,
+            "clientRole" : true
+          }, {
+            "name" : {{ .Values.rbac.researcherRole | default "researcher" | quote }},
+            "description" : "Can modify and view analyses, but not modify data stores.",
+            "composite" : false,
+            "clientRole" : true
+          } ]
+        }
+      },
       "users" : [ {
         "username" : "flameuser",
         "firstName" : "Johnny",
@@ -28,6 +48,9 @@ data:
         "disableableCredentialTypes" : [ ],
         "requiredActions" : [ ],
         "realmRoles" : [ "default-roles-flame" ],
+        "clientRoles" : {
+          "node-ui" : [ {{ .Values.rbac.adminRole | default "admin" | quote }} ]
+        },
         "notBefore" : 0,
         "groups" : [ ]
       }, {
