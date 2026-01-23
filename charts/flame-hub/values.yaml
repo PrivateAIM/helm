@@ -77,6 +77,8 @@ rabbitmq:
     auth:
         username: "root"
         password: "start123"
+    # persistence:
+    #     storageClass: "mayastor-replicated"
     image:
         #repository: "tada5hi/rabbitmq"
         repository: "bitnamilegacy/rabbitmq"
@@ -100,6 +102,8 @@ minio:
         #repository: "tada5hi/minio"
         repository: "bitnamilegacy/minio"
         tag: "2025.7.23-debian-12-r3"
+    # persistence:
+    #     storageClass: "mayastor-replicated"
     auth:
         rootUser: "admin"
         rootPassword: "start123"
@@ -148,6 +152,8 @@ grafana:
         enabled: true
     datasources:
         secretName: grafana-datasources
+    # persistence:
+    #     storageClass: "mayastor-replicated"
     config:
         useGrafanaIniFile: true
         grafanaIniConfigMap: grafana
