@@ -51,6 +51,8 @@ spec:
             - containerPort: 3000
               name: ui
           env:
+            - name: TZ
+              value: {{ .Values.timezone | default "Europe/Berlin" }}
             - name: NODE_ENV
               value: {{ .Values.ui.env | default "production" | quote }}
             - name: HTTP_PROXY

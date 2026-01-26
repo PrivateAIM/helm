@@ -71,6 +71,8 @@ spec:
           ports:
             - containerPort: 8080
           env:
+            - name: TZ
+              value: {{ .Values.timezone | default "Europe/Berlin" }}
             - name: POSTGRES_HOST
               value: {{ include "postgresql.endpoint" . }}
             - name: POSTGRES_DB

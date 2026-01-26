@@ -53,6 +53,8 @@ spec:
           ports:
             - containerPort: 8080
           env:
+            - name: TZ
+              value: {{ .Values.timezone | default "Europe/Berlin" }}
             - name: AUTH_JWKS_URL
               value: {{ required "A valid JWKS URL for Keycloak is required." (include "keycloak.jwks.endpoint" .) }}
             - name: HUB_AUTH_BASE_URL
