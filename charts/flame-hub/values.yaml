@@ -256,7 +256,10 @@ harbor:
         enabled: true # Harbor always needs its own hostname, this is independent of global path-based ingress
     migration:
         enabled: true
-
+    # persistence:
+    #     persistentVolumeClaim:
+    #         registry:
+    #             storageClass: "mayastor-replicated"
     nginx:
         behindReverseProxy: true
         tls:
