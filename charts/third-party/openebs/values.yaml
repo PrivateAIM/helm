@@ -16,6 +16,11 @@ openebs:
   #       kubeletDir: /var/snap/microk8s/common/var/lib/kubelet # no trailing slash !!
   loki:
     enabled: false
+  alloy:
+    enabled: false
+  obs:
+    callhome:
+      enabled: false
 
   # Mayastor configuration (only used when mayastor.enabled is true)
   mayastorConfig:
