@@ -49,7 +49,7 @@ data:
         "requiredActions" : [ ],
         "realmRoles" : [ "default-roles-flame" ],
         "clientRoles" : {
-          "node-ui" : [ "admin" ]
+          "node-ui" : [ {{ .Values.rbac.adminRole | default "admin" | quote }} ]
         },
         "notBefore" : 0,
         "groups" : [ ]
@@ -64,11 +64,11 @@ data:
         "requiredActions" : [ ],
         "realmRoles" : [ "default-roles-flame" ],
         "clientRoles" : {
-          "realm-management" : [ 
-            "create-client", 
-            "manage-clients", 
-            "view-events", 
-            "query-clients" 
+          "realm-management" : [
+            "create-client",
+            "manage-clients",
+            "view-events",
+            "query-clients"
           ],
           "service1" : [ "uma_protection" ]
         },

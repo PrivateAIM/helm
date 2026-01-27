@@ -13,6 +13,9 @@ global:
 ## Overrides hubAdapter.idp.jwks and enables NUXT_PUBLIC_INTERNAL_KEYCLOAK_URL for the UI
 offline: false
 
+## @param timezone Set the timezone for all components in the FLAME Node, use "TZ identifier" from https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+timezone: Europe/Berlin
+
 ## @param userIdp The following settings are used to configure a separate IDP for the Node UI other than the default keycloak instance
 userIdp:
   ## @param userIdp.hostname Hostname for a separate IDP to manage users who can access the FLAME Node UI.
@@ -264,7 +267,7 @@ keycloakx:
   http:
     relativePath: /keycloak
 
-  command: 
+  command:
    - "/opt/keycloak/bin/kc.sh"
    - "start-dev"
    - "--import-realm"
@@ -274,7 +277,7 @@ keycloakx:
 
   dbchecker:
     enabled: true
-  
+
   database:
     vendor: postgres
     hostname: flame-node-keycloak-postgresql
@@ -328,10 +331,10 @@ keycloakx:
         paths:
           - path: '{{ tpl .Values.http.relativePath $ | trimSuffix "/" }}/'
             pathType: ImplementationSpecific
-    
+
     # TLS configuration
     tls: []  # Must be set to empty if no TLS present otherwise will initialize with default example host
-    
+
     console:
       # If `true`, an Ingress is created for console path only
       enabled: true
@@ -346,7 +349,7 @@ keycloakx:
       # Console TLS configuration KlpndHhf8K0Aj2R7JmNlSE2a7XJcSKPV
       tls: []
 
-    
+
 
 # hub-api-adapter Values
 hubAdapter:
@@ -388,7 +391,7 @@ hubAdapter:
   image:
     repository: ghcr.io/privateaim/node-hub-api-adapter
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.3.4
+    tag: 0.3.5
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -588,7 +591,7 @@ messageBroker:
   image:
     repository: ghcr.io/privateaim/node-message-broker
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.5.0
+    tag: 0.6.0
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -767,7 +770,7 @@ flame-node-data-store:
     persistence:
       enabled: true
       size: 5Gi
-  
+
     # ⚠️ Note:
     # The dataPopulatorJob is intended for initial population of FHIR resources with dummy data from Synthea.
     # If enabled (`enabled: true`), it will add resources to the Blaze data store which may lead to unintended data being present.
@@ -798,7 +801,7 @@ flame-node-data-store:
       annotations:
         helm.sh/resource-policy: keep
 
-## Used by the pod orchestrator for storing information on the analysis pods
+## Used by the node components for storing information on the analysis pods and logging events
 postgresql:
   nameOverride:
   fullnameOverride:

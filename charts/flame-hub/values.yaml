@@ -89,8 +89,15 @@ rabbitmq:
         #repository: "tada5hi/rabbitmq"
         repository: "bitnamilegacy/rabbitmq"
         tag: "4.1.3-debian-12-r1"
+    # See /charts/third-party/openebs for details
+    # persistence:
+    #     storageClass: "mayastor-replicated"
 redis:
     nameOverride: "redis"
+    startupProbe:
+        failureThreshold: 15
+    readinessProbe:
+        failureThreshold: 10
     auth:
         enabled: true
     image:
@@ -112,6 +119,9 @@ minio:
             #repository: "tada5hi/minio-object-browser"
             repository: "bitnamilegacy/minio-object-browser"
             tag: "2.0.2-debian-12-r3"
+    # See /charts/third-party/openebs for details
+    # persistence:
+    #     storageClass: "mayastor-replicated"
 mysql:
     nameOverride: "mysql"
     image:
@@ -122,11 +132,19 @@ mysql:
         rootPassword: "start123"
         replicationPassword: "start123"
     secondary:
+        startupProbe:
+            failureThreshold: 30
+        readinessProbe:
+            failureThreshold: 20
         persistence:
             enabled: true
             size: 16Gi
         replicaCount: 2
     primary:
+        startupProbe:
+            failureThreshold: 30
+        readinessProbe:
+            failureThreshold: 20
         persistence:
             enabled: true
             size: 16Gi
@@ -148,7 +166,7 @@ grafana:
         useGrafanaIniFile: true
         grafanaIniConfigMap: grafana
     plugins:
-    - https://github.com/VictoriaMetrics/victorialogs-datasource/releases/download/v0.23.2/victoriametrics-logs-datasource-v0.23.2.zip;victoriametrics-logs-datasource
+        - https://github.com/VictoriaMetrics/victorialogs-datasource/releases/download/v0.23.2/victoriametrics-logs-datasource-v0.23.2.zip;victoriametrics-logs-datasource
 
 victoria-logs-cluster:
     nameOverride: "victoria-logs"

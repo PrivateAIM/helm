@@ -52,6 +52,8 @@ spec:
             - containerPort: 5000
               name: healthcp
           env:
+            - name: TZ
+              value: {{ .Values.timezone | default "Europe/Berlin" }}
             - name: API_ROOT_PATH
               value: {{ (include "adapter.root.path" .) | default "" }}
             - name: API_CLIENT_ID
@@ -97,6 +99,25 @@ spec:
               value: {{ .Values.rbac.stewardRole | default "" | quote }}
             - name: RESEARCHER_ROLE
               value: {{ .Values.rbac.researcherRole | default "" | quote }}
+            - name: POSTGRES_EVENT_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "postgresql.user.secretName" . }}
+                  key: DB_USER
+            - name: POSTGRES_EVENT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "postgresql.user.secretName" . }}
+                  key: DB_PASSWORD
+            - name: POSTGRES_EVENT_DB
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "postgresql.user.secretName" . }}
+                  key: DB_DATABASE
+            - name: POSTGRES_EVENT_HOST
+              value: {{ include "postgresql.endpoint" . }}
+            - name: POSTGRES_EVENT_PORT
+              value: {{ .Values.postgresql.service.port | default "5432" | quote }}
             {{- if $hasCerts }}
             - name: EXTRA_CA_CERTS
               value: "/mnt/certs/certs.pem"

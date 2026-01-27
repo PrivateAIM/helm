@@ -1,0 +1,12 @@
+apiVersion: v2
+name: openebs-wrapper
+# Wrapper Chart for version pinning
+description: OpenEBS for FLAME
+type: application
+version: 0.1.0
+appVersion: "4.4.0"
+
+dependencies:
+  - name: openebs
+    version: 4.4.0
+    repository: https://openebs.github.io/openebs
