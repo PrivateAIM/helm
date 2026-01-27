@@ -1,0 +1,13 @@
+{{- if and .Values.openebs.engines.replicated.mayastor.enabled .Values.openebs.mayastorConfig.diskPools }}
+{{- range .Values.openebs.mayastorConfig.diskPools }}
+---
+apiVersion: "openebs.io/v1beta3"
+kind: DiskPool
+metadata:
+  name: {{ .name }}
+spec:
+  node: {{ .node }}
+  disks:
+{{- toYaml .disks | nindent 4 }}
+{{- end }}
+{{- end }}
