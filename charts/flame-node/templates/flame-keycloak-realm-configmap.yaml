@@ -64,11 +64,11 @@ data:
         "requiredActions" : [ ],
         "realmRoles" : [ "default-roles-flame" ],
         "clientRoles" : {
-          "realm-management" : [ 
-            "create-client", 
-            "manage-clients", 
-            "view-events", 
-            "query-clients" 
+          "realm-management" : [
+            "create-client",
+            "manage-clients",
+            "view-events",
+            "query-clients"
           ],
           "service1" : [ "uma_protection" ]
         },

@@ -1,5 +1,6 @@
 global:
     redis:
+        # TODO: this should be passed from the flame-hub values.yaml
         password: "start123"
 
 ingress:

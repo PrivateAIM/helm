@@ -70,4 +70,33 @@ spec:
                             name: {{ .Release.Name }}-flame-hub-client-ui
                             port:
                                 number: 3000
+
+
+{{- end }}
+
+{{/* Harbor ingress is independent of the above ingress since Harbor always needs its own hostname */}}
+{{- if and .Values.harbor.enabled (not .Values.externalHarbor.enabled) .Values.harbor.ingress.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+    name: {{ .Release.Name }}-harbor
+    annotations:
+        nginx.ingress.kubernetes.io/proxy-body-size: "0"
+        nginx.ingress.kubernetes.io/proxy-read-timeout: "900"
+        nginx.ingress.kubernetes.io/proxy-send-timeout: "900"
+        nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+        nginx.ingress.kubernetes.io/upstream-vhost: "{{ include "harbor.host" . }}"
+spec:
+    rules:
+        - host: {{ include "harbor.host" . }}
+          http:
+              paths:
+                  - path: /
+                    pathType: "ImplementationSpecific"
+                    backend:
+                        service: 
+                            name: {{ .Release.Name }}-harbor
+                            port:
+                                number: 443
 {{- end }}

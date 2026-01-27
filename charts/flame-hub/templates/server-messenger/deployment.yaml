@@ -56,7 +56,7 @@ spec:
                             protocol: TCP
                     env:
                         -   name: REDIS_CONNECTION_STRING
-                            value: "redis://default:{{ .Values.global.redis.password }}@{{ .Release.Name }}-redis-master"
+                            value: "redis://default:{{ .Values.redis.auth.password }}@{{ .Release.Name }}-redis-master"
                         -   name: RABBITMQ_CONNECTION_STRING
                             value: "amqp://root:start123@{{ .Release.Name }}-rabbitmq"
                         -   name: VAULT_CONNECTION_STRING

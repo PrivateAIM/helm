@@ -17,6 +17,12 @@ spec:
         appGroup: "{{ .Release.Name }}-flame-hub"
     spec:
       restartPolicy: Always
+      {{- if not .Values.externalHarbor.enabled }}
+      hostAliases:
+        - ip: "127.0.0.1"
+          hostnames:
+            - {{ include "harbor.host" . | quote }}
+      {{- end }}
       initContainers:
           -   name: wait-for-rabbitmq
               image: busybox
@@ -39,6 +45,13 @@ spec:
                   '-c',
                   'until nc -z -v -w30 {{ .Release.Name }}-authup-server-core 3000; do echo "Waiting for authup..."; sleep 5; done'
               ]
+          -   name: wait-for-harbor
+              image: busybox
+              command: [
+                  'sh',
+                  '-c',
+                  'until wget --no-check-certificate -qO- https://{{ include "harbor.internalHost" . }}/api/v2.0/ping; do echo "Waiting for harbor..."; sleep 5; done'
+              ]
       containers:
         - name: "{{ .Release.Name }}-flame-hub-server-core-worker"
           image: {{ include "flameHub.image" . | trim | quote }}
@@ -49,7 +62,7 @@ spec:
               protocol: TCP
           env:
               -   name: REDIS_CONNECTION_STRING
-                  value: "redis://default:{{ .Values.global.redis.password }}@{{ .Release.Name }}-redis-master"
+                  value: "redis://default:{{ .Values.redis.auth.password }}@{{ .Release.Name }}-redis-master"
               -   name: VAULT_CONNECTION_STRING
                   value: "start123@http://{{ .Release.Name }}-vault:8200/v1/"
               -   name: RABBITMQ_CONNECTION_STRING
@@ -60,11 +73,17 @@ spec:
                   value: "http://{{ .Release.Name }}-flame-hub-server-core:3000/"
               -   name: STORAGE_URL
                   value: "http://{{ .Release.Name }}-flame-hub-server-storage:3000/"
+          {{- if .Values.serverCoreWorker.useSidecarDinD }}
+          volumeMounts:
+              -   name: "{{ .Release.Name }}-docker-sidecar-socket"
+                  mountPath: /var/run
+          {{- else }}
           volumeMounts:
               -   mountPath: "/var/run/docker.sock"
                   name: "{{ .Release.Name }}-flame-hub-server-core-worker-docker-volume"
           securityContext:
               privileged: true
+          {{- end }}
           readinessProbe:
               httpGet:
                   path: "/"
@@ -78,10 +97,43 @@ spec:
                   port: 3000
               periodSeconds: 10
               timeoutSeconds: 10
+        {{- if not .Values.externalHarbor.enabled }}
+        - name: harbor-proxy-sidecar
+          image: alpine/socat
+          # Proxy HTTPS traffic to the internal harbor. This is a workaround to avoid static hostAliases.
+          args: ["TCP-LISTEN:443,fork,bind=127.0.0.1", "TCP:{{ include "harbor.internalHost" . }}:443"]
+          securityContext:
+            capabilities:
+              add: ["NET_BIND_SERVICE"]
+        {{- end }}
+        {{- if .Values.serverCoreWorker.useSidecarDinD }}
+        - name: "{{ .Release.Name }}-docker-sidecar-dind"
+          image: "docker:28-dind"
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            privileged: true
+          {{- if not .Values.externalHarbor.enabled }}
+          # Microk8s Calico CNI defaults to 1400 MTU, but dind defaults to 1500.
+          # This might be different on other k8s providers. If you get mysterious connection errors, check your MTU.
+          args: ["--insecure-registry", "{{ include "harbor.host" . }}:443", "--mtu", "1350"]
+          {{- else }}
+          args: ["--mtu", "1350"]
+          {{- end }}
+          volumeMounts:
+            - name: "{{ .Release.Name }}-docker-sidecar-graph-storage"
+              mountPath: /var/lib/docker
+            - name: "{{ .Release.Name }}-docker-sidecar-socket"
+              mountPath: /var/run
+        {{- end }}
       volumes:
+          {{- if .Values.serverCoreWorker.useSidecarDinD }}
+          - name: "{{ .Release.Name }}-docker-sidecar-graph-storage"
+            emptyDir: {}
+          - name: "{{ .Release.Name }}-docker-sidecar-socket"
+            emptyDir: {}
+          {{- else }}
           -   name: "{{ .Release.Name }}-flame-hub-server-core-worker-docker-volume"
               hostPath:
                   path: "/var/run/docker.sock"
                   type: "Socket"
-
-
+          {{- end }}
