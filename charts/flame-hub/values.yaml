@@ -1,9 +1,6 @@
 global:
     imagePullPolicy: "IfNotPresent"
 
-    redis:
-        password: "start123"
-
     flameHub:
         ingress:
             enabled: true
@@ -40,6 +37,9 @@ serverCore:
         pathType: "Prefix"
     env:
         masterImagesBranch: ""
+    harbor:
+        username: "admin"
+        password: "start123"
 
 serverMessenger:
     ingress:
@@ -64,6 +64,11 @@ serverTelemetry:
         hostname: ""
         path: "/"
         pathType: "Prefix"
+
+serverCoreWorker:
+    enabled: true
+    # Use a docker-in-docker sidecar container instead of mounting the docker socket from the host
+    useSidecarDinD: true
 
 ## services
 vault:
@@ -92,6 +97,7 @@ redis:
         failureThreshold: 10
     auth:
         enabled: true
+        password: "start123"
     image:
         #repository: "tada5hi/redis"
         repository: "bitnamilegacy/redis"
@@ -240,45 +246,49 @@ prometheus:
                   - targets: ["{{ .Release.Name }}-authup-server-core:3000"]
 
 harbor:
-    enabled: false
+    enabled: true
     nameOverride: "harbor"
+    adminUsername: "admin"
     adminPassword: "start123"
-    exposureType: "ingress"
-    externalURL: http://localhost
+    exposureType: "proxy"
+    externalURL: "" # Required by Harbor, e.g. https://harbor.hub.local
+    ingress:
+        enabled: true # Harbor always needs its own hostname, this is independent of global path-based ingress
     migration:
         enabled: true
-    ingress:
-        core:
-            hostname: "localhost"
-            tls: true
-            selfSigned: true
-            # secrets:
-            #  - name <domain>-tls
-            #    certificate: |
-            #        ...
-            #    key: |
-            #       ...
+
     nginx:
+        behindReverseProxy: true
+        tls:
+            enabled: true
         image:
-            #repository: "tada5hi/nginx"
             repository: "bitnamilegacy/nginx"
             tag: "1.29.1-debian-12-r0"
     portal:
+        # defining explicit secrets for the following fields is not required if a chart installation is triggered by helm
+        # secret: "start123"
         image:
             #repository: "tada5hi/harbor-portal"
             repository: "bitnamilegacy/harbor-portal"
             tag: "2.13.2-debian-12-r1"
     core:
+        # secret: "start123"
+        # xsrfKey: "86d877a5d71973ce2029f9d0c4e88516"
+        # csrfKey: "86d877a5d71973ce2029f9d0c4e88516"
+        # secretKey: "start123"
         image:
             #repository: "tada5hi/harbor-core"
             repository: "bitnamilegacy/harbor-core"
             tag: "2.13.2-debian-12-r3"
     jobservice:
+        # secret: "start123"
         image:
             #repository: "tada5hi/harbor-jobservice"
             repository: "bitnamilegacy/harbor-jobservice"
             tag: "2.13.2-debian-12-r3"
     registry:
+        relativeurls: true # Needed for server-core-worker because of TCP forwarding (see https://github.com/distribution/distribution/issues/970#issuecomment-284227065)
+        secret: "start123"
         server:
             image:
                 #repository: "tada5hi/harbor-registry"
@@ -294,3 +304,22 @@ harbor:
             #repository: "tada5hi/harbor-adapter-trivy"
             repository: "bitnamilegacy/harbor-adapter-trivy"
             tag: "2.13.2-debian-12-r2"
+    postgresql:
+        image:
+            repository: "bitnamilegacy/postgresql"
+            # TODO: Update to a recent version (recent versions need different pvc permissions)
+            # See https://github.com/bitnami/containers/issues/2680#issue-1334211988
+            tag: "13.7.0-debian-11-r9"
+    redis:
+        enabled: true
+        nameOverride: "harbor-redis"
+        auth:
+            enabled: true
+            password: "start123"
+        image:
+            repository: "bitnamilegacy/redis"
+            tag: "8.2.1-debian-12-r0"
+
+externalHarbor:
+    enabled: false
+    URL: ""
