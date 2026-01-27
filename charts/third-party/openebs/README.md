@@ -1,6 +1,7 @@
 # OpenEBS/Mayastor for FLAME
 This chart is a wrapper around the official OpenEBS chart and brings a default configuration suitable for FLAME.
 Installing this chart will add a StorageClass to your cluster. You can tell workloads of the Flame Hub to use this Storage Class, by specifying it in `flame-hub/values.yaml`
+
 1. Make sure you have 3 nodes in your cluster
 2. Label them all using `kubectl label node <node_name> openebs.io/engine=mayastor`
 3. Clone `values.yaml` to `values_local.yaml`.
