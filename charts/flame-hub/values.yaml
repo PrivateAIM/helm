@@ -1,9 +1,6 @@
 global:
     imagePullPolicy: "IfNotPresent"
 
-    redis:
-        password: "start123"
-
     flameHub:
         ingress:
             enabled: true
@@ -100,6 +97,7 @@ redis:
         failureThreshold: 10
     auth:
         enabled: true
+        password: "start123"
     image:
         #repository: "tada5hi/redis"
         repository: "bitnamilegacy/redis"
@@ -310,15 +308,14 @@ harbor:
             # See https://github.com/bitnami/containers/issues/2680#issue-1334211988
             tag: "13.7.0-debian-11-r9"
     redis:
-        enabled: false
-    externalRedis:
-        host: "hub-redis-master.default.svc.cluster.local"
-        port: 6379
-        password: "start123"
-        coreDatabaseIndex: "0"
-        jobserviceDatabaseIndex: "1"
-        registryDatabaseIndex: "2"
-        trivyAdapterDatabaseIndex: "5"
+        enabled: true
+        nameOverride: "harbor-redis"
+        auth:
+            enabled: true
+            password: "start123"
+        image:
+            repository: "bitnamilegacy/redis"
+            tag: "8.2.1-debian-12-r0"
 
 externalHarbor:
     enabled: false
