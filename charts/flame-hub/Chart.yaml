@@ -59,7 +59,3 @@ dependencies:
   - name: authup
     repository: file://../third-party/authup
     version: 0.0.10
-
-  - name: openebs
-    version: 4.4.0
-    repository: https://openebs.github.io/openebs

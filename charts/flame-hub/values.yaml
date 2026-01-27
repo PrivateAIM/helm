@@ -77,12 +77,13 @@ rabbitmq:
     auth:
         username: "root"
         password: "start123"
-    # persistence:
-    #     storageClass: "mayastor-replicated"
     image:
         #repository: "tada5hi/rabbitmq"
         repository: "bitnamilegacy/rabbitmq"
         tag: "4.1.3-debian-12-r1"
+    # See /charts/third-party/openebs for details
+    # persistence:
+    #     storageClass: "mayastor-replicated"
 redis:
     nameOverride: "redis"
     startupProbe:
@@ -102,8 +103,6 @@ minio:
         #repository: "tada5hi/minio"
         repository: "bitnamilegacy/minio"
         tag: "2025.7.23-debian-12-r3"
-    # persistence:
-    #     storageClass: "mayastor-replicated"
     auth:
         rootUser: "admin"
         rootPassword: "start123"
@@ -112,6 +111,9 @@ minio:
             #repository: "tada5hi/minio-object-browser"
             repository: "bitnamilegacy/minio-object-browser"
             tag: "2.0.2-debian-12-r3"
+    # See /charts/third-party/openebs for details
+    # persistence:
+    #     storageClass: "mayastor-replicated"
 mysql:
     nameOverride: "mysql"
     image:
@@ -152,13 +154,14 @@ grafana:
         enabled: true
     datasources:
         secretName: grafana-datasources
-    # persistence:
-    #     storageClass: "mayastor-replicated"
     config:
         useGrafanaIniFile: true
         grafanaIniConfigMap: grafana
     plugins:
         - https://github.com/VictoriaMetrics/victorialogs-datasource/releases/download/v0.23.2/victoriametrics-logs-datasource-v0.23.2.zip;victoriametrics-logs-datasource
+    # See /charts/third-party/openebs for details
+    # persistence:
+    #     storageClass: "mayastor-replicated"
 
 victoria-logs-cluster:
     nameOverride: "victoria-logs"
@@ -291,43 +294,3 @@ harbor:
             #repository: "tada5hi/harbor-adapter-trivy"
             repository: "bitnamilegacy/harbor-adapter-trivy"
             tag: "2.13.2-debian-12-r2"
-
-openebs:
-    # OpenEBS provides mayastor for replicated storage (off by default)
-    engines:
-        local:
-            lvm:
-                enabled: false
-            zfs:
-                enabled: false
-        replicated:
-            # Enable Mayastor for replicated storage (3+ node cluster)
-            mayastor:
-                enabled: false
-    # mayastor:
-    #     # If you want to use Mayastor you may need to set the kubeletDir (default is /var/lib/kubelet)
-    #     # For MicroK8s, the kubeletDir is /var/snap/microk8s/common/var/lib/kubelet
-    #     csi:
-    #         node:
-    #             kubeletDir: /var/snap/microk8s/common/var/lib/kubelet # no trailing slash !!
-    loki:
-        enabled: false
-
-    # Mayastor configuration (only used when mayastor.enabled is true)
-    mayastorConfig:
-        # StorageClasses to create
-        storageClasses:
-            - name: mayastor-replicated
-              replicationFactor: 3
-              protocol: nvmf
-              default: false
-
-        # DiskPools to create - one per node with dedicated block device
-        # Use: kubectl mayastor get block-devices <node-name> to find device paths
-        # Example:
-        # diskPools:
-        #     - name: pool-on-node-1
-        #       node: worker-node-1
-        #       disks:
-        #           - "aio:///dev/disk/by-id/<device-id>"
-        diskPools: []
