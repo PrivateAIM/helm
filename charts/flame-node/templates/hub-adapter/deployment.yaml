@@ -63,6 +63,8 @@ spec:
                   key: {{ include "adapter.keycloak.secretKey" . }}
             - name: IDP_URL
               value: {{ include "adapter.userIdp.endpoint" . }}
+            - name: LOG_EVENTS
+              value: {{ .Values.eventLogging.enabled . | default "true" | quote }}
             - name: NODE_SVC_OIDC_URL
               value: {{ include "keycloak.service.endpoint" . }}
             - name: OVERRIDE_JWKS
