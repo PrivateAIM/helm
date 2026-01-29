@@ -5,6 +5,8 @@ metadata:
     name: {{ .Release.Name }}-flame-hub-server-storage
     annotations:
       nginx.ingress.kubernetes.io/proxy-body-size: "0"
+      nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+      nginx.ingress.kuberentes.io/proxy-write-timeout: "300"
 spec:
     rules:
         - host: {{ .Values.serverStorage.ingress.hostname }}

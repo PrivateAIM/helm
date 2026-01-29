@@ -291,7 +291,7 @@ harbor:
             tag: "2.13.2-debian-12-r3"
     registry:
         relativeurls: true # Needed for server-core-worker because of TCP forwarding (see https://github.com/distribution/distribution/issues/970#issuecomment-284227065)
-        secret: "start123"
+        #secret: "start123"
         server:
             image:
                 #repository: "tada5hi/harbor-registry"
