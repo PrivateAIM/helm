@@ -13,6 +13,10 @@ global:
 ## Overrides hubAdapter.idp.jwks and enables NUXT_PUBLIC_INTERNAL_KEYCLOAK_URL for the UI
 offline: false
 
+eventLogging:
+  ## @param eventLogging.enabled Enable event logging
+  enabled: true
+
 ## @param timezone Set the timezone for all components in the FLAME Node, use "TZ identifier" from https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
 timezone: Europe/Berlin
 
@@ -171,6 +175,12 @@ kong:
   # Sub-chart
   postgresql:
     enabled: false
+
+  # Custom plugins loaded via ConfigMap
+  plugins:
+    configMaps:
+      - name: kong-plugin-minio-gateway
+        pluginName: minio-gateway
 
 resultService:
   env:
@@ -391,7 +401,7 @@ hubAdapter:
   image:
     repository: ghcr.io/privateaim/node-hub-api-adapter
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.3.5
+    tag: 0.4.0
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -687,7 +697,7 @@ ui:
   image:
     repository: ghcr.io/privateaim/node-ui
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.3.2
+    tag: 0.4.0
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
