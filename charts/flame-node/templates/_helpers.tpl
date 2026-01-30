@@ -57,10 +57,18 @@ Return the secret containing the hub robot secret
 {{- end -}}
 
 {{/*
+Return the service route for the internal keycloak instance"
+*/}}
+{{- define "keycloak.svc.route" -}}
+{{- printf "%s-keycloak-http.%s.svc.cluster.local" .Release.Name .Release.Namespace -}}
+{{- end -}}
+
+
+{{/*
 Return the endpoint for the internal keycloak instance with the (cleaned) relative path e.g. "/keycloak"
 */}}
 {{- define "keycloak.base.endpoint" -}}
-{{- printf "http://%s-keycloak-http.%s.svc.cluster.local:80/keycloak" .Release.Name .Release.Namespace -}}
+{{- printf "http://%s:80/keycloak" (include "keycloak.svc.route" .) -}}
 {{- end -}}
 
 {{/*
