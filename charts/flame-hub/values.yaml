@@ -165,6 +165,9 @@ grafana:
         grafanaIniConfigMap: grafana
     plugins:
         - https://github.com/VictoriaMetrics/victorialogs-datasource/releases/download/v0.23.2/victoriametrics-logs-datasource-v0.23.2.zip;victoriametrics-logs-datasource
+    # See /charts/third-party/openebs for details
+    # persistence:
+    #     storageClass: "mayastor-replicated"
 
 victoria-logs-cluster:
     nameOverride: "victoria-logs"
@@ -253,7 +256,10 @@ harbor:
         enabled: true # Harbor always needs its own hostname, this is independent of global path-based ingress
     migration:
         enabled: true
-
+    # persistence:
+    #     persistentVolumeClaim:
+    #         registry:
+    #             storageClass: "mayastor-replicated"
     nginx:
         behindReverseProxy: true
         tls:
@@ -285,7 +291,7 @@ harbor:
             tag: "2.13.2-debian-12-r3"
     registry:
         relativeurls: true # Needed for server-core-worker because of TCP forwarding (see https://github.com/distribution/distribution/issues/970#issuecomment-284227065)
-        secret: "start123"
+        #secret: "start123"
         server:
             image:
                 #repository: "tada5hi/harbor-registry"

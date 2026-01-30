@@ -201,16 +201,16 @@ resultService:
     pullPolicy: IfNotPresent
 
   # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
-  imagePullSecrets: [ ]
+  imagePullSecrets: []
 
   # This is for setting Kubernetes Annotations to a Pod.
   # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
-  podAnnotations: { }
+  podAnnotations: {}
   # This is for setting Kubernetes Labels to a Pod.
   # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
-  podLabels: { }
+  podLabels: {}
 
-  podSecurityContext: { }
+  podSecurityContext: {}
   # fsGroup: 2000
 
   securityContext:
@@ -220,9 +220,9 @@ resultService:
     privileged: false
     allowPrivilegeEscalation: false
     capabilities:
-      drop: [ ALL ]
+      drop: [ALL]
 
-  resources: { }
+  resources: {}
     # We usually recommend not to specify default resources and to leave this as a conscious
     # choice for the user. This also increases chances charts run on environments with little
     # resources, such as Minikube. If you do want to specify resources, uncomment the following
@@ -235,13 +235,13 @@ resultService:
   #   memory: 128Mi
 
   # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
-  livenessProbe: { }
+  livenessProbe: {}
     # httpGet:
     #   path: /healthz
     #   port: http-result-srv
   # failureThreshold: 3
   # periodSeconds: 10
-  readinessProbe: { }
+  readinessProbe: {}
     # httpGet:
     #   path: /healthz
     #   port: http-result-srv
@@ -249,41 +249,41 @@ resultService:
   # periodSeconds: 5
 
   # Additional environment variables on the output Deployment definition.
-  extraEnv: [ ]
+  extraEnv: []
   # - name: FOO
   #   value: bar
 
   # Additional volumes on the output Deployment definition.
-  volumes: [ ]
+  volumes: []
   # - name: foo
   #   secret:
   #     secretName: mysecret
   #     optional: false
 
   # Additional volumeMounts on the output Deployment definition
-  volumeMounts: [ ]
+  volumeMounts: []
   # - name: foo
   #   mountPath: "/etc/foo"
   #   readOnly: true
 
-  nodeSelector: { }
-  tolerations: [ ]
-  affinity: { }
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
 
 # keycloakx values
 keycloakx:
-  nameOverride: keycloak  # Otherwise uses "keycloakx", this keeps it backwards compatible
+  nameOverride: keycloak # Otherwise uses "keycloakx", this keeps it backwards compatible
 
   http:
     relativePath: /keycloak
 
   command:
-   - "/opt/keycloak/bin/kc.sh"
-   - "start-dev"
-   - "--import-realm"
+    - "/opt/keycloak/bin/kc.sh"
+    - "start-dev"
+    - "--import-realm"
 
   cache:
-    stack: "custom"  # Current default (kubernetes) is deprecated, setting to 'custom' leaves it unset and will go to 'jdbc-ping'
+    stack: "custom" # Current default (kubernetes) is deprecated, setting to 'custom' leaves it unset and will go to 'jdbc-ping'
 
   dbchecker:
     enabled: true
@@ -335,22 +335,20 @@ keycloakx:
   ingress:
     enabled: true
     rules:
-      -
-        # Ingress host
+      - # Ingress host
         host: '{{ regexReplaceAll "^https?://(.*)" (tpl (coalesce .Values.global.node.ingress.hostname .Values.ingress.hostname "localhost") $) "${1}" | trimSuffix "/" }}'
         paths:
           - path: '{{ tpl .Values.http.relativePath $ | trimSuffix "/" }}/'
             pathType: ImplementationSpecific
 
     # TLS configuration
-    tls: []  # Must be set to empty if no TLS present otherwise will initialize with default example host
+    tls: [] # Must be set to empty if no TLS present otherwise will initialize with default example host
 
     console:
       # If `true`, an Ingress is created for console path only
       enabled: true
       rules:
-        -
-          # Ingress host
+        - # Ingress host
           host: '{{ regexReplaceAll "^https?://(.*)" (tpl (coalesce .Values.global.node.ingress.hostname .Values.ingress.hostname "localhost") $) "${1}" | trimSuffix "/" }}'
           paths:
             - path: '{{ tpl .Values.http.relativePath $ | trimSuffix "/" }}/admin'
@@ -358,8 +356,6 @@ keycloakx:
 
       # Console TLS configuration KlpndHhf8K0Aj2R7JmNlSE2a7XJcSKPV
       tls: []
-
-
 
 # hub-api-adapter Values
 hubAdapter:
@@ -606,16 +602,16 @@ messageBroker:
     pullPolicy: IfNotPresent
 
   # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
-  imagePullSecrets: [ ]
+  imagePullSecrets: []
 
   # This is for setting Kubernetes Annotations to a Pod.
   # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
-  podAnnotations: { }
+  podAnnotations: {}
   # This is for setting Kubernetes Labels to a Pod.
   # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
-  podLabels: { }
+  podLabels: {}
 
-  podSecurityContext: { }
+  podSecurityContext: {}
   # fsGroup: 2000
 
   securityContext:
@@ -624,7 +620,7 @@ messageBroker:
     privileged: false
     allowPrivilegeEscalation: false
     capabilities:
-      drop: [ ALL ]
+      drop: [ALL]
 
   resources:
     requests:
@@ -650,26 +646,26 @@ messageBroker:
     timeoutSeconds: 10
 
   # Additional environment variables on the output Deployment definition.
-  env: [ ]
+  env: []
   # - name: FOO
   #   value: bar
 
   # Additional volumes on the output Deployment definition.
-  volumes: [ ]
+  volumes: []
   # - name: foo
   #   secret:
   #     secretName: mysecret
   #     optional: false
 
   # Additional volumeMounts on the output Deployment definition.
-  volumeMounts: [ ]
+  volumeMounts: []
   # - name: foo
   #   mountPath: "/etc/foo"
   #   readOnly: true
 
-  nodeSelector: { }
-  tolerations: [ ]
-  affinity: { }
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
 
 ui:
   env: production
@@ -711,8 +707,7 @@ ui:
   # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
   podLabels: {}
 
-  podSecurityContext:
-    {}
+  podSecurityContext: {}
     # fsGroup: 2000
 
   securityContext:
@@ -722,8 +717,7 @@ ui:
     capabilities:
       drop: [ALL]
 
-  resources:
-    {}
+  resources: {}
     # We usually recommend not to specify default resources and to leave this as a conscious
     # choice for the user. This also increases chances charts run on environments with little
     # resources, such as Minikube. If you do want to specify resources, uncomment the following
@@ -834,7 +828,7 @@ postgresql:
 
     ## The superuser password
     superuserPassword:
-     secretKey: superPassword
+      secretKey: superPassword
 
   ## Optional user database which is created during first startup with user and password
   userDatabase:
@@ -842,7 +836,7 @@ postgresql:
     existingSecret: postgres-credentials-secret
     ## Name of the user database
     name:
-    ##  Use secretKey when existingSecret was specified otherwise value
+      ##  Use secretKey when existingSecret was specified otherwise value
       secretKey: DB_DATABASE
       # value:
     ## Database user with full access rights
@@ -858,7 +852,6 @@ postgresql:
 
   ## Storage parameters
   storage:
-
     ## Internal volume name and prefix of a created PVC
     volumeName: "postgres-data"
 
@@ -884,7 +877,7 @@ kong-postgresql:
     existingSecret: postgres-kong-credentials-secret
     superuser:
     superuserPassword:
-     secretKey: superPassword
+      secretKey: superPassword
 
   userDatabase:
     existingSecret: postgres-kong-credentials-secret
@@ -901,7 +894,7 @@ kong-postgresql:
 
 keycloak-postgresql:
   nameOverride:
-  fullnameOverride: flame-node-keycloak-postgresql    # Required so keycloak can enable database checker
+  fullnameOverride: flame-node-keycloak-postgresql # Required so keycloak can enable database checker
 
   resources: {}
 
@@ -915,7 +908,7 @@ keycloak-postgresql:
     existingSecret: postgres-keycloak-credentials-secret
     superuser:
     superuserPassword:
-     secretKey: superPassword
+      secretKey: superPassword
 
   userDatabase:
     existingSecret: postgres-keycloak-credentials-secret
@@ -966,15 +959,16 @@ minio:
 
   ## List of buckets to be created after minio install
   ##
-  buckets: [
-    {
-      name: flame,
-      policy: none,
-      purge: false,
-      versioning: false,
-      objectlocking: false
-    }
-  ]
+  buckets:
+    [
+      {
+        name: flame,
+        policy: none,
+        purge: false,
+        versioning: false,
+        objectlocking: false,
+      },
+    ]
     #   # Name of the bucket
     # - name: bucket1
     #   # Policy to be set on the
@@ -995,7 +989,6 @@ minio:
     #   # set objectlocking for
     #   # bucket [true|false] NOTE: versioning is enabled by default if you use locking
     #   objectlocking: false
-
 
   ## Set default image, imageTag, and imagePullPolicy. mode is used to indicate the
   image:
