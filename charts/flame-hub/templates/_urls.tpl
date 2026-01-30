@@ -82,7 +82,9 @@ Harbor host
 {{- $parsedURL := urlParse .Values.harbor.externalURL -}}
 {{- $parsedURL.host -}}
 {{- else -}}
+{{- if .Values.externalHarbor.URL -}}
 {{ .Values.externalHarbor.URL }}
+{{- end -}}
 {{- end -}}
 {{- end }}
 
@@ -106,6 +108,8 @@ This is used by pods to access harbor. If ExternalHarbor is used, this will be t
 {{- if .Values.externalHarbor.enabled -}}
 {{ include "harbor.host" . }}
 {{- else -}}
+{{- if .Values.harbor.enabled -}}
 {{ .Release.Name }}-harbor
+{{- end }}
 {{- end }}
 {{- end }}
