@@ -45,6 +45,8 @@ spec:
                   '-c',
                   'until nc -z -v -w30 {{ .Release.Name }}-authup-server-core 3000; do echo "Waiting for authup..."; sleep 5; done'
               ]
+
+          {{- if include "harbor.internalHost" . }}
           -   name: wait-for-harbor
               image: busybox
               command: [
@@ -52,6 +54,7 @@ spec:
                   '-c',
                   'until wget --no-check-certificate -qO- https://{{ include "harbor.internalHost" . }}/api/v2.0/ping; do echo "Waiting for harbor..."; sleep 5; done'
               ]
+        {{- end }}
       containers:
         - name: "{{ .Release.Name }}-flame-hub-server-core-worker"
           image: {{ include "flameHub.image" . | trim | quote }}
@@ -97,7 +100,7 @@ spec:
                   port: 3000
               periodSeconds: 10
               timeoutSeconds: 10
-        {{- if not .Values.externalHarbor.enabled }}
+        {{- if include "harbor.internalHost" . -}}
         - name: harbor-proxy-sidecar
           image: alpine/socat
           # Proxy HTTPS traffic to the internal harbor. This is a workaround to avoid static hostAliases.
