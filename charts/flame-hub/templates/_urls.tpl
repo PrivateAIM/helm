@@ -9,7 +9,7 @@ https://{{- .Values.serverCore.ingress.hostname }}
 http://{{- .Values.serverCore.ingress.hostname }}
 {{- end }}
 {{- else }}
-{{- if .Values.serverCore.ingress.ssl }}
+{{- if .Values.global.flameHub.ingress.ssl }}
 https://{{ .Values.global.flameHub.ingress.hostname }}/core/
 {{- else }}
 http://{{ .Values.global.flameHub.ingress.hostname }}/core/
@@ -71,5 +71,41 @@ https://{{ .Values.global.flameHub.ingress.hostname }}/auth/
 {{- else }}
 http://{{ .Values.global.flameHub.ingress.hostname }}/auth/
 {{- end }}
+{{- end }}
+{{- end }}
+
+{{/*
+Harbor host
+*/}}
+{{- define "harbor.host" -}}
+{{- if .Values.harbor.externalURL -}}
+{{- $parsedURL := urlParse .Values.harbor.externalURL -}}
+{{- $parsedURL.host -}}
+{{- else -}}
+{{ .Values.externalHarbor.URL }}
+{{- end -}}
+{{- end }}
+
+{{/*
+Harbor baseURL (scheme + host, no trailing slash)
+*/}}
+{{- define "harbor.baseURL" -}}
+{{- if .Values.harbor.externalURL -}}
+{{- trimSuffix "/" .Values.harbor.externalURL -}}
+{{- else -}}
+{{- trimSuffix "/" .Values.externalHarbor.URL -}}
+{{- end -}}
+{{- end }}
+
+
+{{/*
+Harbor internalHost (host, no trailing slash)
+This is used by pods to access harbor. If ExternalHarbor is used, this will be the external harbor host.
+*/}}
+{{- define "harbor.internalHost" -}}
+{{- if .Values.externalHarbor.enabled -}}
+{{ include "harbor.host" . }}
+{{- else -}}
+{{ .Release.Name }}-harbor
 {{- end }}
 {{- end }}

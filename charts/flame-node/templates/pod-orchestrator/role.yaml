@@ -3,6 +3,13 @@ kind: Role
 metadata:
   namespace: {{ .Release.Namespace }}
   name:  {{ .Release.Name }}-po-role
+  labels:
+    component: flame-po
+    app.kubernetes.io/name: flame-po
+    app.kubernetes.io/component: orchestrator
+    app.kubernetes.io/part-of: flame-node
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
 rules:
 - apiGroups: ["networking.k8s.io"] # indicates the network API group
   resources: ["networkpolicies"]

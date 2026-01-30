@@ -343,7 +343,7 @@ Return the JWKS endpoint for user and client authentication which overrides what
 {{- end -}}
 {{- end -}}
 
-{{/*Pod Orchestartor helpers*/}}
+{{/*Pod Orchestrator helpers*/}}
 
 {{/*
 Generate a random clientSecret value for the PO client in keycloak if none provided

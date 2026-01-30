@@ -57,6 +57,8 @@ spec:
             - containerPort: 5000
               name: healthcp
           env:
+            - name: TZ
+              value: {{ .Values.timezone | default "Europe/Berlin" }}
             - name: API_ROOT_PATH
               value: {{ (include "adapter.root.path" .) | default "" }}
             - name: API_CLIENT_ID
