@@ -100,7 +100,7 @@ spec:
                   port: 3000
               periodSeconds: 10
               timeoutSeconds: 10
-        {{- if include "harbor.internalHost" . -}}
+        {{ if include "harbor.internalHost" . -}}
         - name: harbor-proxy-sidecar
           image: alpine/socat
           # Proxy HTTPS traffic to the internal harbor. This is a workaround to avoid static hostAliases.
