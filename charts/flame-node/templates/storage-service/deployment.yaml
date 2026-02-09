@@ -2,55 +2,55 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}-node-result-deployment
+  name: {{ .Release.Name }}-node-storage-deployment
   labels:
-    component: flame-result-service
-    app.kubernetes.io/name: flame-result-service
-    app.kubernetes.io/component: results
+    component: flame-storage-service
+    app.kubernetes.io/name: flame-storage-service
+    app.kubernetes.io/component: storage
     app.kubernetes.io/part-of: flame-node
     app.kubernetes.io/version: {{ .Chart.AppVersion }}
     app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
-  replicas: {{ .Values.resultService.replicaCount }}
+  replicas: {{ .Values.storageService.replicaCount }}
   selector:
     matchLabels:
-      component: flame-result-service
-      app.kubernetes.io/name: flame-result-service
-      app.kubernetes.io/component: results
+      component: flame-storage-service
+      app.kubernetes.io/name: flame-storage-service
+      app.kubernetes.io/component: storage
       app.kubernetes.io/part-of: flame-node
       app.kubernetes.io/instance: {{ .Release.Name }}
   template:
     metadata:
       annotations:
-        {{- with .Values.resultService.podAnnotations }}
+        {{- with .Values.storageService.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
       labels:
-        component: flame-result-service
-        app.kubernetes.io/name: flame-result-service
-        app.kubernetes.io/component: results
+        component: flame-storage-service
+        app.kubernetes.io/name: flame-storage-service
+        app.kubernetes.io/component: storage
         app.kubernetes.io/part-of: flame-node
         app.kubernetes.io/version: {{ .Chart.AppVersion }}
         app.kubernetes.io/instance: {{ .Release.Name }}
-        {{- with .Values.resultService.podLabels }}
+        {{- with .Values.storageService.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
-      {{- with .Values.resultService.imagePullSecrets }}
+      {{- with .Values.storageService.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       securityContext:
-        {{- toYaml .Values.resultService.podSecurityContext | nindent 8 }}
+        {{- toYaml .Values.storageService.podSecurityContext | nindent 8 }}
       containers:
-        - name: results-service
+        - name: storage-service
           securityContext:
-            {{- toYaml .Values.resultService.securityContext | nindent 12 }}
-          image: "{{ .Values.resultService.image.repository }}:{{ .Values.resultService.image.tag | default "latest" }}"
-          imagePullPolicy: {{ .Values.resultService.image.pullPolicy }}
+            {{- toYaml .Values.storageService.securityContext | nindent 12 }}
+          image: "{{ .Values.storageService.image.repository }}:{{ .Values.storageService.image.tag | default "latest" }}"
+          imagePullPolicy: {{ .Values.storageService.image.pullPolicy }}
           ports:
             - containerPort: 8080
-              name: http-result-srv
+              name: http-storage-srv
           env:
             - name: TZ
               value: {{ .Values.timezone | default "Europe/Berlin" }}
@@ -92,9 +92,9 @@ spec:
             - name: MINIO__SECRET_KEY
               value: {{ required "MinIO password must be set." .Values.minio.rootPassword | quote }}
             - name: MINIO__USE_SSL
-              value: {{ .Values.resultService.env.MINIO_USE_SSL | default false | quote }}
+              value: {{ .Values.storageService.env.MINIO_USE_SSL | default false | quote }}
             - name: MINIO__BUCKET
-              value: {{ required "MinIO bucket must be set." .Values.resultService.env.MINIO_BUCKET | quote }}
+              value: {{ required "MinIO bucket must be set." .Values.storageService.env.MINIO_BUCKET | quote }}
             - name: HUB__AUTH__FLOW
               value: "robot"
             - name: HUB__AUTH__ID
@@ -111,9 +111,9 @@ spec:
             - name: HUB__STORAGE_BASE_URL
               value: {{ .Values.hub.endpoints.storage | default "https://storage.privateaim.dev" | quote }}
             - name: OIDC__CERTS_URL
-              value: {{ coalesce .Values.resultService.env.OIDC_CERTS_URL (include "keycloak.jwks.endpoint" .) }}
+              value: {{ coalesce .Values.storageService.env.OIDC_CERTS_URL (include "keycloak.jwks.endpoint" .) }}
             - name: OIDC__CLIENT_ID_CLAIM_NAME
-              value: {{ .Values.resultService.env.OIDC_CLIENT_ID_CLAIM_NAME }}
+              value: {{ .Values.storageService.env.OIDC_CLIENT_ID_CLAIM_NAME }}
             # Change this to "1" for testing purposes. This will cause the value of OIDC__CERTS_URL to be
             # ignored. You will still need to set this variable for the service to start up correctly.
             - name: OIDC__SKIP_JWT_VALIDATION
@@ -124,19 +124,19 @@ spec:
             {{- end }}
             - name: HUB_ADAPTER_CLIENT_ID
               value: {{ .Values.hubAdapter.idp.clientId | default "hub-adapter" | quote }}
-            {{- with .Values.resultService.extraEnv }}
+            {{- with .Values.storageService.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
-          {{- with .Values.resultService.livenessProbe }}
+          {{- with .Values.storageService.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.resultService.readinessProbe }}
+          {{- with .Values.storageService.readinessProbe }}
           readinessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           resources:
-            {{- toYaml .Values.resultService.resources | nindent 12 }}
+            {{- toYaml .Values.storageService.resources | nindent 12 }}
           volumeMounts:
             - name: crypto
               mountPath: /etc/crypto
@@ -147,7 +147,7 @@ spec:
               subPath: "certs.pem"
               readOnly: true
             {{- end }}
-            {{- with .Values.resultService.volumeMounts }}
+            {{- with .Values.storageService.volumeMounts }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
       volumes:
@@ -159,12 +159,12 @@ spec:
           configMap:
             name: {{ include "tls.configMapName" . }}
         {{- end }}
-        {{- with .Values.resultService.volumes }}
+        {{- with .Values.storageService.volumes }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
       nodeSelector:
-        {{- toYaml .Values.resultService.nodeSelector | nindent 8 }}
+        {{- toYaml .Values.storageService.nodeSelector | nindent 8 }}
       affinity:
-        {{- toYaml .Values.resultService.affinity | nindent 8 }}
+        {{- toYaml .Values.storageService.affinity | nindent 8 }}
       tolerations:
-        {{- toYaml .Values.resultService.tolerations | nindent 8 }}
+        {{- toYaml .Values.storageService.tolerations | nindent 8 }}
