@@ -298,6 +298,9 @@ keycloakx:
     {{- if or .Values.global.node.ingress.hostname .Values.ingress.hostname }}
     - name: KC_HOSTNAME
       value: '{{ printf "%s%s" (tpl (coalesce .Values.global.node.ingress.hostname .Values.ingress.hostname) $ | trimSuffix "/") .Values.http.relativePath }}'
+    {{- else }}
+    - name: KC_HOSTNAME
+      value: '{{ printf "http://localhost:8080/%s" .Values.http.relativePath }}'
     {{- end }}
     - name: JAVA_OPTS_APPEND
       value: >-
