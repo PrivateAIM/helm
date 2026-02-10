@@ -447,7 +447,7 @@ hubAdapter:
   readinessProbe: *probe
 
   # Additional environment variables on the output Deployment definition.
-  env: []
+  extraEnv: []
   # - name: FOO
   #   value: bar
 
