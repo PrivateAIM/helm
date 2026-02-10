@@ -136,7 +136,7 @@ spec:
                 secretKeyRef:
                   name: {{ include "hub.secretName" . }}
                   key: robotSecret
-            {{- with .Values.hubAdapter.env }}
+            {{- with .Values.hubAdapter.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
           {{- with .Values.hubAdapter.livenessProbe }}
