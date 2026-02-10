@@ -2,7 +2,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}-node-storage-deployment
+  name: {{ .Release.Name }}-storage-deployment
   labels:
     component: flame-storage-service
     app.kubernetes.io/name: flame-storage-service
@@ -50,7 +50,7 @@ spec:
           imagePullPolicy: {{ .Values.storageService.image.pullPolicy }}
           ports:
             - containerPort: 8080
-              name: http-storage-srv
+              name: api
           env:
             - name: TZ
               value: {{ .Values.timezone | default "Europe/Berlin" }}

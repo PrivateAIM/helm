@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Release.Name }}-node-storage-service
+  name: {{ .Release.Name }}-storage-service
   labels:
     component: flame-storage-service
     app.kubernetes.io/name: flame-storage-service
@@ -19,5 +19,5 @@ spec:
   ports:
     - protocol: TCP
       port: 8080
-      targetPort: http-storage-srv
+      targetPort: api
   type: ClusterIP

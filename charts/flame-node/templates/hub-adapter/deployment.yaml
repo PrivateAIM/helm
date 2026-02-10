@@ -83,7 +83,7 @@ spec:
             - name: NO_PROXY
               value: {{ .Values.proxy.noProxy | default "" }}
             - name: RESULTS_SERVICE_URL
-              value: {{ printf "http://%s-node-result-service.%s.svc.cluster.local:8080" .Release.Name .Release.Namespace }}
+              value: {{ printf "http://%s-storage-service.%s.svc.cluster.local:8080" .Release.Name .Release.Namespace }}
             - name: PODORC_SERVICE_URL
               value: {{ printf "http://%s-po-service.%s.svc.cluster.local:8000" .Release.Name .Release.Namespace }}
             - name: KONG_ADMIN_SERVICE_URL
