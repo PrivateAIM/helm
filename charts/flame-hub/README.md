@@ -20,7 +20,7 @@ This chart manages credentials using a Kubernetes Secret. By default, it will ch
 For example: View the harbor admin password with:
 
 ```bash
-kubectl get secret {{ $secretName }} -n {{ .Release.Namespace }} -o jsonpath='{.data.harbor-admin-password}' | base64 -d && echo
+kubectl get secret flame-hub-auth -o jsonpath='{.data.harbor-admin-password}' | base64 -d && echo
 ```
 
 ### Using an Existing Secret or changing the secret name
