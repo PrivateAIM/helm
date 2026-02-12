@@ -56,11 +56,20 @@ spec:
                             protocol: TCP
                     env:
                         -   name: REDIS_CONNECTION_STRING
-                            value: "redis://default:{{ .Values.redis.auth.password }}@{{ .Release.Name }}-redis-master"
+                            valueFrom:
+                                secretKeyRef:
+                                    name: {{ include "flameHub.effectiveSecretName" .  }}
+                                    key: redis-connection-string
                         -   name: RABBITMQ_CONNECTION_STRING
-                            value: "amqp://root:start123@{{ .Release.Name }}-rabbitmq"
+                            valueFrom:
+                                secretKeyRef:
+                                    name: {{ include "flameHub.effectiveSecretName" .  }}
+                                    key: rabbitmq-connection-string
                         -   name: VAULT_CONNECTION_STRING
-                            value: "start123@http://{{ .Release.Name }}-vault:8200/v1/"
+                            valueFrom:
+                                secretKeyRef:
+                                    name: {{ include "flameHub.effectiveSecretName" .  }}
+                                    key: vault-connection-string
                         -   name: AUTHUP_URL
                             value: "http://{{ .Release.Name }}-authup-server-core:3000/"
                     resources:

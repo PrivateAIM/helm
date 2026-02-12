@@ -64,18 +64,27 @@ spec:
             - containerPort: 3000
               protocol: TCP
           env:
-              -   name: REDIS_CONNECTION_STRING
-                  value: "redis://default:{{ .Values.redis.auth.password }}@{{ .Release.Name }}-redis-master"
-              -   name: VAULT_CONNECTION_STRING
-                  value: "start123@http://{{ .Release.Name }}-vault:8200/v1/"
-              -   name: RABBITMQ_CONNECTION_STRING
-                  value: "amqp://root:start123@{{ .Release.Name }}-rabbitmq"
-              -   name: AUTHUP_URL
-                  value: "http://{{ .Release.Name }}-authup-server-core:3000/"
-              -   name: CORE_URL
-                  value: "http://{{ .Release.Name }}-flame-hub-server-core:3000/"
-              -   name: STORAGE_URL
-                  value: "http://{{ .Release.Name }}-flame-hub-server-storage:3000/"
+            - name: REDIS_CONNECTION_STRING
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "flameHub.effectiveSecretName" .  }}
+                  key: redis-connection-string
+            - name: VAULT_CONNECTION_STRING
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "flameHub.effectiveSecretName" .  }}
+                  key: vault-connection-string
+            - name: RABBITMQ_CONNECTION_STRING
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "flameHub.effectiveSecretName" .  }}
+                  key: rabbitmq-connection-string
+            - name: AUTHUP_URL
+              value: "http://{{ .Release.Name }}-authup-server-core:3000/"
+            - name: CORE_URL
+              value: "http://{{ .Release.Name }}-flame-hub-server-core:3000/"
+            - name: STORAGE_URL
+              value: "http://{{ .Release.Name }}-flame-hub-server-storage:3000/"
           {{- if .Values.serverCoreWorker.useSidecarDinD }}
           volumeMounts:
               -   name: "{{ .Release.Name }}-docker-sidecar-socket"

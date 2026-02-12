@@ -22,12 +22,6 @@ clientUI:
         path: "/"
         pathType: "Prefix"
 
-authup:
-    ingress:
-        enabled: false
-        hostname: ""
-        ssl: false
-
 serverCore:
     ingress:
         ssl: false
@@ -37,9 +31,6 @@ serverCore:
         pathType: "Prefix"
     env:
         masterImagesBranch: ""
-    harbor:
-        username: "admin"
-        password: "start123"
 
 serverMessenger:
     ingress:
@@ -70,18 +61,42 @@ serverCoreWorker:
     # Use a docker-in-docker sidecar container instead of mounting the docker socket from the host
     useSidecarDinD: true
 
-## services
+# Credentials configuration
+auth:
+    # Name of the secret containing all credentials
+    # IMPORTANT: If you change this value, you must also update the subchart configurations to match.
+    # This is because subcharts have their own existingSecret fields that cannot be templated, unfortunately.
+    secretName: "flame-hub-auth"
+
+    # Advanced: Use your own secret instead of auto-generated one, takes precedence over secretName
+    # IMPORTANT:If you set this, you must also update the subchart configurations below to point to your secret!
+    existingSecret: ""
+
+## Dependencies / Subcharts
+
+authup:
+    auth:
+        # For MySQL, Redis, Vault
+        existingSecret: "flame-hub-auth"
+    ingress:
+        enabled: false
+        hostname: ""
+        ssl: false
+
 vault:
     server:
         enabled: true
         dev:
             enabled: true
-            devRootToken: start123
+            # needs to be set. No option for passing a secret here.
+            devRootToken: "start123"
 rabbitmq:
     nameOverride: "rabbitmq"
     auth:
         username: "root"
-        password: "start123"
+        password: "" # Leave empty for auto-generation
+        existingPasswordSecret: "flame-hub-auth"
+        existingSecretPasswordKey: "rabbitmq-password"
     image:
         #repository: "tada5hi/rabbitmq"
         repository: "bitnamilegacy/rabbitmq"
@@ -97,7 +112,9 @@ redis:
         failureThreshold: 10
     auth:
         enabled: true
-        password: "start123"
+        password: "" # Leave empty for auto-generation
+        existingSecret: "flame-hub-auth"
+        existingSecretPasswordKey: "redis-password"
     image:
         #repository: "tada5hi/redis"
         repository: "bitnamilegacy/redis"
@@ -111,7 +128,9 @@ minio:
         tag: "2025.7.23-debian-12-r3"
     auth:
         rootUser: "admin"
-        rootPassword: "start123"
+        rootPassword: "" # Leave empty for auto-generation
+        existingSecret: "flame-hub-auth"
+        rootPasswordKey: "minio-root-password"
     console:
         image:
             #repository: "tada5hi/minio-object-browser"
@@ -127,8 +146,10 @@ mysql:
         repository: "bitnamilegacy/mysql"
         tag: "9.4.0-debian-12-r1"
     auth:
-        rootPassword: "start123"
-        replicationPassword: "start123"
+        password: "" # Leave empty for auto-generation
+        rootPassword: "" # ...
+        replicationPassword: "" # ...
+        existingSecret: "flame-hub-auth"
     secondary:
         startupProbe:
             failureThreshold: 30
@@ -155,7 +176,9 @@ grafana:
         repository: "bitnamilegacy/grafana"
         tag: "12.1.1-debian-12-r1"
     admin:
-        password: "start123"
+        password: "" # Leave empty for auto-generation
+        existingSecret: "flame-hub-auth"
+        existingSecretPasswordKey: "grafana-admin-password"
     dashboardsProvider:
         enabled: true
     datasources:
@@ -249,7 +272,9 @@ harbor:
     enabled: true
     nameOverride: "harbor"
     adminUsername: "admin"
-    adminPassword: "start123"
+    adminPassword: "" # Leave empty for auto-generation
+    existingSecretAdminPassword: "flame-hub-auth"
+    existingSecretAdminPasswordKey: "harbor-admin-password"
     exposureType: "proxy"
     externalURL: "" # Required by Harbor, e.g. https://harbor.hub.local
     ingress:
@@ -279,7 +304,6 @@ harbor:
             repository: "bitnamilegacy/harbor-core"
             tag: "2.13.2-debian-12-r3"
     jobservice:
-        # secret: "start123"
         image:
             #repository: "tada5hi/harbor-jobservice"
             repository: "bitnamilegacy/harbor-jobservice"
@@ -310,9 +334,6 @@ harbor:
     redis:
         enabled: true
         nameOverride: "harbor-redis"
-        auth:
-            enabled: true
-            password: "start123"
         image:
             repository: "bitnamilegacy/redis"
             tag: "8.2.1-debian-12-r0"

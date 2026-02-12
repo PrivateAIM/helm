@@ -1,13 +1,17 @@
-global:
-    redis:
-        # TODO: this should be passed from the flame-hub values.yaml
-        password: "start123"
-
 ingress:
     enabled: false
     hostname: ""
     path: "/"
     pathType: "Prefix"
+
+auth:
+    # Use an existing secret with keys: vault-connection-string, redis-connection-string, mysql-root-password
+    existingSecret: ""
+
+    # or provide credentials in values (used when existingSecret is not set)
+    vaultToken: "start123"
+    redisPassword: "start123"
+    mysqlRootPassword: "start123"
 
 cookieDomain: ""
 publicURL: ""
