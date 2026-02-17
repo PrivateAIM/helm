@@ -97,6 +97,9 @@ hub:
   auth:
     clientID:
     clientSecret:
+
+    robotUser:
+    robotSecret:
     ## @param hub.auth.existingSecret Existing k8s secret containing secret for given hub robot user UUID
     ## The secret must have a key named "robotSecret"
     existingSecret: ""
