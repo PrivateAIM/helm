@@ -373,7 +373,7 @@ Generate a random clientSecret value for the PO client in keycloak if none provi
 {{- end -}}
 {{- end -}}
 
-{{/*Result Service helpers*/}}
+{{/*Storage Service helpers*/}}
 
 {{/*
 Return the secret containing private key

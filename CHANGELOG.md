@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.0.11
+
+
+### Refactoring
+
+* **node**: rename node-result-service to node-storage-service ([14b6f91](https://github.com/PrivateAIM/helm/commit/14b6f91634798a0d29ba25a374718841d6460330))
+
 ## [0.0.10](https://github.com/PrivateAIM/helm/compare/root-0.0.9...root-0.0.10) (2025-11-21)
 
 

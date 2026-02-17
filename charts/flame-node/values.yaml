@@ -100,7 +100,7 @@ hub:
     ## @param hub.auth.existingSecret Existing k8s secret containing secret for given hub client ID
     ## The secret must have a key named "clientSecret"
     existingSecret: ""
-  ## Values required by the result service for encrypting intermediate results sent to the Hub
+  ## Values required by the storage service for encrypting intermediate results sent to the Hub
   crypto:
     ## @param hub.crypto.privateKey Content of the private key to be added to the secret. Need to use the "|" scalar:
     ## https://yaml.org/spec/1.2.2/#812-literal-style
@@ -182,7 +182,7 @@ kong:
       - name: kong-plugin-minio-gateway
         pluginName: minio-gateway
 
-resultService:
+storageService:
   env:
     MINIO_USE_SSL: false
     MINIO_BUCKET: flame
@@ -194,9 +194,9 @@ resultService:
 
   # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
   image:
-    repository: ghcr.io/privateaim/node-result-service
+    repository: ghcr.io/privateaim/node-storage-service
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.1.4
+    tag: sha-a8bd4f1
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -238,13 +238,13 @@ resultService:
   livenessProbe: {}
     # httpGet:
     #   path: /healthz
-    #   port: http-result-srv
+    #   port: http-storage-srv
   # failureThreshold: 3
   # periodSeconds: 10
   readinessProbe: {}
     # httpGet:
     #   path: /healthz
-    #   port: http-result-srv
+    #   port: http-storage-srv
   # failureThreshold: 5
   # periodSeconds: 5
 
@@ -400,7 +400,7 @@ hubAdapter:
   image:
     repository: ghcr.io/privateaim/node-hub-api-adapter
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.4.1
+    tag: 0.4.2
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
