@@ -98,12 +98,12 @@ spec:
             - name: HUB__AUTH__FLOW
               value: "robot"
             - name: HUB__AUTH__ID
-              value: {{ required "Hub robot id must be set." .Values.hub.auth.robotUser  | quote }}
+              value: {{ required "Hub client ID must be set." .Values.hub.auth.clientID  | quote }}
             - name: HUB__AUTH__SECRET
               valueFrom:
                 secretKeyRef:
                   name: {{ include "hub.secretName" . }}
-                  key: robotSecret
+                  key: clientSecret
             - name: HUB__AUTH_BASE_URL
               value: {{ .Values.hub.endpoints.auth | default "https://auth.privateaim.dev" | quote }}
             - name: HUB__CORE_BASE_URL

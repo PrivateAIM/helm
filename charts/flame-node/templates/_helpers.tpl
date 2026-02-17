@@ -48,9 +48,9 @@ Set the hostname of the Node UI. Assumes if global ingress enabled then global h
 Return the secret containing the hub robot secret
 */}}
 {{- define "hub.secretName" -}}
-{{- $robotSecretName := .Values.hub.auth.existingSecret -}}
-{{- if $robotSecretName -}}
-    {{- printf "%s" (tpl $robotSecretName $) -}}
+{{- $clientSecretName := .Values.hub.auth.existingSecret -}}
+{{- if $clientSecretName -}}
+    {{- printf "%s" (tpl $clientSecretName $) -}}
 {{- else -}}
     {{- printf "%s-hub-robot-secret" .Release.Name -}}
 {{- end -}}
