@@ -129,9 +129,9 @@ spec:
             - name: EXTRA_CA_CERTS
               value: "/mnt/certs/certs.pem"
             {{- end }}
-            - name: HUB_CLIENT_ID
+            - name: HUB_NODE_CLIENT_ID
               value: {{ required "A client ID for the Hub is required." .Values.hub.auth.clientID | quote }}
-            - name: HUB_CLIENT_SECRET
+            - name: HUB_NODE_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
                   name: {{ include "hub.secretName" . }}
