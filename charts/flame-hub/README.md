@@ -22,6 +22,12 @@ For example: View the harbor admin password with:
 ```bash
 kubectl get secret flame-hub-auth -o jsonpath='{.data.harbor-admin-password}' | base64 -d && echo
 ```
+View the default admin password for the FLAME Hub with:
+```bash
+kubectl get secret flame-hub-auth -o jsonpath='{.data.authup-default-admin-password}' | base64 -d && echo
+```
+
+> **Note:** If authentication in the WebUI fails, make sure your browser trusts the TLS certificate of the page.
 
 ### Using an Existing Secret or changing the secret name
 
@@ -58,6 +64,7 @@ rabbitmq-connection-string:
 vault-connection-string:
 minio-connection-string:
 harbor-connection-string:
+authup-default-admin-password:
 ```
 Create a secret:
 ```bash
@@ -79,14 +86,18 @@ global:
       ssl: true
       hostname: "hub.local"
 
+auth:
+  # Default FLAME Hub Admin password
+  defaultAdminPassword: "" # Leave empty for auto-generation
+
 image:
   registry: ghcr.io
   repository: privateaim/hub
-  tag: "latest"
+  tag: "latest" # Set Hub version here
   pullPolicy: Always
 
 grafana:
-  # disable plugins until plugin issues are fixed
+  # empty plugins section to disable plugins until plugin issues are fixed
   plugins:
 
 

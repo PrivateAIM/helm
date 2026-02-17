@@ -74,10 +74,12 @@ auth:
 
 ## Dependencies / Subcharts
 
+# Authentication Provider
 authup:
     auth:
-        # For MySQL, Redis, Vault
         existingSecret: "flame-hub-auth"
+        # Default Password for the FLAME Hub Admin User
+        defaultAdminPassword: "" # Leave empty for auto-generation
     ingress:
         enabled: false
         hostname: ""

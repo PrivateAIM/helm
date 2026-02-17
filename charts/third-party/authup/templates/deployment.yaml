@@ -70,6 +70,11 @@ spec:
                     secretKeyRef:
                       name: {{ .Values.auth.existingSecret }}
                       key: mysql-root-password
+              -   name: USER_ADMIN_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.auth.existingSecret }}
+                      key: authup-default-admin-password
             {{- else }}
               -   name: VAULT
                   value: "{{ .Values.auth.vaultToken }}@http://{{ .Release.Name }}-vault:8200/v1/"
@@ -77,6 +82,8 @@ spec:
                   value: "redis://default:{{ .Values.auth.redisPassword }}@{{ .Release.Name }}-redis-master"
               -   name: DB_PASSWORD
                   value: {{ .Values.auth.mysqlRootPassword | quote }}
+              -   name: USER_ADMIN_PASSWORD
+                  value: {{ .Values.auth.defaultAdminPassword | quote }}
             {{- end }}
               -   name: ROBOT_ADMIN_ENABLED
                   value: "true"

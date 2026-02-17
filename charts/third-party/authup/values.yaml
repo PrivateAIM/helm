@@ -12,6 +12,7 @@ auth:
     vaultToken: "start123"
     redisPassword: "start123"
     mysqlRootPassword: "start123"
+    defaultAdminPassword: "start123"
 
 cookieDomain: ""
 publicURL: ""
