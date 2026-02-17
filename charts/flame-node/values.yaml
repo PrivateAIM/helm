@@ -95,8 +95,8 @@ hub:
     storage: https://storage.privateaim.dev
   ## Credentials used for retrieving a valid token from the hub using a robot account
   auth:
-    robotUser:
-    robotSecret:
+    clientID:
+    clientSecret:
     ## @param hub.auth.existingSecret Existing k8s secret containing secret for given hub robot user UUID
     ## The secret must have a key named "robotSecret"
     existingSecret: ""
