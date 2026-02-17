@@ -11,7 +11,7 @@ hub:
   auth:
     robotUser:
     robotSecret:
-  ## Values required by the result service for encrypting intermediate results sent to the Hub
+  ## Values required by the storage service for encrypting intermediate results sent to the Hub
   crypto:
     ## @param hub.crypto.privateKey Content of the private key to be added to the secret. Need to use the "|" scalar:
     ## https://yaml.org/spec/1.2.2/#812-literal-style
