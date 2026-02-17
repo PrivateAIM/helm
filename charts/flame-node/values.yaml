@@ -238,13 +238,13 @@ storageService:
   livenessProbe: {}
     # httpGet:
     #   path: /healthz
-    #   port: http-storage-srv
+    #   port: api
   # failureThreshold: 3
   # periodSeconds: 10
   readinessProbe: {}
     # httpGet:
     #   path: /healthz
-    #   port: http-storage-srv
+    #   port: api
   # failureThreshold: 5
   # periodSeconds: 5
 
