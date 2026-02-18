@@ -275,7 +275,7 @@ harbor:
     nameOverride: "harbor"
     adminUsername: "admin"
     adminPassword: "" # Leave empty for auto-generation
-    existingSecretAdminPassword: "flame-hub-auth"
+    existingSecret: "flame-hub-auth"
     existingSecretAdminPasswordKey: "harbor-admin-password"
     exposureType: "proxy"
     externalURL: "" # Required by Harbor, e.g. https://harbor.hub.local
