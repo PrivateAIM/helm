@@ -118,7 +118,11 @@ spec:
           {{- if not .Values.externalHarbor.enabled }}
           # Microk8s Calico CNI defaults to 1400 MTU, but dind defaults to 1500.
           # This might be different on other k8s providers. If you get mysterious connection errors, check your MTU.
+          {{- if include "harbor.host" . }}
           args: ["--insecure-registry", "{{ include "harbor.host" . }}:443", "--mtu", "1350"]
+          {{- else }}
+          args: ["--mtu", "1350"]
+          {{- end }}
           {{- else }}
           args: ["--mtu", "1350"]
           {{- end }}
