@@ -17,7 +17,7 @@ spec:
         appGroup: "{{ .Release.Name }}-flame-hub"
     spec:
       restartPolicy: Always
-      {{- if not .Values.externalHarbor.enabled }}
+      {{- if and (not .Values.externalHarbor.enabled) (include "harbor.host" .)}}
       hostAliases:
         - ip: "127.0.0.1"
           hostnames:
