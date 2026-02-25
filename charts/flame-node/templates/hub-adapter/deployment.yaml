@@ -44,9 +44,16 @@ spec:
         {{- toYaml .Values.hubAdapter.podSecurityContext | nindent 8 }}
       initContainers:
         - name: wait-for-keycloak
-          image: busybox:1.36.0
+          image: curlimages/curl:latest
           imagePullPolicy: IfNotPresent
-          command: ['sh', '-c', "until nc -vz {{ include "keycloak.svc.route" . }} 80; do echo waiting for internal keycloak; sleep 2; done"]
+          command:
+            - sh
+            - -c
+            - |
+              until curl -sf {{ include "keycloak.svc.route" . }}:9000/keycloak/health/ready; do
+                echo "Waiting for Keycloak..."
+                sleep 5
+              done
       containers:
         - name: api-gateway
           securityContext:
