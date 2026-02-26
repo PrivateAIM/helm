@@ -63,7 +63,7 @@ spec:
             containers:
                 -   name: "{{ .Release.Name }}-flame-hub-server-storage"
                     image: {{ include "flameHub.image" . | trim | quote }}
-                    args: ["storage", "start"]
+                    args: ["storage", "cli", "start"]
                     imagePullPolicy: {{ .Values.image.pullPolicy | trim | quote }}
                     ports:
                         -   containerPort: 3000
