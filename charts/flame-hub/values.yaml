@@ -120,24 +120,15 @@ minio:
     # See /charts/third-party/openebs for details
     # persistence:
     #     storageClass: "mayastor-replicated"
-mysql:
-    nameOverride: "mysql"
+
+postgresql:
+    nameOverride: "postgresql"
     image:
-        #repository: "tada5hi/mysql"
-        repository: "bitnamilegacy/mysql"
-        tag: "9.4.0-debian-12-r1"
+        repository: "bitnamilegacy/postgresql"
+        tag: "17.6.0-debian-12-r4"
     auth:
-        rootPassword: "start123"
+        postgresPassword: "start123"
         replicationPassword: "start123"
-    secondary:
-        startupProbe:
-            failureThreshold: 30
-        readinessProbe:
-            failureThreshold: 20
-        persistence:
-            enabled: true
-            size: 16Gi
-        replicaCount: 2
     primary:
         startupProbe:
             failureThreshold: 30
@@ -146,6 +137,15 @@ mysql:
         persistence:
             enabled: true
             size: 16Gi
+    readReplicas:
+        replicaCount: 0
+        persistence:
+            enabled: true
+            size: 16Gi
+        startupProbe:
+            failureThreshold: 30
+        readinessProbe:
+            failureThreshold: 20
     architecture: "replication"
 
 grafana:
