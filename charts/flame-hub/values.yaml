@@ -268,7 +268,6 @@ harbor:
             repository: "bitnamilegacy/nginx"
             tag: "1.29.1-debian-12-r0"
     portal:
-        # defining explicit secrets for the following fields is not required if a chart installation is triggered by helm
         image:
             #repository: "tada5hi/harbor-portal"
             repository: "bitnamilegacy/harbor-portal"
@@ -305,9 +304,7 @@ harbor:
         nameOverride: "harbor-postgresql"
         image:
             repository: "bitnamilegacy/postgresql"
-            # TODO: Update to a recent version (recent versions need different pvc permissions)
-            # See https://github.com/bitnami/containers/issues/2680#issue-1334211988
-            tag: "13.7.0-debian-11-r9"
+            tag: "17.6.0-debian-12-r4"
     redis:
         enabled: true
         nameOverride: "harbor-redis"
