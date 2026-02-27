@@ -148,8 +148,12 @@ postgresql:
         repository: "bitnamilegacy/postgresql"
         tag: "17.6.0-debian-12-r4"
     auth:
-        postgresPassword: "start123"
-        replicationPassword: "start123"
+        postgresPassword: "" # Leave empty for auto-generation
+        replicationPassword: "" # Leave empty for auto-generation
+        existingSecret: "flame-hub-auth"
+        secretKeys:
+            adminPasswordKey: "postgresql-password"
+            replicationPasswordKey: "postgresql-replication-password"
     primary:
         startupProbe:
             failureThreshold: 30

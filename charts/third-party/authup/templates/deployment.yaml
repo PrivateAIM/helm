@@ -69,7 +69,7 @@ spec:
                   valueFrom:
                     secretKeyRef:
                       name: {{ .Values.auth.existingSecret }}
-                      key: mysql-root-password
+                      key: postgresql-password
               -   name: USER_ADMIN_PASSWORD
                   valueFrom:
                     secretKeyRef:
@@ -81,7 +81,7 @@ spec:
               -   name: REDIS
                   value: "redis://default:{{ .Values.auth.redisPassword }}@{{ .Release.Name }}-redis-master:6379"
               -   name: DB_PASSWORD
-                  value: {{ .Values.auth.mysqlRootPassword | quote }}
+                  value: {{ .Values.auth.postgresPassword | quote }}
               -   name: USER_ADMIN_PASSWORD
                   value: {{ .Values.auth.defaultAdminPassword | quote }}
             {{- end }}
@@ -99,8 +99,6 @@ spec:
                   value: "{{ .Release.Name }}-postgresql-primary"
               -   name: DB_USERNAME
                   value: "postgres"
-              -   name: DB_PASSWORD
-                  value: "start123"
               -   name: DB_DATABASE
                   value: "auth"
           resources:

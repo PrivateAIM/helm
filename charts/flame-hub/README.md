@@ -50,26 +50,26 @@ The difference is that `existingSecret` is not populated with values from the ch
 The chart requires a secret with the following keys:
 
 ```
-mysql-root-password:
-mysql-replication-password:
-mysql-password:
+postgresql-password:
+postgresql-replication-password:
 rabbitmq-password:
 redis-password:
 vault-dev-root-token:
 minio-root-password:
 harbor-admin-password:
 grafana-admin-password:
+authup-default-admin-password:
+postgresql-connection-string:
 redis-connection-string:
 rabbitmq-connection-string:
 vault-connection-string:
 minio-connection-string:
 harbor-connection-string:
-authup-default-admin-password:
 ```
 Create a secret:
 ```bash
 kubectl create secret generic flame-hub-auth \
-  --from-literal=mysql-root-password=verysecurepassword \
+  --from-literal=postgresql-password=verysecurepassword \
   --from-literal=harbor-admin-password=anothersecurepassword \
   # ...
 ```

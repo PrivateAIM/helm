@@ -110,7 +110,7 @@ spec:
                   valueFrom:
                       secretKeyRef:
                           name: {{ include "flameHub.effectiveSecretName" .  }}
-                          key: mysql-root-password
+                          key: postgresql-password
               -   name: DB_DATABASE
                   value: "core"
               -   name: MASTER_IMAGES_BRANCH

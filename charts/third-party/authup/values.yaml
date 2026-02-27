@@ -5,13 +5,13 @@ ingress:
     pathType: "Prefix"
 
 auth:
-    # Use an existing secret with keys: vault-connection-string, redis-connection-string, mysql-root-password
+    # Use an existing secret with keys: vault-connection-string, redis-connection-string, postgresql-password
     existingSecret: ""
 
     # or provide credentials in values (used when existingSecret is not set)
     vaultToken: "start123"
     redisPassword: "start123"
-    mysqlRootPassword: "start123"
+    postgresPassword: "start123"
     defaultAdminPassword: "start123"
 
 cookieDomain: ""
