@@ -302,6 +302,7 @@ harbor:
             repository: "bitnamilegacy/harbor-adapter-trivy"
             tag: "2.13.2-debian-12-r2"
     postgresql:
+        nameOverride: "harbor-postgresql"
         image:
             repository: "bitnamilegacy/postgresql"
             # TODO: Update to a recent version (recent versions need different pvc permissions)
