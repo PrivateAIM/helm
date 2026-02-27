@@ -4,8 +4,8 @@ kind: Deployment
 metadata:
   name: {{ .Release.Name }}-node-ui-deployment
   labels:
-    component: flame-node-ui
-    app.kubernetes.io/name: flame-node-ui
+    component: flame-ui
+    app.kubernetes.io/name: flame-ui
     app.kubernetes.io/component: ui
     app.kubernetes.io/part-of: flame-node
     app.kubernetes.io/version: {{ .Chart.AppVersion }}
@@ -13,8 +13,8 @@ metadata:
 spec:
   selector:
     matchLabels:
-      component: flame-node-ui  
-      app.kubernetes.io/name: flame-node-ui
+      component: flame-ui  
+      app.kubernetes.io/name: flame-ui
       app.kubernetes.io/component: ui
       app.kubernetes.io/part-of: flame-node
   replicas: {{ .Values.ui.replicaCount }}
@@ -25,8 +25,8 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
       labels:
-        component: flame-node-ui
-        app.kubernetes.io/name: flame-node-ui
+        component: flame-ui
+        app.kubernetes.io/name: flame-ui
         app.kubernetes.io/component: ui
         app.kubernetes.io/part-of: flame-node
         app.kubernetes.io/version: {{ .Chart.AppVersion }}

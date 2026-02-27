@@ -22,7 +22,7 @@ spec:
               command: [
                   'sh',
                   '-c',
-                  'until nc -z -v -w30 {{ .Release.Name }}-mysql-primary 3306; do echo "Waiting for db..."; sleep 5; done'
+                  'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done'
               ]
           -   name: wait-for-redis
               image: busybox
@@ -85,14 +85,22 @@ spec:
               -   name: USER_ADMIN_PASSWORD
                   value: {{ .Values.auth.defaultAdminPassword | quote }}
             {{- end }}
+              -   name: CLIENT_SYSTEM_ENABLED
+                  value: "true"
+              -   name: CLIENT_SYSTEM_SECRET
+                  value: "start123"
+              -   name: CLIENT_SYSTEM_SECRET_RESET
+                  value: "true"
               -   name: ROBOT_ADMIN_ENABLED
                   value: "true"
               -   name: DB_TYPE
-                  value: "mysql"
+                  value: "postgres"
               -   name: DB_HOST
-                  value: "{{ .Release.Name }}-mysql-primary"
+                  value: "{{ .Release.Name }}-postgresql-primary"
               -   name: DB_USERNAME
-                  value: "root"
+                  value: "postgres"
+              -   name: DB_PASSWORD
+                  value: "start123"
               -   name: DB_DATABASE
                   value: "auth"
           resources:

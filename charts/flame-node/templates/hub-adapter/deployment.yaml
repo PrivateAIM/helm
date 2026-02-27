@@ -44,9 +44,16 @@ spec:
         {{- toYaml .Values.hubAdapter.podSecurityContext | nindent 8 }}
       initContainers:
         - name: wait-for-keycloak
-          image: busybox:1.36.0
+          image: curlimages/curl:latest
           imagePullPolicy: IfNotPresent
-          command: ['sh', '-c', "until nc -vz {{ include "keycloak.svc.route" . }} 80; do echo waiting for internal keycloak; sleep 2; done"]
+          command:
+            - sh
+            - -c
+            - |
+              until curl -sf {{ include "keycloak.svc.route" . }}:9000/keycloak/health/ready; do
+                echo "Waiting for Keycloak..."
+                sleep 5
+              done
       containers:
         - name: api-gateway
           securityContext:
@@ -82,8 +89,8 @@ spec:
               value: {{ .Values.proxy.httpsProxy | default "" }}
             - name: NO_PROXY
               value: {{ .Values.proxy.noProxy | default "" }}
-            - name: RESULTS_SERVICE_URL
-              value: {{ printf "http://%s-node-result-service.%s.svc.cluster.local:8080" .Release.Name .Release.Namespace }}
+            - name: STORAGE_SERVICE_URL
+              value: {{ printf "http://%s-storage-service.%s.svc.cluster.local:8080" .Release.Name .Release.Namespace }}
             - name: PODORC_SERVICE_URL
               value: {{ printf "http://%s-po-service.%s.svc.cluster.local:8000" .Release.Name .Release.Namespace }}
             - name: KONG_ADMIN_SERVICE_URL

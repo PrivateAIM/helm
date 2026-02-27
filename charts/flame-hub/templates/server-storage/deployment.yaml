@@ -23,7 +23,7 @@ spec:
                     command: [
                         'sh',
                         '-c',
-                        'until nc -z -v -w30 {{ .Release.Name }}-mysql-primary 3306; do echo "Waiting for db..."; sleep 5; done'
+                        'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done'
                     ]
                 -   name: wait-for-redis
                     image: busybox
@@ -63,7 +63,7 @@ spec:
             containers:
                 -   name: "{{ .Release.Name }}-flame-hub-server-storage"
                     image: {{ include "flameHub.image" . | trim | quote }}
-                    args: ["storage", "start"]
+                    args: ["storage", "cli", "start"]
                     imagePullPolicy: {{ .Values.image.pullPolicy | trim | quote }}
                     ports:
                         -   containerPort: 3000
@@ -92,11 +92,11 @@ spec:
                         -   name: AUTHUP_URL
                             value: "http://{{ .Release.Name }}-authup-server-core:3000/"
                         -   name: DB_TYPE
-                            value: "mysql"
+                            value: "postgres"
                         -   name: DB_HOST
-                            value: "{{ .Release.Name }}-mysql-primary"
+                            value: "{{ .Release.Name }}-postgresql-primary"
                         -   name: DB_USERNAME
-                            value: "root"
+                            value: "postgres"
                         -   name: DB_PASSWORD
                             valueFrom:
                                 secretKeyRef:

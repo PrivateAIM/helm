@@ -3,8 +3,8 @@ kind: Service
 metadata:
   name: {{ .Release.Name }}-node-ui-service
   labels:
-    component: flame-node-ui
-    app.kubernetes.io/name: flame-node-ui
+    component: flame-ui
+    app.kubernetes.io/name: flame-ui
     app.kubernetes.io/component: ui
     app.kubernetes.io/part-of: flame-node
     app.kubernetes.io/version: {{ .Chart.AppVersion }}
@@ -14,8 +14,8 @@ spec:
   - name: ui
     port: 3000
   selector:
-    component: flame-node-ui
-    app.kubernetes.io/name: flame-node-ui
+    component: flame-ui
+    app.kubernetes.io/name: flame-ui
     app.kubernetes.io/component: ui
     app.kubernetes.io/part-of: flame-node
     app.kubernetes.io/instance: {{ .Release.Name }}
