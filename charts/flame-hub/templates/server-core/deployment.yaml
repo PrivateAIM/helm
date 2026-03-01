@@ -29,7 +29,7 @@ spec:
               command: [
                   'sh',
                   '-c',
-                  'until nc -z -v -w30 {{ .Release.Name }}-mysql-primary 3306; do echo "Waiting for db..."; sleep 5; done'
+                  'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done'
               ]
           -   name: wait-for-redis
               image: busybox
@@ -92,11 +92,11 @@ spec:
               -   name: SKIP_ANALYSIS_APPROVAL
                   value: "true"
               -   name: DB_TYPE
-                  value: "mysql"
+                  value: "postgres"
               -   name: DB_HOST
-                  value: "{{ .Release.Name }}-mysql-primary"
+                  value: "{{ .Release.Name }}-postgresql-primary"
               -   name: DB_USERNAME
-                  value: "root"
+                  value: "postgres"
               -   name: DB_PASSWORD
                   value: "start123"
               -   name: DB_DATABASE

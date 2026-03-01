@@ -22,7 +22,7 @@ spec:
               command: [
                   'sh',
                   '-c',
-                  'until nc -z -v -w30 {{ .Release.Name }}-mysql-primary 3306; do echo "Waiting for db..."; sleep 5; done'
+                  'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done'
               ]
           -   name: wait-for-redis
               image: busybox
@@ -58,14 +58,20 @@ spec:
                   value: "start123@http://{{ .Release.Name }}-vault:8200/v1/"
               -   name: REDIS
                   value: "redis://default:{{ .Values.global.redis.password }}@{{ .Release.Name }}-redis-master"
+              -   name: CLIENT_SYSTEM_ENABLED
+                  value: "true"
+              -   name: CLIENT_SYSTEM_SECRET
+                  value: "start123"
+              -   name: CLIENT_SYSTEM_SECRET_RESET
+                  value: "true"
               -   name: ROBOT_ADMIN_ENABLED
                   value: "true"
               -   name: DB_TYPE
-                  value: "mysql"
+                  value: "postgres"
               -   name: DB_HOST
-                  value: "{{ .Release.Name }}-mysql-primary"
+                  value: "{{ .Release.Name }}-postgresql-primary"
               -   name: DB_USERNAME
-                  value: "root"
+                  value: "postgres"
               -   name: DB_PASSWORD
                   value: "start123"
               -   name: DB_DATABASE

@@ -19,8 +19,8 @@ dependencies:
     version: 2.31.4
     repository: https://charts.bitnami.com/bitnami
 
-  - name: mysql
-    version: 14.0.3
+  - name: postgresql
+    version: 18.5.1
     repository: https://charts.bitnami.com/bitnami
 
   - name: redis
