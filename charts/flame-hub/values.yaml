@@ -71,12 +71,6 @@ serverCoreWorker:
     useSidecarDinD: true
 
 ## services
-vault:
-    server:
-        enabled: true
-        dev:
-            enabled: true
-            devRootToken: start123
 rabbitmq:
     nameOverride: "rabbitmq"
     auth:
