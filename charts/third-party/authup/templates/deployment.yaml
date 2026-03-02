@@ -74,7 +74,10 @@ spec:
               -   name: CLIENT_SYSTEM_ENABLED
                   value: "true"
               -   name: CLIENT_SYSTEM_SECRET
-                  value: "start123"
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.auth.existingSecret }}
+                      key: client-secret
               -   name: CLIENT_SYSTEM_SECRET_RESET
                   value: "true"
               -   name: ROBOT_ADMIN_ENABLED

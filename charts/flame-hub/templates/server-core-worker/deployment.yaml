@@ -75,7 +75,10 @@ spec:
             - name: CLIENT_ID
               value: "system"
             - name: CLIENT_SECRET
-              value: "start123"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "flameHub.effectiveSecretName" .  }}
+                  key: client-secret
             - name: REALM
               value: "master"
           {{- if .Values.serverCoreWorker.useSidecarDinD }}

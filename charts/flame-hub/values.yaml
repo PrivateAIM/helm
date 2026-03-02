@@ -72,6 +72,10 @@ auth:
     # IMPORTANT:If you set this, you must also update the subchart configurations below to point to your secret!
     existingSecret: ""
 
+    # Client Auth (previously "Robot Auth")
+    # FLAME Hub Client Secret (not a k8s secret resource, but the actual secret string used for FLAME communication)
+    clientSecret: "" # Leave empty for auto-generation
+
 ## Dependencies / Subcharts
 
 # Authentication Provider
