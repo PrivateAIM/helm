@@ -45,13 +45,6 @@ spec:
                   '-c',
                   'until nc -z -v -w30 {{ .Release.Name }}-rabbitmq 5672; do echo "Waiting for rabbitmq..."; sleep 5; done'
               ]
-          -   name: wait-for-vault
-              image: busybox
-              command: [
-                  'sh',
-                  '-c',
-                  'until nc -z -v -w30 {{ .Release.Name }}-vault 8200; do echo "Waiting for vault..."; sleep 5; done'
-              ]
           -   name: wait-for-authup
               image: busybox
               command: [
@@ -79,8 +72,6 @@ spec:
           env:
               -   name: REDIS_CONNECTION_STRING
                   value: "redis://default:{{ .Values.redis.auth.password }}@{{ .Release.Name }}-redis-master"
-              -   name: VAULT_CONNECTION_STRING
-                  value: "start123@http://{{ .Release.Name }}-vault:8200/v1/"
               -   name: RABBITMQ_CONNECTION_STRING
                   value: "amqp://root:start123@{{ .Release.Name }}-rabbitmq"
               -   name: AUTHUP_URL
@@ -107,6 +98,12 @@ spec:
               -   name: HARBOR_URL
                   value: "{{ .Values.serverCore.harbor.username }}:{{ .Values.serverCore.harbor.password }}@{{ include "harbor.host" . }}"
               {{- end }}
+              -   name: CLIENT_ID
+                  value: "system"
+              -   name: CLIENT_SECRET
+                  value: "start123"
+              -   name: REALM
+                  value: "master"
           resources:
               requests:
                   memory: "512Mi"
