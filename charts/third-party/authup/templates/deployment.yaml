@@ -31,13 +31,6 @@ spec:
                   '-c',
                   'until nc -z -v -w30 {{ .Release.Name }}-redis-master 6379; do echo "Waiting for redis..."; sleep 5; done'
               ]
-          -   name: wait-for-vault
-              image: busybox
-              command: [
-                  'sh',
-                  '-c',
-                  'until nc -z -v -w30 {{ .Release.Name }}-vault 8200; do echo "Waiting for vault..."; sleep 5; done'
-              ]
       containers:
         - name: "{{ .Release.Name }}-authup-server-core"
           image: "authup/authup:latest"
@@ -55,11 +48,6 @@ spec:
                   value: "{{- toString . | trim }}"
             {{- end }}
             {{- if .Values.auth.existingSecret }}
-              -   name: VAULT
-                  valueFrom:
-                    secretKeyRef:
-                      name: {{ .Values.auth.existingSecret }}
-                      key: vault-connection-string
               -   name: REDIS
                   valueFrom:
                     secretKeyRef:
@@ -76,8 +64,6 @@ spec:
                       name: {{ .Values.auth.existingSecret }}
                       key: authup-default-admin-password
             {{- else }}
-              -   name: VAULT
-                  value: "{{ .Values.auth.vaultToken }}@http://{{ .Release.Name }}-vault:8200/v1/"
               -   name: REDIS
                   value: "redis://default:{{ .Values.auth.redisPassword }}@{{ .Release.Name }}-redis-master:6379"
               -   name: DB_PASSWORD

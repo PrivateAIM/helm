@@ -32,13 +32,6 @@ spec:
                       '-c',
                       'until nc -z -v -w30 {{ .Release.Name }}-rabbitmq 5672; do echo "Waiting for rabbitmq..."; sleep 5; done'
                     ]
-                -   name: wait-for-vault
-                    image: busybox
-                    command: [
-                        'sh',
-                        '-c',
-                        'until nc -z -v -w30 {{ .Release.Name }}-vault 8200; do echo "Waiting for vault..."; sleep 5; done'
-                    ]
                 -   name: wait-for-authup
                     image: busybox
                     command: [
@@ -72,6 +65,12 @@ spec:
                                     key: vault-connection-string
                         -   name: AUTHUP_URL
                             value: "http://{{ .Release.Name }}-authup-server-core:3000/"
+                        -   name: CLIENT_ID
+                            value: "system"
+                        -   name: CLIENT_SECRET
+                            value: "start123"
+                        -   name: REALM
+                            value: "master"
                     resources:
                         requests:
                             memory: "512Mi"
