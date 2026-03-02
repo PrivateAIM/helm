@@ -59,10 +59,10 @@ spec:
               value: {{ required "A valid JWKS URL for Keycloak is required." (include "keycloak.jwks.endpoint" .) }}
             - name: HUB_AUTH_BASE_URL
               value: {{ required "A valid HUB Auth base URL is required." .Values.hub.endpoints.auth | default "https://auth.privateaim.net/" | quote }}
-            - name: HUB_AUTH_ROBOT_ID
+            - name: HUB_AUTH_CLIENT_ID
               value: {{ required "A client ID for the Hub is required." .Values.hub.auth.clientID | quote }}
-            - name: HUB_AUTH_ROBOT_SECRET_FILE
-              value: "/opt/message-broker/auth/robot_secret.txt"
+            - name: HUB_AUTH_CLIENT_SECRET_FILE
+              value: "/opt/message-broker/auth/client_secret.txt"
             - name: HUB_BASE_URL
               value: {{ required "A valid HUB API base URL is required." .Values.hub.endpoints.core | default "https://api.privateaim.net/" | quote}}
             - name: HUB_MESSENGER_BASE_URL
@@ -119,9 +119,9 @@ spec:
               subPath: "certs.pem"
               readOnly: true
             {{- end }}
-            - mountPath: "/opt/message-broker/auth/robot_secret.txt"
+            - mountPath: "/opt/message-broker/auth/client_secret.txt"
               name: "auth"
-              subPath: "robot_secret.txt"
+              subPath: "client_secret.txt"
               readOnly: true
             {{- if $hasProxyAuth }}
             - mountPath: "/opt/message-broker/proxy/proxy_password.txt"
@@ -149,7 +149,7 @@ spec:
             secretName: {{ include "hub.secretName" . }}
             items:
               - key: clientSecret
-                path: "robot_secret.txt"
+                path: "client_secret.txt"
         {{- if $hasProxyAuth }}
         - name: proxy
           secret:
