@@ -116,7 +116,7 @@ spec:
                   valueFrom:
                       secretKeyRef:
                           name: {{ include "flameHub.effectiveSecretName" .  }}
-                          key: client-secret
+                          key: authup-client-secret
               -   name: REALM
                   value: "master"
           resources:

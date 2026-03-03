@@ -69,7 +69,7 @@ spec:
                   valueFrom:
                     secretKeyRef:
                       name: {{ .Values.auth.existingSecret }}
-                      key: client-secret
+                      key: authup-client-secret
             {{- else }}
               -   name: REDIS
                   value: "redis://default:{{ .Values.auth.redisPassword }}@{{ .Release.Name }}-redis-master:6379"
