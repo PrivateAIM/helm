@@ -62,7 +62,9 @@ spec:
                   valueFrom:
                     secretKeyRef:
                       name: {{ .Values.auth.existingSecret }}
-                      key: authup-default-admin-password
+                      key: authup-admin-password
+              -   name: USER_ADMIN_PASSWORD_RESET
+                  value: "true"
               -   name: CLIENT_SYSTEM_SECRET
                   valueFrom:
                     secretKeyRef:

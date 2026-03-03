@@ -24,7 +24,7 @@ kubectl get secret flame-hub-auth -o jsonpath='{.data.harbor-admin-password}' | 
 ```
 View the default admin password for the FLAME Hub with:
 ```bash
-kubectl get secret flame-hub-auth -o jsonpath='{.data.authup-default-admin-password}' | base64 -d && echo
+kubectl get secret flame-hub-auth -o jsonpath='{.data.authup-admin-password}' | base64 -d && echo
 ```
 
 > **Note:** If authentication in the WebUI fails, make sure your browser trusts the TLS certificate of the page.
@@ -57,7 +57,7 @@ redis-password:
 minio-root-password:
 harbor-admin-password:
 grafana-admin-password:
-authup-default-admin-password:
+authup-admin-password:
 postgresql-connection-string:
 redis-connection-string:
 rabbitmq-connection-string:
