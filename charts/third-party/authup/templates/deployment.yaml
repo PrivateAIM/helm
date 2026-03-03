@@ -47,12 +47,41 @@ spec:
               -   name: PUBLIC_URL
                   value: "{{- toString . | trim }}"
             {{- end }}
+            {{- if .Values.auth.existingSecret }}
               -   name: REDIS
-                  value: "redis://default:{{ .Values.global.redis.password }}@{{ .Release.Name }}-redis-master"
-              -   name: CLIENT_SYSTEM_ENABLED
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.auth.existingSecret }}
+                      key: redis-connection-string
+              -   name: DB_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.auth.existingSecret }}
+                      key: postgresql-password
+              -   name: USER_ADMIN_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.auth.existingSecret }}
+                      key: authup-admin-password
+              -   name: USER_ADMIN_PASSWORD_RESET
                   value: "true"
               -   name: CLIENT_SYSTEM_SECRET
-                  value: "start123"
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.auth.existingSecret }}
+                      key: authup-client-secret
+            {{- else }}
+              -   name: REDIS
+                  value: "redis://default:{{ .Values.auth.redisPassword }}@{{ .Release.Name }}-redis-master:6379"
+              -   name: DB_PASSWORD
+                  value: {{ .Values.auth.postgresPassword | quote }}
+              -   name: USER_ADMIN_PASSWORD
+                  value: {{ .Values.auth.adminPassword | quote }}
+              -   name: CLIENT_SYSTEM_SECRET
+                  value: {{ .Values.auth.clientSecret | quote }}
+            {{- end }}
+              -   name: CLIENT_SYSTEM_ENABLED
+                  value: "true"
               -   name: CLIENT_SYSTEM_SECRET_RESET
                   value: "true"
               -   name: ROBOT_ADMIN_ENABLED
@@ -63,8 +92,6 @@ spec:
                   value: "{{ .Release.Name }}-postgresql-primary"
               -   name: DB_USERNAME
                   value: "postgres"
-              -   name: DB_PASSWORD
-                  value: "start123"
               -   name: DB_DATABASE
                   value: "auth"
           resources:

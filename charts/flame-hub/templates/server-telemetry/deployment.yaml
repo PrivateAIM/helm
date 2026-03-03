@@ -63,9 +63,15 @@ spec:
                             protocol: TCP
                     env:
                         -   name: REDIS_CONNECTION_STRING
-                            value: "redis://default:{{ .Values.redis.auth.password }}@{{ .Release.Name }}-redis-master"
+                            valueFrom:
+                                secretKeyRef:
+                                    name: {{ include "flameHub.effectiveSecretName" .  }}
+                                    key: redis-connection-string
                         -   name: RABBITMQ_CONNECTION_STRING
-                            value: "amqp://root:start123@{{ .Release.Name }}-rabbitmq"
+                            valueFrom:
+                                secretKeyRef:
+                                    name: {{ include "flameHub.effectiveSecretName" .  }}
+                                    key: rabbitmq-connection-string
                         -   name: AUTHUP_URL
                             value: "http://{{ .Release.Name }}-authup-server-core:3000/"
                         -   name: VICTORIA_LOGS_INGESTOR_URL
@@ -79,13 +85,19 @@ spec:
                         -   name: DB_USERNAME
                             value: "postgres"
                         -   name: DB_PASSWORD
-                            value: "start123"
+                            valueFrom:
+                                secretKeyRef:
+                                    name: {{ include "flameHub.effectiveSecretName" .  }}
+                                    key: postgresql-password
                         -   name: DB_DATABASE
                             value: "telemetry"
                         -   name: CLIENT_ID
                             value: "system"
                         -   name: CLIENT_SECRET
-                            value: "start123"
+                            valueFrom:
+                                secretKeyRef:
+                                    name: {{ include "flameHub.effectiveSecretName" .  }}
+                                    key: authup-client-secret
                         -   name: REALM
                             value: "master"
                     resources:

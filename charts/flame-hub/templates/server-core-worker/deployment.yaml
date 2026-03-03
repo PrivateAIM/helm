@@ -56,22 +56,31 @@ spec:
             - containerPort: 3000
               protocol: TCP
           env:
-              -   name: REDIS_CONNECTION_STRING
-                  value: "redis://default:{{ .Values.redis.auth.password }}@{{ .Release.Name }}-redis-master"
-              -   name: RABBITMQ_CONNECTION_STRING
-                  value: "amqp://root:start123@{{ .Release.Name }}-rabbitmq"
-              -   name: AUTHUP_URL
-                  value: "http://{{ .Release.Name }}-authup-server-core:3000/"
-              -   name: CORE_URL
-                  value: "http://{{ .Release.Name }}-flame-hub-server-core:3000/"
-              -   name: STORAGE_URL
-                  value: "http://{{ .Release.Name }}-flame-hub-server-storage:3000/"
-              -   name: CLIENT_ID
-                  value: "system"
-              -   name: CLIENT_SECRET
-                  value: "start123"
-              -   name: REALM
-                  value: "master"
+            - name: REDIS_CONNECTION_STRING
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "flameHub.effectiveSecretName" .  }}
+                  key: redis-connection-string
+            - name: RABBITMQ_CONNECTION_STRING
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "flameHub.effectiveSecretName" .  }}
+                  key: rabbitmq-connection-string
+            - name: AUTHUP_URL
+              value: "http://{{ .Release.Name }}-authup-server-core:3000/"
+            - name: CORE_URL
+              value: "http://{{ .Release.Name }}-flame-hub-server-core:3000/"
+            - name: STORAGE_URL
+              value: "http://{{ .Release.Name }}-flame-hub-server-storage:3000/"
+            - name: CLIENT_ID
+              value: "system"
+            - name: CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "flameHub.effectiveSecretName" .  }}
+                  key: authup-client-secret
+            - name: REALM
+              value: "master"
           {{- if .Values.serverCoreWorker.useSidecarDinD }}
           volumeMounts:
               -   name: "{{ .Release.Name }}-docker-sidecar-socket"
