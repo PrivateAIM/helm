@@ -83,7 +83,7 @@ authup:
     auth:
         existingSecret: "flame-hub-auth"
         # Default Password for the FLAME Hub Admin User
-        defaultAdminPassword: "" # Leave empty for auto-generation
+        adminPassword: "" # Leave empty for auto-generation
     ingress:
         enabled: false
         hostname: ""

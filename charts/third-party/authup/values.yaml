@@ -11,7 +11,7 @@ auth:
     # or provide credentials in values (used when existingSecret is not set)
     redisPassword: "start123"
     postgresPassword: "start123"
-    defaultAdminPassword: "start123"
+    adminPassword: "start123"
     clientSecret: "start123"
 
 cookieDomain: ""

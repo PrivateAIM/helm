@@ -87,7 +87,7 @@ global:
 
 auth:
   # Default FLAME Hub Admin password
-  defaultAdminPassword: "" # Leave empty for auto-generation
+  adminPassword: "" # Leave empty for auto-generation
 
 image:
   registry: ghcr.io

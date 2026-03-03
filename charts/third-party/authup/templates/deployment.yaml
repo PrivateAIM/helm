@@ -76,7 +76,7 @@ spec:
               -   name: DB_PASSWORD
                   value: {{ .Values.auth.postgresPassword | quote }}
               -   name: USER_ADMIN_PASSWORD
-                  value: {{ .Values.auth.defaultAdminPassword | quote }}
+                  value: {{ .Values.auth.adminPassword | quote }}
               -   name: CLIENT_SYSTEM_SECRET
                   value: {{ .Values.auth.clientSecret | quote }}
             {{- end }}
