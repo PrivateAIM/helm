@@ -63,6 +63,11 @@ spec:
                     secretKeyRef:
                       name: {{ .Values.auth.existingSecret }}
                       key: authup-default-admin-password
+              -   name: CLIENT_SYSTEM_SECRET
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.auth.existingSecret }}
+                      key: client-secret
             {{- else }}
               -   name: REDIS
                   value: "redis://default:{{ .Values.auth.redisPassword }}@{{ .Release.Name }}-redis-master:6379"
@@ -70,14 +75,11 @@ spec:
                   value: {{ .Values.auth.postgresPassword | quote }}
               -   name: USER_ADMIN_PASSWORD
                   value: {{ .Values.auth.defaultAdminPassword | quote }}
+              -   name: CLIENT_SYSTEM_SECRET
+                  value: {{ .Values.auth.clientSecret | quote }}
             {{- end }}
               -   name: CLIENT_SYSTEM_ENABLED
                   value: "true"
-              -   name: CLIENT_SYSTEM_SECRET
-                  valueFrom:
-                    secretKeyRef:
-                      name: {{ .Values.auth.existingSecret }}
-                      key: client-secret
               -   name: CLIENT_SYSTEM_SECRET_RESET
                   value: "true"
               -   name: ROBOT_ADMIN_ENABLED

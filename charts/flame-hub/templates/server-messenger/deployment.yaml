@@ -58,11 +58,6 @@ spec:
                                 secretKeyRef:
                                     name: {{ include "flameHub.effectiveSecretName" .  }}
                                     key: rabbitmq-connection-string
-                        -   name: VAULT_CONNECTION_STRING
-                            valueFrom:
-                                secretKeyRef:
-                                    name: {{ include "flameHub.effectiveSecretName" .  }}
-                                    key: vault-connection-string
                         -   name: AUTHUP_URL
                             value: "http://{{ .Release.Name }}-authup-server-core:3000/"
                         -   name: CLIENT_ID

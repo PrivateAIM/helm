@@ -54,7 +54,6 @@ postgresql-password:
 postgresql-replication-password:
 rabbitmq-password:
 redis-password:
-vault-dev-root-token:
 minio-root-password:
 harbor-admin-password:
 grafana-admin-password:
@@ -62,9 +61,9 @@ authup-default-admin-password:
 postgresql-connection-string:
 redis-connection-string:
 rabbitmq-connection-string:
-vault-connection-string:
 minio-connection-string:
 harbor-connection-string:
+client-secret:
 ```
 Create a secret:
 ```bash

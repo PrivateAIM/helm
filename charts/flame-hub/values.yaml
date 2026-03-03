@@ -89,13 +89,6 @@ authup:
         hostname: ""
         ssl: false
 
-vault:
-    server:
-        enabled: true
-        dev:
-            enabled: true
-            # needs to be set. No option for passing a secret here.
-            devRootToken: "start123"
 rabbitmq:
     nameOverride: "rabbitmq"
     auth:
