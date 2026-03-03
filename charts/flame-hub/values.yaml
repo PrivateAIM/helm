@@ -154,6 +154,16 @@ postgresql:
             adminPasswordKey: "postgresql-password"
             replicationPasswordKey: "postgresql-replication-password"
     primary:
+        initdb:
+            scripts:
+                initial-registry.sql: |
+                    CREATE DATABASE registry ENCODING 'UTF8';
+                    CREATE DATABASE auth ENCODING 'UTF8';
+                    CREATE DATABASE storage ENCODING 'UTF8';
+                    CREATE DATABASE telemetry ENCODING 'UTF8';
+                    CREATE DATABASE core ENCODING 'UTF8';
+                    \c registry;
+                    CREATE TABLE schema_migrations(version bigint not null primary key, dirty boolean not null);
         startupProbe:
             failureThreshold: 30
         readinessProbe:
@@ -328,10 +338,16 @@ harbor:
             repository: "bitnamilegacy/harbor-adapter-trivy"
             tag: "2.13.2-debian-12-r2"
     postgresql:
-        nameOverride: "harbor-postgresql"
-        image:
-            repository: "bitnamilegacy/postgresql"
-            tag: "17.6.0-debian-12-r4"
+        enabled: false
+    externalDatabase:
+        host: "{{ .Release.Name }}-postgresql-primary"
+        port: 5432
+        user: "postgres"
+        password: ""
+        coreDatabase: "registry"
+        existingSecret: "flame-hub-auth"
+        existingSecretPasswordKey: "postgresql-password"
+        sslmode: "disable"
     redis:
         enabled: true
         nameOverride: "harbor-redis"
