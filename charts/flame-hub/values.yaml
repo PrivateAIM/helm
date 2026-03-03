@@ -129,7 +129,9 @@ minio:
         rootUser: "admin"
         rootPassword: "" # Leave empty for auto-generation
         existingSecret: "flame-hub-auth"
-        rootPasswordKey: "minio-root-password"
+        rootPasswordSecretKey: "minio-root-password"
+        rootUserSecretKey: "minio-root-user"
+
     console:
         image:
             #repository: "tada5hi/minio-object-browser"

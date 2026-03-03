@@ -55,6 +55,7 @@ postgresql-replication-password:
 rabbitmq-password:
 redis-password:
 minio-root-password:
+minio-root-user:
 harbor-admin-password:
 grafana-admin-password:
 authup-admin-password:
