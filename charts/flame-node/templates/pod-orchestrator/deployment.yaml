@@ -116,8 +116,10 @@ spec:
                 secretKeyRef:
                   name: {{ include "hub.secretName" . }}
                   key: robotSecret
+            - name: HUB_LOGGING
+              value:  {{ .Values.podOrchestrator.enableHubLogging | toString | default "true" | quote }}
             - name: STATUS_LOOP_INTERVAL
-              value:  {{ .Values.podOrchestrator.statusLoopInterval | default "10" | quote }}
+              value:  {{ .Values.podOrchestrator.statusLoopInterval | toString | default "10" | quote }}
             {{- if $hasCerts }}
             - name: EXTRA_CA_CERTS
               value: "/mnt/certs/certs.pem"

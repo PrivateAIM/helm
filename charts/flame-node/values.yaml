@@ -475,7 +475,10 @@ podOrchestrator:
     debug: false
 
   ## @param statusLoopInterval How long to wait before restarting nginx and analysis deployment loops in seconds
-  statusLoopInterval: "10"
+  statusLoopInterval: 10
+
+  ## This will enable logging to be sent to the hub for better observability of the node.
+  enableHubLogging: true
 
   # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
   replicaCount: 1
