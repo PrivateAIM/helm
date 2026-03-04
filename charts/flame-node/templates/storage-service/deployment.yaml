@@ -96,7 +96,7 @@ spec:
             - name: MINIO__BUCKET
               value: {{ required "MinIO bucket must be set." .Values.storageService.env.MINIO_BUCKET | quote }}
             - name: HUB__AUTH__FLOW
-              value: "robot"
+              value: "client"
             - name: HUB__AUTH__ID
               value: {{ required "Hub client ID must be set." .Values.hub.auth.clientID  | quote }}
             - name: HUB__AUTH__SECRET
