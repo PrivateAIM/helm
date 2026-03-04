@@ -65,3 +65,11 @@ Create the name of the service account to use
 {{- define "flameHub.image" -}}
 {{ include "common.images.image" (dict "imageRoot" .Values.image "global" .Values.global) }}
 {{- end -}}
+
+{{- define "flameHub.effectiveSecretName" -}}
+{{- if .Values.auth.existingSecret -}}
+{{ .Values.auth.existingSecret }}
+{{- else -}}
+{{ .Values.auth.secretName }}
+{{- end -}}
+{{- end -}}
