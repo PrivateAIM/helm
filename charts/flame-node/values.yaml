@@ -601,7 +601,7 @@ messageBroker:
   image:
     repository: ghcr.io/privateaim/node-message-broker
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.6.0
+    tag: 0.6.1
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
