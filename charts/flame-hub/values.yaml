@@ -154,16 +154,6 @@ postgresql:
             adminPasswordKey: "postgresql-password"
             replicationPasswordKey: "postgresql-replication-password"
     primary:
-        initdb:
-            scripts:
-                initial-registry.sql: |
-                    CREATE DATABASE registry ENCODING 'UTF8';
-                    CREATE DATABASE auth ENCODING 'UTF8';
-                    CREATE DATABASE storage ENCODING 'UTF8';
-                    CREATE DATABASE telemetry ENCODING 'UTF8';
-                    CREATE DATABASE core ENCODING 'UTF8';
-                    \c registry;
-                    CREATE TABLE schema_migrations(version bigint not null primary key, dirty boolean not null);
         startupProbe:
             failureThreshold: 30
         readinessProbe:
@@ -171,6 +161,15 @@ postgresql:
         persistence:
             enabled: true
             size: 16Gi
+        extendedConfiguration: |
+            max_connections = 1024
+        # https://github.com/bitnami/charts/blob/main/bitnami/harbor/values.yaml
+        initdb:
+            scripts:
+              initial-registry.sql: |
+                CREATE DATABASE registry ENCODING 'UTF8';
+                \c registry;
+                CREATE TABLE schema_migrations(version bigint not null primary key, dirty boolean not null);
     readReplicas:
         replicaCount: 0
         persistence:
@@ -310,16 +309,41 @@ harbor:
             #repository: "tada5hi/harbor-portal"
             repository: "bitnamilegacy/harbor-portal"
             tag: "2.13.2-debian-12-r1"
+        initContainers:
+            - name: wait-for-db
+              image: busybox
+              command: [
+                  'sh',
+                  '-c',
+                  'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done'
+              ]
     core:
         image:
             #repository: "tada5hi/harbor-core"
             repository: "bitnamilegacy/harbor-core"
             tag: "2.13.2-debian-12-r3"
+        initContainers:
+            - name: wait-for-db
+              image: busybox
+              command: [
+                  'sh',
+                  '-c',
+                  'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done'
+              ]
     jobservice:
         image:
             #repository: "tada5hi/harbor-jobservice"
             repository: "bitnamilegacy/harbor-jobservice"
             tag: "2.13.2-debian-12-r3"
+        initContainers:
+            - name: wait-for-db
+              image: busybox
+              command: [
+                  'sh',
+                  '-c',
+                  'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done'
+              ]
+
     registry:
         relativeurls: true # Needed for server-core-worker because of TCP forwarding (see https://github.com/distribution/distribution/issues/970#issuecomment-284227065)
         server:
@@ -332,11 +356,27 @@ harbor:
                 #repository: "tada5hi/harbor-registryctl"
                 repository: "bitnamilegacy/harbor-registryctl"
                 tag: "2.13.2-debian-12-r3"
+        initContainers:
+            - name: wait-for-db
+              image: busybox
+              command: [
+                  'sh',
+                  '-c',
+                  'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done'
+              ]
     trivy:
         image:
             #repository: "tada5hi/harbor-adapter-trivy"
             repository: "bitnamilegacy/harbor-adapter-trivy"
             tag: "2.13.2-debian-12-r2"
+        initContainers:
+            - name: wait-for-db
+              image: busybox
+              command: [
+                  'sh',
+                  '-c',
+                  'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done'
+              ]
     postgresql:
         enabled: false
     externalDatabase:
