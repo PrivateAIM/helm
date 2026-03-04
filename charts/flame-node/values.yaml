@@ -475,7 +475,7 @@ podOrchestrator:
     debug: false
 
   ## @param statusLoopInterval How long to wait before restarting nginx and analysis deployment loops in seconds
-  statusLoopInterval: "10"
+  statusLoopInterval: 10
 
   ## This will enabel logging to be sent to the hub for better observability of the node.
   enableHubLogging: true
