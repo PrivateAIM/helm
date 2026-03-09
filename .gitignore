@@ -3,6 +3,7 @@
 .hevi
 node_modules
 values_*
+!charts/flame-hub/values_min.yaml
 Chart.lock
 .monokle
 *.tgz

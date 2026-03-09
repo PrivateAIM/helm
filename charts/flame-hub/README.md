@@ -74,35 +74,40 @@ kubectl create secret generic flame-hub-auth \
   # ...
 ```
 
-## Minimal configuration
+## Installing the FLAME Hub Chart
 
-create `values_local.yaml` then run `helm install hub . -f values_local.yaml`
-
+### 1. Option: Official Chart Repo
+```bash
+helm repo add flame https://PrivateAIM.github.io/helm
+helm repo update
 ```
-global:
-  flameHub:
-    ingress:
-      enabled: true
-      ssl: true
-      hostname: "hub.local"
+Create your custom values file (see the [chart's README](https://github.com/PrivateAIM/helm/tree/master/charts/flame-hub))
+```bash
+helm install <release-name> -f <values-file> flame/hub
+```
 
-auth:
-  # Default FLAME Hub Admin password
-  adminPassword: "" # Leave empty for auto-generation
+### 2. Option: Chart Source Code
+> Choose this option if you want to
+>
+> a) modify not only the chart values, but also the chart files.
+>
+> b) run the newest, not yet released version of the chart.
+```bash
+git clone https://github.com/PrivateAIM/helm.git
+cd helm
+```
 
-image:
-  registry: ghcr.io
-  repository: privateaim/hub
-  tag: "latest" # Set Hub version here
-  pullPolicy: Always
+```bash
+cd charts/flame-hub
+```
+Create your custom values file or copy the suggested minimal example.
+> **Storage Replication (optional)** see the comments regarding mayastor in `values.yaml` on how to configure your values file for storage replication
 
-grafana:
-  # empty plugins section to disable plugins until plugin issues are fixed
-  plugins:
+```bash
+cp values_min.yaml <my-custom-values-file>
+```
+Install the Chart with the custom values file.
 
-
-harbor:
-  enabled: true
-  externalURL: "https://harbor.hub.local/" # don't forget https://
-
+```bash
+helm install <release-name> -f <my-custom-values-file> .
 ```

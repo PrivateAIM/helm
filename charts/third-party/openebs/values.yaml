@@ -36,5 +36,4 @@ openebs:
     #     - name: pool-on-node-1
     #       node: worker-node-1
     #       disks:
-    #           - "aio:///dev/disk/by-id/<device-id>"
-    diskPools: []
+    #           - "aio:///dev/disk/by-partuuid/<partuuid>"

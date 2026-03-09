@@ -118,6 +118,10 @@ redis:
         #repository: "tada5hi/redis"
         repository: "bitnamilegacy/redis"
         tag: "8.2.1-debian-12-r0"
+    # See /charts/third-party/openebs for details
+    # master:
+    #     persistence:
+    #         storageClass: "mayastor-replicated"
 
 minio:
     nameOverride: "minio"
@@ -161,15 +165,17 @@ postgresql:
         persistence:
             enabled: true
             size: 16Gi
+            # See /charts/third-party/openebs for details
+            # storageClass: "mayastor-replicated"
         extendedConfiguration: |
             max_connections = 1024
         # https://github.com/bitnami/charts/blob/main/bitnami/harbor/values.yaml
         initdb:
             scripts:
-              initial-registry.sql: |
-                CREATE DATABASE registry ENCODING 'UTF8';
-                \c registry;
-                CREATE TABLE schema_migrations(version bigint not null primary key, dirty boolean not null);
+                initial-registry.sql: |
+                    CREATE DATABASE registry ENCODING 'UTF8';
+                    \c registry;
+                    CREATE TABLE schema_migrations(version bigint not null primary key, dirty boolean not null);
     readReplicas:
         replicaCount: 0
         persistence:
@@ -312,11 +318,12 @@ harbor:
         initContainers:
             - name: wait-for-db
               image: busybox
-              command: [
-                  'sh',
-                  '-c',
-                  'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done'
-              ]
+              command:
+                  [
+                      "sh",
+                      "-c",
+                      'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done',
+                  ]
     core:
         image:
             #repository: "tada5hi/harbor-core"
@@ -325,11 +332,12 @@ harbor:
         initContainers:
             - name: wait-for-db
               image: busybox
-              command: [
-                  'sh',
-                  '-c',
-                  'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done'
-              ]
+              command:
+                  [
+                      "sh",
+                      "-c",
+                      'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done',
+                  ]
     jobservice:
         image:
             #repository: "tada5hi/harbor-jobservice"
@@ -338,11 +346,12 @@ harbor:
         initContainers:
             - name: wait-for-db
               image: busybox
-              command: [
-                  'sh',
-                  '-c',
-                  'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done'
-              ]
+              command:
+                  [
+                      "sh",
+                      "-c",
+                      'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done',
+                  ]
 
     registry:
         relativeurls: true # Needed for server-core-worker because of TCP forwarding (see https://github.com/distribution/distribution/issues/970#issuecomment-284227065)
@@ -359,11 +368,12 @@ harbor:
         initContainers:
             - name: wait-for-db
               image: busybox
-              command: [
-                  'sh',
-                  '-c',
-                  'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done'
-              ]
+              command:
+                  [
+                      "sh",
+                      "-c",
+                      'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done',
+                  ]
     trivy:
         image:
             #repository: "tada5hi/harbor-adapter-trivy"
@@ -372,11 +382,12 @@ harbor:
         initContainers:
             - name: wait-for-db
               image: busybox
-              command: [
-                  'sh',
-                  '-c',
-                  'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done'
-              ]
+              command:
+                  [
+                      "sh",
+                      "-c",
+                      'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done',
+                  ]
     postgresql:
         enabled: false
     externalDatabase:
