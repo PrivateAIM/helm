@@ -109,5 +109,5 @@ cp values_min.yaml <my-custom-values-file>
 Install the Chart with the custom values file.
 
 ```bash
-helm install <release name> -f <my-custom-values-file> .
+helm install <release-name> -f <my-custom-values-file> .
 ```

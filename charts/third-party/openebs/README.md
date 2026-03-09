@@ -20,7 +20,7 @@ helm install openebs . --namespace openebs --create-namespace -f values_local.ya
 Fill in your diskpools in your values-file and upgrade the Helm Release.
 **Important considerations**
 - Each pool needs an unmounted disk/partition
-- Reference disks by `/dev/disk/by-partuuid/xxx` instead of `dev/vdx`
+- Reference disks by `/dev/disk/by-partuuid/xxx` instead of `/dev/vdx`
 ```bash
 helm upgrade openebs . --namespace openebs -f values_local.yaml
 ```
