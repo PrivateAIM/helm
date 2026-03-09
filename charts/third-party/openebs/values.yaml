@@ -8,12 +8,19 @@ openebs:
     replicated:
       mayastor:
         enabled: true
-  # mayastor:
-  #   # You may need to set the kubeletDir (default is /var/lib/kubelet)
-  #   # For MicroK8s, the kubeletDir is /var/snap/microk8s/common/var/lib/kubelet
-  #   csi:
-  #     node:
-  #       kubeletDir: /var/snap/microk8s/common/var/lib/kubelet # no trailing slash !!
+  mayastor:
+    csi:
+      node:
+        nvme:
+          # nvme controller loss timeout (see https://github.com/PrivateAIM/hub-deployment/issues/5)
+          # Use this to prevent Mayastor from trying to connect to a dead NVMe controller
+          # (when rebooting a node that uses network-attached storage)
+          ctrl_loss_tmo: "" # leave empty for default 1980, recommended 90
+
+        # You may need to set the kubeletDir (default is /var/lib/kubelet)
+        # For MicroK8s, the kubeletDir is /var/snap/microk8s/common/var/lib/kubelet
+        # kubeletDir: /var/snap/microk8s/common/var/lib/kubelet # no trailing slash !!
+
   loki:
     enabled: false
   alloy:

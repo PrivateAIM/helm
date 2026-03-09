@@ -37,4 +37,6 @@ kubectl get storageclasses
 
 9. (optional) If you need to remove pools, use the mayastor kubectl plugin to drain them first.
 
+10. (optional) If you are using network-attached storage, you may need to set `ctrl_loss_tmo` for nvme in order to prevent long restart times (see `values.yaml`)
+
 Now your cluster is ready to use the StorageClass `mayastor-replicated`
