@@ -1,13 +1,18 @@
-global:
-    redis:
-        # TODO: this should be passed from the flame-hub values.yaml
-        password: "start123"
-
 ingress:
     enabled: false
     hostname: ""
     path: "/"
     pathType: "Prefix"
+
+auth:
+    # Use an existing secret with keys: client-secret, redis-connection-string, postgresql-password
+    existingSecret: ""
+
+    # or provide credentials in values (used when existingSecret is not set)
+    redisPassword: "start123"
+    postgresPassword: "start123"
+    adminPassword: "start123"
+    clientSecret: "start123"
 
 cookieDomain: ""
 publicURL: ""

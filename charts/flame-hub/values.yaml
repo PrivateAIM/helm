@@ -22,12 +22,6 @@ clientUI:
         path: "/"
         pathType: "Prefix"
 
-authup:
-    ingress:
-        enabled: false
-        hostname: ""
-        ssl: false
-
 serverCore:
     ingress:
         ssl: false
@@ -37,9 +31,6 @@ serverCore:
         pathType: "Prefix"
     env:
         masterImagesBranch: ""
-    harbor:
-        username: "admin"
-        password: "start123"
 
 serverMessenger:
     ingress:
@@ -70,18 +61,41 @@ serverCoreWorker:
     # Use a docker-in-docker sidecar container instead of mounting the docker socket from the host
     useSidecarDinD: true
 
-## services
-vault:
-    server:
-        enabled: true
-        dev:
-            enabled: true
-            devRootToken: start123
+# Credentials configuration
+auth:
+    # Name of the secret containing all credentials
+    # IMPORTANT: If you change this value, you must also update the subchart configurations to match.
+    # This is because subcharts have their own existingSecret fields that cannot be templated, unfortunately.
+    secretName: "flame-hub-auth"
+
+    # Advanced: Use your own secret instead of auto-generated one, takes precedence over secretName
+    # IMPORTANT:If you set this, you must also update the subchart configurations below to point to your secret!
+    existingSecret: ""
+
+## Dependencies / Subcharts
+
+# Authentication Provider
+authup:
+    auth:
+        existingSecret: "flame-hub-auth"
+
+        # Default Password for the FLAME Hub Admin User
+        adminPassword: "" # Leave empty for auto-generation
+
+        # Default secret for the FLAME Hub System Client
+        clientSecret: "" # Leave empty for auto-generation
+    ingress:
+        enabled: false
+        hostname: ""
+        ssl: false
+
 rabbitmq:
     nameOverride: "rabbitmq"
     auth:
         username: "root"
-        password: "start123"
+        password: "" # Leave empty for auto-generation
+        existingPasswordSecret: "flame-hub-auth"
+        existingSecretPasswordKey: "rabbitmq-password"
     image:
         #repository: "tada5hi/rabbitmq"
         repository: "bitnamilegacy/rabbitmq"
@@ -97,11 +111,17 @@ redis:
         failureThreshold: 10
     auth:
         enabled: true
-        password: "start123"
+        password: "" # Leave empty for auto-generation
+        existingSecret: "flame-hub-auth"
+        existingSecretPasswordKey: "redis-password"
     image:
         #repository: "tada5hi/redis"
         repository: "bitnamilegacy/redis"
         tag: "8.2.1-debian-12-r0"
+    # See /charts/third-party/openebs for details
+    # master:
+    #     persistence:
+    #         storageClass: "mayastor-replicated"
 
 minio:
     nameOverride: "minio"
@@ -111,7 +131,11 @@ minio:
         tag: "2025.7.23-debian-12-r3"
     auth:
         rootUser: "admin"
-        rootPassword: "start123"
+        rootPassword: "" # Leave empty for auto-generation
+        existingSecret: "flame-hub-auth"
+        rootPasswordSecretKey: "minio-root-password"
+        rootUserSecretKey: "minio-root-user"
+
     console:
         image:
             #repository: "tada5hi/minio-object-browser"
@@ -127,8 +151,12 @@ postgresql:
         repository: "bitnamilegacy/postgresql"
         tag: "17.6.0-debian-12-r4"
     auth:
-        postgresPassword: "start123"
-        replicationPassword: "start123"
+        postgresPassword: "" # Leave empty for auto-generation
+        replicationPassword: "" # Leave empty for auto-generation
+        existingSecret: "flame-hub-auth"
+        secretKeys:
+            adminPasswordKey: "postgresql-password"
+            replicationPasswordKey: "postgresql-replication-password"
     primary:
         startupProbe:
             failureThreshold: 30
@@ -137,6 +165,17 @@ postgresql:
         persistence:
             enabled: true
             size: 16Gi
+            # See /charts/third-party/openebs for details
+            # storageClass: "mayastor-replicated"
+        extendedConfiguration: |
+            max_connections = 1024
+        # https://github.com/bitnami/charts/blob/main/bitnami/harbor/values.yaml
+        initdb:
+            scripts:
+                initial-registry.sql: |
+                    CREATE DATABASE registry ENCODING 'UTF8';
+                    \c registry;
+                    CREATE TABLE schema_migrations(version bigint not null primary key, dirty boolean not null);
     readReplicas:
         replicaCount: 0
         persistence:
@@ -155,7 +194,9 @@ grafana:
         repository: "bitnamilegacy/grafana"
         tag: "12.1.1-debian-12-r1"
     admin:
-        password: "start123"
+        password: "" # Leave empty for auto-generation
+        existingSecret: "flame-hub-auth"
+        existingSecretPasswordKey: "grafana-admin-password"
     dashboardsProvider:
         enabled: true
     datasources:
@@ -249,7 +290,9 @@ harbor:
     enabled: true
     nameOverride: "harbor"
     adminUsername: "admin"
-    adminPassword: "start123"
+    adminPassword: "" # Leave empty for auto-generation
+    existingSecret: "flame-hub-auth"
+    existingSecretAdminPasswordKey: "harbor-admin-password"
     exposureType: "proxy"
     externalURL: "" # Required by Harbor, e.g. https://harbor.hub.local
     ingress:
@@ -272,17 +315,44 @@ harbor:
             #repository: "tada5hi/harbor-portal"
             repository: "bitnamilegacy/harbor-portal"
             tag: "2.13.2-debian-12-r1"
+        initContainers:
+            - name: wait-for-db
+              image: busybox
+              command:
+                  [
+                      "sh",
+                      "-c",
+                      'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done',
+                  ]
     core:
         image:
             #repository: "tada5hi/harbor-core"
             repository: "bitnamilegacy/harbor-core"
             tag: "2.13.2-debian-12-r3"
+        initContainers:
+            - name: wait-for-db
+              image: busybox
+              command:
+                  [
+                      "sh",
+                      "-c",
+                      'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done',
+                  ]
     jobservice:
-        # secret: "start123"
         image:
             #repository: "tada5hi/harbor-jobservice"
             repository: "bitnamilegacy/harbor-jobservice"
             tag: "2.13.2-debian-12-r3"
+        initContainers:
+            - name: wait-for-db
+              image: busybox
+              command:
+                  [
+                      "sh",
+                      "-c",
+                      'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done',
+                  ]
+
     registry:
         relativeurls: true # Needed for server-core-worker because of TCP forwarding (see https://github.com/distribution/distribution/issues/970#issuecomment-284227065)
         server:
@@ -295,22 +365,43 @@ harbor:
                 #repository: "tada5hi/harbor-registryctl"
                 repository: "bitnamilegacy/harbor-registryctl"
                 tag: "2.13.2-debian-12-r3"
+        initContainers:
+            - name: wait-for-db
+              image: busybox
+              command:
+                  [
+                      "sh",
+                      "-c",
+                      'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done',
+                  ]
     trivy:
         image:
             #repository: "tada5hi/harbor-adapter-trivy"
             repository: "bitnamilegacy/harbor-adapter-trivy"
             tag: "2.13.2-debian-12-r2"
+        initContainers:
+            - name: wait-for-db
+              image: busybox
+              command:
+                  [
+                      "sh",
+                      "-c",
+                      'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done',
+                  ]
     postgresql:
-        nameOverride: "harbor-postgresql"
-        image:
-            repository: "bitnamilegacy/postgresql"
-            tag: "17.6.0-debian-12-r4"
+        enabled: false
+    externalDatabase:
+        host: "{{ .Release.Name }}-postgresql-primary"
+        port: 5432
+        user: "postgres"
+        password: ""
+        coreDatabase: "registry"
+        existingSecret: "flame-hub-auth"
+        existingSecretPasswordKey: "postgresql-password"
+        sslmode: "disable"
     redis:
         enabled: true
         nameOverride: "harbor-redis"
-        auth:
-            enabled: true
-            password: "start123"
         image:
             repository: "bitnamilegacy/redis"
             tag: "8.2.1-debian-12-r0"

@@ -45,13 +45,6 @@ spec:
                   '-c',
                   'until nc -z -v -w30 {{ .Release.Name }}-rabbitmq 5672; do echo "Waiting for rabbitmq..."; sleep 5; done'
               ]
-          -   name: wait-for-vault
-              image: busybox
-              command: [
-                  'sh',
-                  '-c',
-                  'until nc -z -v -w30 {{ .Release.Name }}-vault 8200; do echo "Waiting for vault..."; sleep 5; done'
-              ]
           -   name: wait-for-authup
               image: busybox
               command: [
@@ -78,11 +71,15 @@ spec:
               protocol: TCP
           env:
               -   name: REDIS_CONNECTION_STRING
-                  value: "redis://default:{{ .Values.redis.auth.password }}@{{ .Release.Name }}-redis-master"
-              -   name: VAULT_CONNECTION_STRING
-                  value: "start123@http://{{ .Release.Name }}-vault:8200/v1/"
+                  valueFrom:
+                      secretKeyRef:
+                          name: {{ include "flameHub.effectiveSecretName" .  }}
+                          key: redis-connection-string
               -   name: RABBITMQ_CONNECTION_STRING
-                  value: "amqp://root:start123@{{ .Release.Name }}-rabbitmq"
+                  valueFrom:
+                      secretKeyRef:
+                          name: {{ include "flameHub.effectiveSecretName" .  }}
+                          key: rabbitmq-connection-string
               -   name: AUTHUP_URL
                   value: "http://{{ .Release.Name }}-authup-server-core:3000/"
               -   name: TELEMETRY_URL
@@ -98,15 +95,30 @@ spec:
               -   name: DB_USERNAME
                   value: "postgres"
               -   name: DB_PASSWORD
-                  value: "start123"
+                  valueFrom:
+                      secretKeyRef:
+                          name: {{ include "flameHub.effectiveSecretName" .  }}
+                          key: postgresql-password
               -   name: DB_DATABASE
                   value: "core"
               -   name: MASTER_IMAGES_BRANCH
                   value: {{ .Values.serverCore.env.masterImagesBranch | default "master" | quote }}
               {{- if include "harbor.host" . }}
               -   name: HARBOR_URL
-                  value: "{{ .Values.serverCore.harbor.username }}:{{ .Values.serverCore.harbor.password }}@{{ include "harbor.host" . }}"
+                  valueFrom:
+                      secretKeyRef:
+                          name: {{ include "flameHub.effectiveSecretName" .  }}
+                          key: harbor-connection-string
               {{- end }}
+              -   name: CLIENT_ID
+                  value: "system"
+              -   name: CLIENT_SECRET
+                  valueFrom:
+                      secretKeyRef:
+                          name: {{ include "flameHub.effectiveSecretName" .  }}
+                          key: authup-client-secret
+              -   name: REALM
+                  value: "master"
           resources:
               requests:
                   memory: "512Mi"

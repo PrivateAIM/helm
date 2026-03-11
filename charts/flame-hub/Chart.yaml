@@ -35,10 +35,6 @@ dependencies:
     version: 17.0.21
     repository: https://charts.bitnami.com/bitnami
 
-  - name: vault
-    version: 0.30.1
-    repository: https://helm.releases.hashicorp.com
-
   - name: grafana
     version: 12.1.8
     repository: https://charts.bitnami.com/bitnami
