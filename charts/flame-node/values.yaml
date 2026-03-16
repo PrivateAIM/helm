@@ -1,12 +1,15 @@
 global:
   node:
+    ## @param global.node.hostname Host name to be assigned to the Node UI (/) and Hub Adapter API (/api) and keycloak (/keycloak)  
+    ## This overrides ingress.hostname or gateway.hostname and is also supplied to the bundled keycloak helm chart
+    hostname:
     ingress:
       ## @param global.node.ingress.enabled Toggle whether ingress should be enabled
       ## This overrides ingress.enabled
       enabled: false
-      ## @param global.node.ingress.enabled Host name to be assigned to the Node UI (/) and Hub Adapter API (/api)
-      ## This overrides ingress.hostname and is also supplied to the bundled keycloak helm chart
-      hostname:
+    ## For defining gateway specific metadata
+    gateway:
+      enabled: false
 
 ## @param offline Forces the UI and hub adapter to use the internal service endpoint for authentication
 ## this is useful for when you are using a locally resolveable domain i.e. localhost or similar as defined in /etc/hosts
@@ -60,7 +63,7 @@ ingress:
   ## You should generally use global.node.ingress.enabled instead
   enabled: false
   ## @param ingress.hostname Default host for the ingress record (evaluated as template)
-  ## You should generally use global.node.ingress.hostname instead
+  ## You should generally use global.node.hostname instead
   hostname: ""
   ## @param ingress.pathType Ingress path type
   pathType: ImplementationSpecific
@@ -72,6 +75,11 @@ ingress:
   className: ""
   # @param ingress.tlsSecretName Specify a tls secret to enable TLS for the given hostname
   tlsSecretName: ""
+
+gateway:
+  enabled: false
+  hostname: ""
+  gatewayClassName: istio
 
 ## Add Custom CA certificate(s)
 ## @param certificateConfigMap Name of an existing ConfigMap that contains additional CA certificates
@@ -295,9 +303,9 @@ keycloakx:
 
   # Additional environment variables for Keycloak
   extraEnv: |
-    {{- if or .Values.global.node.ingress.hostname .Values.ingress.hostname }}
+    {{- if .Values.global.node.hostname }}
     - name: KC_HOSTNAME
-      value: '{{ printf "%s%s" (tpl (coalesce .Values.global.node.ingress.hostname .Values.ingress.hostname) $ | trimSuffix "/") .Values.http.relativePath }}'
+      value: '{{ printf "%s%s" (tpl .Values.global.node.hostname $ | trimSuffix "/") .Values.http.relativePath }}'
     {{- else }}
     - name: KC_HOSTNAME
       value: '{{ printf "http://localhost:8080/%s" .Values.http.relativePath }}'
@@ -339,7 +347,7 @@ keycloakx:
     enabled: true
     rules:
       - # Ingress host
-        host: '{{ regexReplaceAll "^https?://(.*)" (tpl (coalesce .Values.global.node.ingress.hostname .Values.ingress.hostname "localhost") $) "${1}" | trimSuffix "/" }}'
+        host: '{{ regexReplaceAll "^https?://(.*)" (tpl (coalesce .Values.global.node.hostname .Values.ingress.hostname "localhost") $) "${1}" | trimSuffix "/" }}'
         paths:
           - path: '{{ tpl .Values.http.relativePath $ | trimSuffix "/" }}/'
             pathType: ImplementationSpecific
@@ -352,7 +360,7 @@ keycloakx:
       enabled: true
       rules:
         - # Ingress host
-          host: '{{ regexReplaceAll "^https?://(.*)" (tpl (coalesce .Values.global.node.ingress.hostname .Values.ingress.hostname "localhost") $) "${1}" | trimSuffix "/" }}'
+          host: '{{ regexReplaceAll "^https?://(.*)" (tpl (coalesce .Values.global.node.hostname .Values.ingress.hostname "localhost") $) "${1}" | trimSuffix "/" }}'
           paths:
             - path: '{{ tpl .Values.http.relativePath $ | trimSuffix "/" }}/admin'
               pathType: ImplementationSpecific
