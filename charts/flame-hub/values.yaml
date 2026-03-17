@@ -53,6 +53,12 @@ serverStorage:
         hostname: ""
         path: "/"
         pathType: "Prefix"
+        # Default annotations for ingress nginx (e.g. for large file uploads)
+        # Replace or remove if you use a different ingress controller
+        annotations:
+            nginx.ingress.kubernetes.io/proxy-body-size: "0"
+            nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+            nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
 
 serverTelemetry:
     ingress:
@@ -61,6 +67,13 @@ serverTelemetry:
         hostname: ""
         path: "/"
         pathType: "Prefix"
+        # Default annotations for ingress nginx
+        # Replace or remove if you use a different ingress controller
+        annotations:
+            nginx.ingress.kubernetes.io/proxy-body-size: "0"
+        # Annotations for the grafana sub-path ingress (rewrite-target)
+        subPathAnnotations:
+            nginx.ingress.kubernetes.io/rewrite-target: /$2
 
 serverCoreWorker:
     enabled: true
