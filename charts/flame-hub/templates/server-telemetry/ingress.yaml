@@ -10,6 +10,9 @@ metadata:
     {{- end }}
   {{- end }}
 spec:
+    {{- if .Values.serverTelemetry.ingress.className }}
+    ingressClassName: {{ .Values.serverTelemetry.ingress.className }}
+    {{- end }}
   rules:
     - host: {{ .Values.serverTelemetry.ingress.hostname }}
       http:
@@ -33,6 +36,9 @@ metadata:
         {{- end }}
     {{- end }}
 spec:
+    {{- if .Values.serverTelemetry.ingress.className }}
+    ingressClassName: {{ .Values.serverTelemetry.ingress.className }}
+    {{- end }}
     rules:
         - host: {{ .Values.serverTelemetry.ingress.hostname }}
           http:

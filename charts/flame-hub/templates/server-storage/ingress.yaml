@@ -10,6 +10,9 @@ metadata:
         {{- end }}
     {{- end }}
 spec:
+    {{- if .Values.serverStorage.ingress.className }}
+    ingressClassName: {{ .Values.serverStorage.ingress.className }}
+    {{- end }}
     rules:
         - host: {{ .Values.serverStorage.ingress.hostname }}
           http:

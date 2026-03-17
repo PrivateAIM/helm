@@ -35,6 +35,8 @@ serverCore:
         hostname: ""
         path: "/"
         pathType: "Prefix"
+        className: ""
+        annotations: {}
     env:
         masterImagesBranch: ""
 
@@ -45,6 +47,8 @@ serverMessenger:
         hostname: ""
         path: "/"
         pathType: "Prefix"
+        className: ""
+        annotations: {}
 
 serverStorage:
     ingress:
