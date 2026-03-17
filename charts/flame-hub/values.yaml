@@ -6,6 +6,12 @@ global:
             enabled: true
             ssl: false
             hostname: "localhost"
+            className: ""
+            # Default annotations for ingress nginx
+            # Replace or remove if you use a different ingress controller
+            annotations:
+                nginx.ingress.kubernetes.io/rewrite-target: /$2
+                nginx.ingress.kubernetes.io/proxy-buffer-size: "16k"
 
 image:
     registry: ghcr.io
@@ -297,6 +303,15 @@ harbor:
     externalURL: "" # Required by Harbor, e.g. https://harbor.hub.local
     ingress:
         enabled: true # Harbor always needs its own hostname, this is independent of global path-based ingress
+        className: ""
+        # Default annotations for ingress nginx
+        # Replace or remove if you use a different ingress controller
+        annotations:
+            nginx.ingress.kubernetes.io/proxy-body-size: "0"
+            nginx.ingress.kubernetes.io/proxy-read-timeout: "900"
+            nginx.ingress.kubernetes.io/proxy-send-timeout: "900"
+            nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+            nginx.ingress.kubernetes.io/upstream-vhost: '{{ include "harbor.host" . }}'
     migration:
         enabled: true
     # persistence:

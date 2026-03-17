@@ -10,6 +10,9 @@ metadata:
         nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
         nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
 spec:
+    {{- if .Values.global.flameHub.ingress.className }}
+    ingressClassName: {{ .Values.global.flameHub.ingress.className }}
+    {{- end }}
     rules:
         - host: {{ .Values.global.flameHub.ingress.hostname }}
           http:
@@ -62,6 +65,9 @@ kind: Ingress
 metadata:
     name: {{ .Release.Name }}-flame-hub-root-path
 spec:
+    {{- if .Values.global.flameHub.ingress.className }}
+    ingressClassName: {{ .Values.global.flameHub.ingress.className }}
+    {{- end }}
     rules:
         - host: {{ .Values.global.flameHub.ingress.hostname }}
           http:
@@ -85,12 +91,13 @@ kind: Ingress
 metadata:
     name: {{ .Release.Name }}-harbor
     annotations:
-        nginx.ingress.kubernetes.io/proxy-body-size: "0"
-        nginx.ingress.kubernetes.io/proxy-read-timeout: "900"
-        nginx.ingress.kubernetes.io/proxy-send-timeout: "900"
-        nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
-        nginx.ingress.kubernetes.io/upstream-vhost: "{{ include "harbor.host" . }}"
+        {{- range $key, $value := .Values.harbor.ingress.annotations }}
+        {{ $key }}: {{ tpl ($value | toString) $ | quote }}
+        {{- end }}
 spec:
+    {{- if .Values.harbor.ingress.className }}
+    ingressClassName: {{ .Values.harbor.ingress.className }}
+    {{- end }}
     rules:
         - host: {{ include "harbor.host" . }}
           http:
