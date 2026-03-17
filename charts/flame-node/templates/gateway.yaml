@@ -9,7 +9,7 @@ spec:
   - protocol: HTTP
     port: 80
     name: node-http
-    hostname: {{ regexReplaceAll "^https?://(.*)" .Values.gateway.hostname "${1}" }}
+    hostname: {{ regexReplaceAll "^https?://(.*)" .Values.global.node.hostname "${1}" }}
     allowedRoutes:
       namespaces:
         from: Same

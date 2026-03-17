@@ -7,7 +7,11 @@ spec:
   parentRefs:
   - name: {{ .Release.Name }}-node-gateway
   rules:
-  - backendRefs:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /
+    backendRefs:
     - name: {{ .Release.Name }}-node-ui-service
       port: 3000
 {{- end }}

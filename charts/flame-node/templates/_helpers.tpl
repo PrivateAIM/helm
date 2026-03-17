@@ -69,7 +69,7 @@ Set the hostname of the Node components using gateway API. Assumes if global ing
 Set the hostname of the Node components.
 */}}
 {{- define "node.hostname" -}}
-{{- if .Values.gateway.enabled -}}
+{{- if or .Values.gateway.enabled .Values.global.node.gateway.enabled -}}
     {{- (include "node.gateway.hostname" .) -}}
 {{- else if or .Values.ingress.enabled .Values.global.node.ingress.enabled -}}
     {{- (include "node.ingress.hostname" .) -}}
@@ -204,7 +204,7 @@ If offline is true - true, else if external IDP hostname is provided - false, el
 Return the hub adapter endpoint
 */}}
 {{- define "ui.adapter.endpoint" -}}
-{{- if and .Values.global.node.ingress.enabled .Values.global.node.hostname (not (contains "localhost" .Values.global.node.hostname)) -}}
+{{- if and (or .Values.global.node.ingress.enabled .Values.global.node.gateway.enabled) .Values.global.node.hostname (not (contains "localhost" .Values.global.node.hostname)) -}}
     {{- if hasPrefix "http" .Values.global.node.hostname -}}
         {{- printf "%s/api" .Values.global.node.hostname -}}
     {{- else -}}
@@ -215,6 +215,12 @@ Return the hub adapter endpoint
         {{- printf "%s/api" .Values.ingress.hostname -}}
     {{- else -}}
         {{- printf "http://%s/api" .Values.ingress.hostname -}}
+    {{- end -}}
+{{- else if and .Values.gateway.enabled .Values.gateway.hostname (not (contains "localhost" .Values.gateway.hostname)) -}}
+    {{- if hasPrefix "http" .Values.gateway.hostname -}}
+        {{- printf "%s/api" .Values.gateway.hostname -}}
+    {{- else -}}
+        {{- printf "http://%s/api" .Values.gateway.hostname -}}
     {{- end -}}
 {{- else -}}
     {{- print "http://localhost:5000" -}}
@@ -291,7 +297,7 @@ Create valid redirect URIs for keycloak i.e. http & https
 Set the API's root path. If ingress is enabled, defaults to "/api" else remains blank
 */}}
 {{- define "adapter.root.path" -}}
-{{- if or .Values.global.node.ingress.enabled .Values.ingress.enabled -}}
+{{- if or .Values.global.node.ingress.enabled .Values.ingress.enabled .Values.global.node.gateway.enabled .Values.gateway.enabled -}}
     {{- print "/api" -}}
 {{- else -}}
     {{- print "" -}}

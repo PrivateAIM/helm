@@ -79,7 +79,7 @@ ingress:
 gateway:
   enabled: false
   hostname: ""
-  gatewayClassName: istio
+  gatewayClassName: nginx
 
 ## Add Custom CA certificate(s)
 ## @param certificateConfigMap Name of an existing ConfigMap that contains additional CA certificates

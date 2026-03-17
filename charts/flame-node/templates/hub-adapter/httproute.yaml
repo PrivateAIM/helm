@@ -7,11 +7,11 @@ spec:
   parentRefs:
   - name: {{ .Release.Name }}-node-gateway
   rules:
-  - backendRefs:
-    - name: {{ .Release.Name }}-hub-adapter-service
-      port: 5000
   - matches:
     - path:
         type: PathPrefix
         value: /api
+    backendRefs:
+    - name: {{ .Release.Name }}-hub-adapter-service
+      port: 5000
 {{- end }}
