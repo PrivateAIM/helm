@@ -2,7 +2,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-    name: {{ .Release.Name }}-flame-hub-sub-paths
+    name: {{ .Release.Name }}-flame-hub
     annotations:
         nginx.ingress.kubernetes.io/rewrite-target: /$2
         nginx.ingress.kubernetes.io/proxy-buffer-size: "16k"
@@ -20,10 +20,10 @@ spec:
                   - path: /grafana(/|$)(.*)
                     pathType: "ImplementationSpecific"
                     backend:
-                      service:
-                        name: {{ .Release.Name }}-grafana
-                        port:
-                          number: 3000
+                        service:
+                            name: {{ .Release.Name }}-grafana
+                            port:
+                                number: 3000
                   - path: /core(/|$)(.*)
                     pathType: "ImplementationSpecific"
                     backend:
@@ -48,10 +48,10 @@ spec:
                   - path: /telemetry(/|$)(.*)
                     pathType: "ImplementationSpecific"
                     backend:
-                      service:
-                        name: {{ .Release.Name }}-flame-hub-server-telemetry
-                        port:
-                          number: 3000
+                        service:
+                            name: {{ .Release.Name }}-flame-hub-server-telemetry
+                            port:
+                                number: 3000
                   - path: /auth(/|$)(.*)
                     pathType: "ImplementationSpecific"
                     backend:
@@ -59,28 +59,13 @@ spec:
                             name: {{ .Release.Name }}-authup-server-core
                             port:
                                 number: 3000
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-    name: {{ .Release.Name }}-flame-hub-root-path
-spec:
-    {{- if .Values.global.flameHub.ingress.className }}
-    ingressClassName: {{ .Values.global.flameHub.ingress.className }}
-    {{- end }}
-    rules:
-        - host: {{ .Values.global.flameHub.ingress.hostname }}
-          http:
-              paths:
-                  - path: /
-                    pathType: "Prefix"
+                  - path: /()(.*)
+                    pathType: "ImplementationSpecific"
                     backend:
                         service:
                             name: {{ .Release.Name }}-flame-hub-client-ui
                             port:
                                 number: 3000
-
-
 {{- end }}
 
 {{/* Harbor ingress is independent of the above ingress since Harbor always needs its own hostname */}}
