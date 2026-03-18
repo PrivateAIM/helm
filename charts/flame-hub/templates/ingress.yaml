@@ -65,31 +65,3 @@ spec:
                             port:
                                 number: 3000
 {{- end }}
-
-{{/* Harbor ingress is independent of the above ingress since Harbor always needs its own hostname */}}
-{{- if and .Values.harbor.enabled (not .Values.externalHarbor.enabled) .Values.harbor.ingress.enabled }}
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-    name: {{ .Release.Name }}-harbor
-    annotations:
-        {{- range $key, $value := .Values.harbor.ingress.annotations }}
-        {{ $key }}: {{ tpl ($value | toString) $ | quote }}
-        {{- end }}
-spec:
-    {{- if .Values.harbor.ingress.className }}
-    ingressClassName: {{ .Values.harbor.ingress.className }}
-    {{- end }}
-    rules:
-        - host: {{ include "harbor.host" . }}
-          http:
-              paths:
-                  - path: /
-                    pathType: "ImplementationSpecific"
-                    backend:
-                        service: 
-                            name: {{ .Release.Name }}-harbor
-                            port:
-                                number: 443
-{{- end }}

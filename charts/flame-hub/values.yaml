@@ -2,6 +2,9 @@ global:
     imagePullPolicy: "IfNotPresent"
 
     flameHub:
+        # enable this ingress for path based routing
+        # alternatively you can enable ingress for each Hub service individually (subdomain-based routing)
+        # enabling this ingress will expose all Hub services on the same domain at different paths (e.g. /core/, /messenger/, /storage/, /telemetry/)
         ingress:
             enabled: true
             ssl: false
@@ -22,16 +25,20 @@ image:
 # internal services
 clientUI:
     cookieDomain: ""
+    # service specific ingress configuration. If you use this, you will need a separate domain for each service
     ingress:
         enabled: false
+        ssl: false
         hostname: ""
         path: "/"
         pathType: "Prefix"
+        className: ""
+        annotations: {}
 
 serverCore:
     ingress:
-        ssl: false
         enabled: false
+        ssl: false
         hostname: ""
         path: "/"
         pathType: "Prefix"
@@ -42,8 +49,8 @@ serverCore:
 
 serverMessenger:
     ingress:
-        ssl: false
         enabled: false
+        ssl: false
         hostname: ""
         path: "/"
         pathType: "Prefix"
@@ -52,8 +59,8 @@ serverMessenger:
 
 serverStorage:
     ingress:
-        ssl: false
         enabled: false
+        ssl: false
         hostname: ""
         path: "/"
         pathType: "Prefix"
@@ -66,8 +73,8 @@ serverStorage:
 
 serverTelemetry:
     ingress:
-        ssl: false
         enabled: false
+        ssl: false
         hostname: ""
         path: "/"
         pathType: "Prefix"
@@ -109,8 +116,8 @@ authup:
         clientSecret: "" # Leave empty for auto-generation
     ingress:
         enabled: false
-        hostname: ""
         ssl: false
+        hostname: ""
 
 rabbitmq:
     nameOverride: "rabbitmq"
@@ -316,10 +323,13 @@ harbor:
     adminPassword: "" # Leave empty for auto-generation
     existingSecret: "flame-hub-auth"
     existingSecretAdminPasswordKey: "harbor-admin-password"
-    exposureType: "proxy"
     externalURL: "" # Required by Harbor, e.g. https://harbor.hub.local
     ingress:
-        enabled: true # Harbor always needs its own hostname, this is independent of global path-based ingress
+        enabled: true # Harbor always needs its own hostname/domain, even when global path-based ingress is enabled
+        ssl: false
+        hostname: ""
+        path: "/"
+        pathType: "Prefix"
         className: ""
         # Default annotations for ingress nginx
         # Replace or remove if you use a different ingress controller
@@ -335,6 +345,10 @@ harbor:
     #     persistentVolumeClaim:
     #         registry:
     #             storageClass: "mayastor-replicated"
+    # exposureType controls the way the harbor subchart is exposed. The harbor subchart provides
+    # its own ingress, but we need to use exposureType proxy (nginx) to allow access internally.
+    # Ingress is handled by the ingress section above.
+    exposureType: "proxy"
     nginx:
         behindReverseProxy: true
         tls:
