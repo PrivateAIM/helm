@@ -3,11 +3,16 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
     name: {{ .Release.Name }}-flame-hub-server-storage
+    {{- with .Values.serverStorage.ingress.annotations }}
     annotations:
-      nginx.ingress.kubernetes.io/proxy-body-size: "0"
-      nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
-      nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+        {{- range $key, $value := . }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
+    {{- end }}
 spec:
+    {{- if .Values.serverStorage.ingress.className }}
+    ingressClassName: {{ .Values.serverStorage.ingress.className }}
+    {{- end }}
     rules:
         - host: {{ .Values.serverStorage.ingress.hostname }}
           http:

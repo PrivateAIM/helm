@@ -3,9 +3,16 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ .Release.Name }}-flame-hub-server-telemetry-sub-paths
+  {{- with .Values.serverTelemetry.ingress.subPathAnnotations }}
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    {{- range $key, $value := . }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+  {{- end }}
 spec:
+    {{- if .Values.serverTelemetry.ingress.className }}
+    ingressClassName: {{ .Values.serverTelemetry.ingress.className }}
+    {{- end }}
   rules:
     - host: {{ .Values.serverTelemetry.ingress.hostname }}
       http:
@@ -22,9 +29,16 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
     name: {{ .Release.Name }}-flame-hub-server-telemetry
+    {{- with .Values.serverTelemetry.ingress.annotations }}
     annotations:
-      nginx.ingress.kubernetes.io/proxy-body-size: "0"
+        {{- range $key, $value := . }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
+    {{- end }}
 spec:
+    {{- if .Values.serverTelemetry.ingress.className }}
+    ingressClassName: {{ .Values.serverTelemetry.ingress.className }}
+    {{- end }}
     rules:
         - host: {{ .Values.serverTelemetry.ingress.hostname }}
           http:

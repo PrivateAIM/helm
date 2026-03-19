@@ -73,3 +73,21 @@ Create the name of the service account to use
 {{ .Values.auth.secretName }}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Validate ingress mode: global path-based ingress and individual service ingresses are mutually exclusive.
+*/}}
+{{- define "flameHub.validateIngressMode" -}}
+{{- $globalIngressEnabled := .Values.global.flameHub.ingress.enabled -}}
+{{- $individualIngressEnabled := or
+    .Values.clientUI.ingress.enabled
+    .Values.serverCore.ingress.enabled
+    .Values.serverMessenger.ingress.enabled
+    .Values.serverStorage.ingress.enabled
+    .Values.serverTelemetry.ingress.enabled
+    .Values.authup.ingress.enabled
+-}}
+{{- if and $globalIngressEnabled $individualIngressEnabled -}}
+{{- fail "Ingress configuration is mutually exclusive: disable global.flameHub.ingress.enabled or disable individual service ingress settings (clientUI, serverCore, serverMessenger, serverStorage, serverTelemetry, authup)." -}}
+{{- end -}}
+{{- end -}}
