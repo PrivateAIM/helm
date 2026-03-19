@@ -1,0 +1,129 @@
+{{- if .Values.global.flameHub.gatewayApi.enabled -}}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+    name: {{ .Release.Name }}-flame-hub
+spec:
+    parentRefs:
+        {{- range .Values.global.flameHub.gatewayApi.parentRefs }}
+        - name: {{ tpl .name $ }}
+          {{- if .namespace }}
+          namespace: {{ .namespace }}
+          {{- end }}
+        {{- end }}
+    hostnames:
+        - {{ .Values.global.flameHub.gatewayApi.hostname | quote }}
+    rules:
+        - matches:
+            - path:
+                type: PathPrefix
+                value: /grafana
+          filters:
+            - type: URLRewrite
+              urlRewrite:
+                path:
+                  type: ReplacePrefixMatch
+                  replacePrefixMatch: /
+          backendRefs:
+            - name: {{ .Release.Name }}-grafana
+              port: 3000
+        - matches:
+            - path:
+                type: PathPrefix
+                value: /core
+          filters:
+            - type: URLRewrite
+              urlRewrite:
+                path:
+                  type: ReplacePrefixMatch
+                  replacePrefixMatch: /
+          backendRefs:
+            - name: {{ .Release.Name }}-flame-hub-server-core
+              port: 3000
+        - matches:
+            - path:
+                type: PathPrefix
+                value: /messenger
+          filters:
+            - type: URLRewrite
+              urlRewrite:
+                path:
+                  type: ReplacePrefixMatch
+                  replacePrefixMatch: /
+          backendRefs:
+            - name: {{ .Release.Name }}-flame-hub-server-messenger
+              port: 3000
+        - matches:
+            - path:
+                type: PathPrefix
+                value: /storage
+          filters:
+            - type: URLRewrite
+              urlRewrite:
+                path:
+                  type: ReplacePrefixMatch
+                  replacePrefixMatch: /
+          backendRefs:
+            - name: {{ .Release.Name }}-flame-hub-server-storage
+              port: 3000
+        - matches:
+            - path:
+                type: PathPrefix
+                value: /telemetry
+          filters:
+            - type: URLRewrite
+              urlRewrite:
+                path:
+                  type: ReplacePrefixMatch
+                  replacePrefixMatch: /
+          backendRefs:
+            - name: {{ .Release.Name }}-flame-hub-server-telemetry
+              port: 3000
+        - matches:
+            - path:
+                type: PathPrefix
+                value: /auth
+          filters:
+            - type: URLRewrite
+              urlRewrite:
+                path:
+                  type: ReplacePrefixMatch
+                  replacePrefixMatch: /
+          backendRefs:
+            - name: {{ .Release.Name }}-authup-server-core
+              port: 3000
+        - matches:
+            - path:
+                type: PathPrefix
+                value: /
+          backendRefs:
+            - name: {{ .Release.Name }}-flame-hub-client-ui
+              port: 3000
+{{- end }}
+
+{{/* Harbor route is independent of the above route since Harbor always needs its own hostname */}}
+{{- if and .Values.harbor.enabled (not .Values.externalHarbor.enabled) .Values.harbor.gatewayApi.enabled }}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+    name: {{ .Release.Name }}-harbor
+spec:
+    parentRefs:
+        {{- range .Values.harbor.gatewayApi.parentRefs }}
+        - name: {{ tpl .name $ }}
+          {{- if .namespace }}
+          namespace: {{ .namespace }}
+          {{- end }}
+        {{- end }}
+    hostnames:
+        - {{ include "harbor.host" . | quote }}
+    rules:
+        - matches:
+            - path:
+                type: PathPrefix
+                value: /
+          backendRefs:
+            - name: {{ .Release.Name }}-harbor
+              port: 443
+{{- end }}

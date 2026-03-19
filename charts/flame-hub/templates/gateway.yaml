@@ -1,0 +1,29 @@
+{{- if and .Values.global.flameHub.gatewayApi.enabled .Values.global.flameHub.gatewayApi.gateway.create -}}
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: {{ tpl .Values.global.flameHub.gatewayApi.gateway.name . }}
+  {{- if .Values.global.flameHub.gatewayApi.gateway.annotations }}
+  annotations:
+    {{- range $key, $value := .Values.global.flameHub.gatewayApi.gateway.annotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+  {{- end }}
+spec:
+  gatewayClassName: {{ .Values.global.flameHub.gatewayApi.gateway.className }}
+  listeners:
+    {{- range .Values.global.flameHub.gatewayApi.gateway.listeners }}
+    - name: {{ .name }}
+      protocol: {{ .protocol }}
+      port: {{ .port }}
+      {{- if .tls }}
+      tls:
+        mode: {{ .tls.mode | default "Terminate" }}
+        certificateRefs:
+          - name: {{ tpl .tls.certificateRef $ }}
+      {{- end }}
+      allowedRoutes:
+        namespaces:
+          from: Same
+    {{- end }}
+{{- end }}
