@@ -13,8 +13,27 @@ spec:
         - matches:
             - path:
                 type: PathPrefix
+                value: /api/
+            - path:
+                type: PathPrefix
+                value: /service/
+            - path:
+                type: PathPrefix
+                value: /v2
+            - path:
+                type: PathPrefix
+                value: /chartrepo/
+            - path:
+                type: PathPrefix
+                value: /c/
+          backendRefs:
+            - name: {{ .Release.Name }}-harbor-core
+              port: 80
+        - matches:
+            - path:
+                type: PathPrefix
                 value: /
           backendRefs:
-            - name: {{ .Release.Name }}-harbor
-              port: 443
+            - name: {{ .Release.Name }}-harbor-portal
+              port: 80
 {{- end }}
