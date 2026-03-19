@@ -3,7 +3,16 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
     name: {{ .Release.Name }}-flame-hub-client-ui
+    {{- with .Values.clientUI.ingress.annotations }}
+    annotations:
+        {{- range $key, $value := . }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
+    {{- end }}
 spec:
+    {{- if .Values.clientUI.ingress.className }}
+    ingressClassName: {{ .Values.clientUI.ingress.className }}
+    {{- end }}
     rules:
         - host: {{ .Values.clientUI.ingress.hostname }}
           http:
