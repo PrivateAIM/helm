@@ -5,12 +5,7 @@ metadata:
     name: {{ .Release.Name }}-flame-hub
 spec:
     parentRefs:
-        {{- range .Values.global.flameHub.gatewayApi.parentRefs }}
-        - name: {{ tpl .name $ }}
-          {{- if .namespace }}
-          namespace: {{ .namespace }}
-          {{- end }}
-        {{- end }}
+        - name: {{ .Release.Name }}-flame-hub-gateway
     hostnames:
         - {{ .Values.global.flameHub.gatewayApi.hostname | quote }}
     rules:
@@ -99,31 +94,4 @@ spec:
           backendRefs:
             - name: {{ .Release.Name }}-flame-hub-client-ui
               port: 3000
-{{- end }}
-
-{{/* Harbor route is independent of the above route since Harbor always needs its own hostname */}}
-{{- if and .Values.harbor.enabled (not .Values.externalHarbor.enabled) .Values.harbor.gatewayApi.enabled }}
----
-apiVersion: gateway.networking.k8s.io/v1
-kind: HTTPRoute
-metadata:
-    name: {{ .Release.Name }}-harbor
-spec:
-    parentRefs:
-        {{- range .Values.harbor.gatewayApi.parentRefs }}
-        - name: {{ tpl .name $ }}
-          {{- if .namespace }}
-          namespace: {{ .namespace }}
-          {{- end }}
-        {{- end }}
-    hostnames:
-        - {{ include "harbor.host" . | quote }}
-    rules:
-        - matches:
-            - path:
-                type: PathPrefix
-                value: /
-          backendRefs:
-            - name: {{ .Release.Name }}-harbor
-              port: 443
 {{- end }}

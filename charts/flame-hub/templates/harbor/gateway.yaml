@@ -1,0 +1,36 @@
+{{- if and .Values.harbor.enabled (not .Values.externalHarbor.enabled) .Values.harbor.gatewayApi.enabled -}}
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: {{ .Release.Name }}-harbor-gateway
+  {{- $harborAnnotations := .Values.harbor.gatewayApi.gateway.annotations | default .Values.global.flameHub.gatewayApi.gateway.annotations }}
+  {{- if $harborAnnotations }}
+  annotations:
+    {{- range $key, $value := $harborAnnotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+  {{- end }}
+spec:
+  gatewayClassName: {{ required "harbor.gatewayApi.gateway.className or global.flameHub.gatewayApi.gateway.className is required when harbor.gatewayApi.enabled=true" (coalesce .Values.harbor.gatewayApi.gateway.className .Values.global.flameHub.gatewayApi.gateway.className) }}
+  listeners:
+    - name: http
+      hostname: {{ include "harbor.host" . | quote }}
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: Same
+    {{- if .Values.harbor.gatewayApi.tls.enabled }}
+    - name: https
+      hostname: {{ include "harbor.host" . | quote }}
+      protocol: HTTPS
+      port: 443
+      tls:
+        mode: {{ coalesce .Values.harbor.gatewayApi.tls.mode .Values.global.flameHub.gatewayApi.tls.mode | default "Terminate" }}
+        certificateRefs:
+          - name: {{ required "harbor.gatewayApi.tls.certificateRef or global.flameHub.gatewayApi.tls.certificateRef is required when harbor.gatewayApi TLS is enabled" (coalesce .Values.harbor.gatewayApi.tls.certificateRef .Values.global.flameHub.gatewayApi.tls.certificateRef) }}
+      allowedRoutes:
+        namespaces:
+          from: Same
+    {{- end }}
+{{- end }}

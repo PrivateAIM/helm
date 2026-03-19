@@ -1,8 +1,8 @@
-{{- if and .Values.global.flameHub.gatewayApi.enabled .Values.global.flameHub.gatewayApi.gateway.create -}}
+{{- if .Values.global.flameHub.gatewayApi.enabled -}}
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
-  name: {{ tpl .Values.global.flameHub.gatewayApi.gateway.name . }}
+  name: {{ .Release.Name }}-flame-hub-gateway
   {{- if .Values.global.flameHub.gatewayApi.gateway.annotations }}
   annotations:
     {{- range $key, $value := .Values.global.flameHub.gatewayApi.gateway.annotations }}
@@ -10,18 +10,24 @@ metadata:
     {{- end }}
   {{- end }}
 spec:
-  gatewayClassName: {{ .Values.global.flameHub.gatewayApi.gateway.className }}
+  gatewayClassName: {{ required "global.flameHub.gatewayApi.gateway.className is required when global.flameHub.gatewayApi.enabled=true" .Values.global.flameHub.gatewayApi.gateway.className }}
   listeners:
-    {{- range .Values.global.flameHub.gatewayApi.gateway.listeners }}
-    - name: {{ .name }}
-      protocol: {{ .protocol }}
-      port: {{ .port }}
-      {{- if .tls }}
+    - name: http
+      hostname: {{ .Values.global.flameHub.gatewayApi.hostname | quote }}
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: Same
+    {{- if .Values.global.flameHub.gatewayApi.tls.enabled }}
+    - name: https
+      hostname: {{ .Values.global.flameHub.gatewayApi.hostname | quote }}
+      protocol: HTTPS
+      port: 443
       tls:
-        mode: {{ .tls.mode | default "Terminate" }}
+        mode: {{ .Values.global.flameHub.gatewayApi.tls.mode | default "Terminate" }}
         certificateRefs:
-          - name: {{ tpl .tls.certificateRef $ }}
-      {{- end }}
+          - name: {{ required "global.flameHub.gatewayApi.tls.certificateRef is required when global.flameHub.gatewayApi.tls.enabled=true" .Values.global.flameHub.gatewayApi.tls.certificateRef }}
       allowedRoutes:
         namespaces:
           from: Same
