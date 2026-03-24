@@ -35,6 +35,10 @@ global:
             gateway:
                 className: ""
                 annotations: {}
+            # Set to true to use SnippetsFilter-based proxy timeouts (see harbor/server-storage httproutes).
+            # Requires snippets to be enabled in your NGINX Gateway Fabric install.
+            nginxGatewayFabric:
+                snippetsTimeouts: false
 
 image:
     registry: ghcr.io

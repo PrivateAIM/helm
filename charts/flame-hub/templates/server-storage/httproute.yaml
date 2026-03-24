@@ -13,13 +13,29 @@ spec:
             - path:
                 type: PathPrefix
                 value: {{ .Values.serverStorage.gatewayApi.path }}
-          {{- if ne .Values.serverStorage.gatewayApi.path "/" }}
+          {{- $rewrite := ne .Values.serverStorage.gatewayApi.path "/" }}
+          {{- $ngfSnip := eq (include "flameHub.gatewayApi.nginxSnippetsTimeouts" .) "true" }}
+          {{- if or $rewrite $ngfSnip }}
           filters:
+          {{- if $rewrite }}
             - type: URLRewrite
               urlRewrite:
                 path:
                   type: ReplacePrefixMatch
                   replacePrefixMatch: /
+          {{- end }}
+          {{- if $ngfSnip }}
+            - type: ExtensionRef
+              extensionRef:
+                group: gateway.nginx.org
+                kind: SnippetsFilter
+                name: {{ .Release.Name }}-flame-hub-server-storage-ngf-timeouts
+          {{- end }}
+          {{- end }}
+          {{- if not $ngfSnip }}
+          timeouts:
+              request: 300s
+              backendRequest: 300s
           {{- end }}
           backendRefs:
             - name: {{ .Release.Name }}-flame-hub-server-storage

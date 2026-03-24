@@ -27,6 +27,19 @@ spec:
             - path:
                 type: PathPrefix
                 value: /c/
+          {{- if eq (include "flameHub.gatewayApi.nginxSnippetsTimeouts" .) "true" }}
+          filters:
+            - type: ExtensionRef
+              extensionRef:
+                group: gateway.nginx.org
+                kind: SnippetsFilter
+                name: {{ .Release.Name }}-harbor-ngf-timeouts
+          {{- end }}
+          {{- if ne (include "flameHub.gatewayApi.nginxSnippetsTimeouts" .) "true" }}
+          timeouts:
+              request: 900s
+              backendRequest: 900s
+          {{- end }}
           backendRefs:
             - name: {{ .Release.Name }}-harbor-core
               port: 80
@@ -34,6 +47,19 @@ spec:
             - path:
                 type: PathPrefix
                 value: /
+          {{- if eq (include "flameHub.gatewayApi.nginxSnippetsTimeouts" .) "true" }}
+          filters:
+            - type: ExtensionRef
+              extensionRef:
+                group: gateway.nginx.org
+                kind: SnippetsFilter
+                name: {{ .Release.Name }}-harbor-ngf-timeouts
+          {{- end }}
+          {{- if ne (include "flameHub.gatewayApi.nginxSnippetsTimeouts" .) "true" }}
+          timeouts:
+              request: 900s
+              backendRequest: 900s
+          {{- end }}
           backendRefs:
             - name: {{ .Release.Name }}-harbor-portal
               port: 80

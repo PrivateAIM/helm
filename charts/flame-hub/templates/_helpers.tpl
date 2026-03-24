@@ -118,3 +118,11 @@ Expects a dict with keys: name, hostname, tls (the global TLS config dict).
       from: Same
 {{- end }}
 {{- end -}}
+
+{{/*
+True when NGINX Gateway Fabric SnippetsFilter-based proxy timeouts should be used (see harbor/server-storage httproutes).
+*/}}
+{{- define "flameHub.gatewayApi.nginxSnippetsTimeouts" -}}
+{{- $ngx := index .Values.global.flameHub.gatewayApi "nginxGatewayFabric" | default dict -}}
+{{- if $ngx.snippetsTimeouts }}true{{- end -}}
+{{- end -}}

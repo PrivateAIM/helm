@@ -46,4 +46,22 @@ spec:
     {{- $harborTls := dict "enabled" .Values.harbor.gatewayApi.tls.enabled "mode" (coalesce .Values.harbor.gatewayApi.tls.mode .Values.global.flameHub.gatewayApi.tls.mode) "certificateRef" (coalesce .Values.harbor.gatewayApi.tls.certificateRef .Values.global.flameHub.gatewayApi.tls.certificateRef) }}
     {{- include "flameHub.gatewayListeners" (dict "name" "harbor" "hostname" (include "harbor.host" .) "tls" $harborTls) | nindent 4 }}
     {{- end }}
+{{- if eq (include "flameHub.gatewayApi.nginxSnippetsTimeouts" .) "true" }}
+---
+apiVersion: gateway.nginx.org/v1alpha1
+kind: SnippetsPolicy
+metadata:
+  name: {{ .Release.Name }}-flame-hub-gateway-ngf-snippets
+  namespace: {{ .Release.Namespace }}
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: {{ .Release.Name }}-flame-hub-gateway
+  snippets:
+    - context: http
+      value: |
+        large_client_header_buffers 8 32k;
+        proxy_set_header Proxy "";
+{{- end }}
 {{- end }}
