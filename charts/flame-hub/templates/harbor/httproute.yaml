@@ -1,5 +1,6 @@
 {{/* Harbor route is independent since it always needs its own hostname. */}}
-{{- if and .Values.harbor.enabled (not .Values.externalHarbor.enabled) .Values.harbor.gatewayApi.enabled -}}
+{{- if and .Values.harbor.enabled (not .Values.externalHarbor.enabled) -}}
+{{- if or .Values.global.flameHub.gatewayApi.enabled .Values.harbor.gatewayApi.enabled -}}
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -36,4 +37,5 @@ spec:
           backendRefs:
             - name: {{ .Release.Name }}-harbor-portal
               port: 80
+{{- end }}
 {{- end }}

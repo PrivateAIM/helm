@@ -1,0 +1,27 @@
+{{- if or .Values.global.flameHub.gatewayApi.enabled .Values.authup.gatewayApi.enabled -}}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+    name: {{ .Release.Name }}-authup
+spec:
+    parentRefs:
+        - name: {{ .Release.Name }}-flame-hub-gateway
+    hostnames:
+        - {{ .Values.authup.gatewayApi.hostname | default .Values.global.flameHub.gatewayApi.hostname | quote }}
+    rules:
+        - matches:
+            - path:
+                type: PathPrefix
+                value: {{ .Values.authup.gatewayApi.path }}
+          {{- if ne .Values.authup.gatewayApi.path "/" }}
+          filters:
+            - type: URLRewrite
+              urlRewrite:
+                path:
+                  type: ReplacePrefixMatch
+                  replacePrefixMatch: /
+          {{- end }}
+          backendRefs:
+            - name: {{ .Release.Name }}-authup-server-core
+              port: 3000
+{{- end }}

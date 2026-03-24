@@ -19,9 +19,12 @@ global:
                 nginx.ingress.kubernetes.io/proxy-body-size: "0" # for large file uploads
                 nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
                 nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
-        # enable this gateway api for path based routing
-        # alternatively you can enable gateway api for each Hub service individually (subdomain-based routing)
-        # enabling this gateway api will expose all Hub services on the same domain at different paths (e.g. /core/, /messenger/, /storage/, /telemetry/)
+        # Gateway API configuration.
+        # Set enabled: true to enable all service routes at once (using the default paths below).
+        # Alternatively, enable routing per service (clientUI.gatewayApi.enabled, serverCore.gatewayApi.enabled, etc.).
+        # For path-based routing, keep the default paths and use one shared hostname.
+        # For domain-based routing, set a unique hostname per service and override path to "/".
+        # Note: Harbor cannot use path-based routing because it always needs its own hostname
         gatewayApi:
             enabled: false
             hostname: "localhost"
@@ -51,6 +54,12 @@ clientUI:
         pathType: "Prefix"
         className: ""
         annotations: {}
+    # Per-service gateway API route. Set hostname to override the global default.
+    # For path-based routing, use the default paths below. For domain-based, set hostname and path: "/".
+    gatewayApi:
+        enabled: false
+        hostname: "" # empty = global.flameHub.gatewayApi.hostname
+        path: "/"
 
 serverCore:
     ingress:
@@ -61,6 +70,10 @@ serverCore:
         pathType: "Prefix"
         className: ""
         annotations: {}
+    gatewayApi:
+        enabled: false
+        hostname: ""
+        path: "/core"
     env:
         masterImagesBranch: ""
 
@@ -73,6 +86,10 @@ serverMessenger:
         pathType: "Prefix"
         className: ""
         annotations: {}
+    gatewayApi:
+        enabled: false
+        hostname: ""
+        path: "/messenger"
 
 serverStorage:
     ingress:
@@ -87,6 +104,10 @@ serverStorage:
             nginx.ingress.kubernetes.io/proxy-body-size: "0"
             nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
             nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    gatewayApi:
+        enabled: false
+        hostname: ""
+        path: "/storage"
 
 serverTelemetry:
     ingress:
@@ -102,6 +123,11 @@ serverTelemetry:
         # Annotations for the grafana sub-path ingress (rewrite-target)
         subPathAnnotations:
             nginx.ingress.kubernetes.io/rewrite-target: /$2
+    gatewayApi:
+        enabled: false
+        hostname: ""
+        path: "/telemetry"
+        grafanaPath: "/grafana"
 
 serverCoreWorker:
     enabled: true
@@ -138,6 +164,10 @@ authup:
         className: ""
         annotations:
             nginx.ingress.kubernetes.io/proxy-buffer-size: "16k" # for large auth token
+    gatewayApi:
+        enabled: false
+        hostname: ""
+        path: "/auth"
 
 rabbitmq:
     nameOverride: "rabbitmq"
@@ -347,9 +377,6 @@ harbor:
     ingress:
         enabled: true # Harbor always needs its own hostname/domain, even when global path-based ingress is enabled
         ssl: false
-        hostname: ""
-        path: "/"
-        pathType: "Prefix"
         className: ""
         # Default annotations for ingress nginx
         # Replace or remove if you use a different ingress controller
@@ -360,7 +387,9 @@ harbor:
             nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
             nginx.ingress.kubernetes.io/upstream-vhost: '{{ include "harbor.host" . }}'
     gatewayApi:
-        enabled: false # Requires global.flameHub.gatewayApi.enabled=true; Harbor listeners are added to the unified gateway
+        # hostname is taken from externalURL
+        # no option to set path, as harbor does not support it
+        enabled: false
         tls:
             enabled: false
             mode: "Terminate"

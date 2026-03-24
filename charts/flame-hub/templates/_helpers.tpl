@@ -91,3 +91,30 @@ Validate ingress mode: global path-based ingress and individual service ingresse
 {{- fail "Ingress configuration is mutually exclusive: disable global.flameHub.ingress.enabled or disable individual service ingress settings (clientUI, serverCore, serverMessenger, serverStorage, serverTelemetry, authup)." -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Generate a pair of HTTP (+ optional HTTPS) gateway listeners for a given name and hostname.
+Expects a dict with keys: name, hostname, tls (the global TLS config dict).
+*/}}
+{{- define "flameHub.gatewayListeners" -}}
+- name: {{ .name }}-http
+  hostname: {{ .hostname | quote }}
+  protocol: HTTP
+  port: 80
+  allowedRoutes:
+    namespaces:
+      from: Same
+{{- if .tls.enabled }}
+- name: {{ .name }}-https
+  hostname: {{ .hostname | quote }}
+  protocol: HTTPS
+  port: 443
+  tls:
+    mode: {{ .tls.mode | default "Terminate" }}
+    certificateRefs:
+      - name: {{ .tls.certificateRef }}
+  allowedRoutes:
+    namespaces:
+      from: Same
+{{- end }}
+{{- end -}}
