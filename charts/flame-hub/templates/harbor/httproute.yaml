@@ -6,7 +6,7 @@ metadata:
     name: {{ .Release.Name }}-harbor
 spec:
     parentRefs:
-        - name: {{ .Release.Name }}-harbor-gateway
+        - name: {{ .Release.Name }}-flame-hub-gateway
     hostnames:
         - {{ include "harbor.host" . | quote }}
     rules:

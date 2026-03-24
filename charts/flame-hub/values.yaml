@@ -360,17 +360,11 @@ harbor:
             nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
             nginx.ingress.kubernetes.io/upstream-vhost: '{{ include "harbor.host" . }}'
     gatewayApi:
-        enabled: false
+        enabled: false # Requires global.flameHub.gatewayApi.enabled=true; Harbor listeners are added to the unified gateway
         tls:
             enabled: false
             mode: "Terminate"
             certificateRef: ""
-        gateway:
-            # Optional Harbor-specific gateway overrides.
-            # If className is empty, global.flameHub.gatewayApi.gateway.className is used.
-            className: ""
-            # If annotations is empty, global.flameHub.gatewayApi.gateway.annotations is used.
-            annotations: {}
     migration:
         enabled: true
     # persistence:
