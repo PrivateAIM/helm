@@ -124,7 +124,9 @@ authup:
         hostname: ""
         className: ""
         annotations:
-            nginx.ingress.kubernetes.io/proxy-buffer-size: "16k" # for large auth token
+            nginx.ingress.kubernetes.io/proxy-buffer-size: "128k"
+            nginx.ingress.kubernetes.io/proxy-buffers-number: "4"
+            nginx.ingress.kubernetes.io/proxy-busy-buffers-size: "256k"
 
 rabbitmq:
     nameOverride: "rabbitmq"
