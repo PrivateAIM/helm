@@ -2,6 +2,7 @@ global:
     imagePullPolicy: "IfNotPresent"
 
     flameHub:
+        publicHttps: false
         # enable this ingress for path based routing
         # alternatively you can enable ingress for each Hub service individually (subdomain-based routing)
         # enabling this ingress will expose all Hub services on the same domain at different paths (e.g. /core/, /messenger/, /storage/, /telemetry/)
@@ -48,6 +49,7 @@ image:
 
 # internal services
 clientUI:
+    publicHttps: false
     cookieDomain: ""
     # service specific ingress configuration. If you use this, you will need a separate domain for each service
     ingress:
@@ -66,6 +68,7 @@ clientUI:
         path: "/"
 
 serverCore:
+    publicHttps: false
     ingress:
         enabled: false
         ssl: false
@@ -82,6 +85,7 @@ serverCore:
         masterImagesBranch: ""
 
 serverMessenger:
+    publicHttps: false
     ingress:
         enabled: false
         ssl: false
@@ -96,6 +100,7 @@ serverMessenger:
         path: "/messenger"
 
 serverStorage:
+    publicHttps: false
     ingress:
         enabled: false
         ssl: false
@@ -114,6 +119,7 @@ serverStorage:
         path: "/storage"
 
 serverTelemetry:
+    publicHttps: false
     ingress:
         enabled: false
         ssl: false
@@ -153,6 +159,7 @@ auth:
 
 # Authentication Provider
 authup:
+    publicHttps: false
     auth:
         existingSecret: "flame-hub-auth"
 
