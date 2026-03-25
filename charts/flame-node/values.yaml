@@ -488,7 +488,7 @@ podOrchestrator:
     repository: ghcr.io/privateaim/node-pod-orchestration
     # Overrides the image tag whose default is the chart appVersion.
     # TODO: update to new version once available after testing
-    tag: new-hub
+    tag: 0.4.0
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
