@@ -95,10 +95,10 @@ hub:
     storage: https://storage.privateaim.dev
   ## Credentials used for retrieving a valid token from the hub using a robot account
   auth:
-    robotUser:
-    robotSecret:
-    ## @param hub.auth.existingSecret Existing k8s secret containing secret for given hub robot user UUID
-    ## The secret must have a key named "robotSecret"
+    clientID:
+    clientSecret:
+    ## @param hub.auth.existingSecret Existing k8s secret containing secret for given hub client ID
+    ## The secret must have a key named "clientSecret"
     existingSecret: ""
   ## Values required by the storage service for encrypting intermediate results sent to the Hub
   crypto:
@@ -196,7 +196,7 @@ storageService:
   image:
     repository: ghcr.io/privateaim/node-storage-service
     # Overrides the image tag whose default is the chart appVersion.
-    tag: sha-a8bd4f1
+    tag: 0.1.5
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -238,13 +238,13 @@ storageService:
   livenessProbe: {}
     # httpGet:
     #   path: /healthz
-    #   port: http-storage-srv
+    #   port: api
   # failureThreshold: 3
   # periodSeconds: 10
   readinessProbe: {}
     # httpGet:
     #   path: /healthz
-    #   port: http-storage-srv
+    #   port: api
   # failureThreshold: 5
   # periodSeconds: 5
 
@@ -400,7 +400,7 @@ hubAdapter:
   image:
     repository: ghcr.io/privateaim/node-hub-api-adapter
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.4.2
+    tag: 0.5.1
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -487,7 +487,8 @@ podOrchestrator:
   image:
     repository: ghcr.io/privateaim/node-pod-orchestration
     # Overrides the image tag whose default is the chart appVersion.
-    tag: storage
+    # TODO: update to new version once available after testing
+    tag: 0.4.0
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -593,8 +594,6 @@ messageBroker:
     HUB_BASE_URL: https://api.privateaim.dev/
     HUB_AUTH_BASE_URL: https://auth.privateaim.dev/
     HUB_MESSENGER_BASE_URL: https://messenger.privateaim.dev/
-    HUB_AUTH_ROBOT_ID: ""
-    HUB_AUTH_ROBOT_SECRET: ""
 
   # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
   replicaCount: 1
@@ -603,7 +602,7 @@ messageBroker:
   image:
     repository: ghcr.io/privateaim/node-message-broker
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.6.0
+    tag: 0.6.1
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -699,7 +698,7 @@ ui:
   image:
     repository: ghcr.io/privateaim/node-ui
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.4.1
+    tag: 0.5.3
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
