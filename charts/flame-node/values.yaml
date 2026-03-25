@@ -594,8 +594,6 @@ messageBroker:
     HUB_BASE_URL: https://api.privateaim.dev/
     HUB_AUTH_BASE_URL: https://auth.privateaim.dev/
     HUB_MESSENGER_BASE_URL: https://messenger.privateaim.dev/
-    HUB_AUTH_ROBOT_ID: ""
-    HUB_AUTH_ROBOT_SECRET: ""
 
   # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
   replicaCount: 1
