@@ -5,7 +5,6 @@ global:
       # alternatively you can enable ingress for each Hub service individually (subdomain-based routing)
       # see the values.yaml for more details and examples
       enabled: true
-      ssl: true
       hostname: "hub.local"
 
 authup:

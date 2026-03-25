@@ -2,15 +2,14 @@ global:
     imagePullPolicy: "IfNotPresent"
 
     flameHub:
-        publicHttps: false
+        publicHttps: true # used for constructing URLs used in your browser
         # enable this ingress for path based routing
         # alternatively you can enable ingress for each Hub service individually (subdomain-based routing)
         # enabling this ingress will expose all Hub services on the same domain at different paths (e.g. /core/, /messenger/, /storage/, /telemetry/)
         ingress:
             enabled: true
-            ssl: false
             hostname: "localhost"
-            className: ""
+            className: "" # ingress class you want to use (optional)
             # Default annotations for ingress nginx
             # Replace or remove if you use a different ingress controller
             annotations:
@@ -27,7 +26,7 @@ global:
         # For domain-based routing, set a unique hostname per service and override path to "/".
         # Note: Harbor cannot use path-based routing because it always needs its own hostname
         gatewayApi:
-            enabled: false
+            enabled: false # enable gatewayApi for all services
             hostname: "localhost"
             tls:
                 enabled: false
@@ -38,6 +37,7 @@ global:
                 annotations: {}
             # Set to true to use SnippetsFilter-based proxy timeouts (see harbor/server-storage httproutes).
             # Requires snippets to be enabled in your NGINX Gateway Fabric install.
+            # (NGINX Gateway Fabric does not support annotations.)
             nginxGatewayFabric:
                 snippets: true
 
@@ -49,12 +49,11 @@ image:
 
 # internal services
 clientUI:
-    publicHttps: false
+    publicHttps: false # global.flameHub.publicHttps also enables this
     cookieDomain: ""
     # service specific ingress configuration. If you use this, you will need a separate domain for each service
     ingress:
         enabled: false
-        ssl: false
         hostname: ""
         path: "/"
         pathType: "Prefix"
@@ -63,47 +62,44 @@ clientUI:
     # Per-service gateway API route. Set hostname to override the global default.
     # For path-based routing, use the default paths below. For domain-based, set hostname and path: "/".
     gatewayApi:
-        enabled: false
+        enabled: false # global.flameHub.ingress.enabled also enables this
         hostname: "" # empty = global.flameHub.gatewayApi.hostname
         path: "/"
 
 serverCore:
-    publicHttps: false
+    publicHttps: false # global.flameHub.publicHttps also enables this
     ingress:
         enabled: false
-        ssl: false
         hostname: ""
         path: "/"
         pathType: "Prefix"
         className: ""
         annotations: {}
     gatewayApi:
-        enabled: false
-        hostname: ""
+        enabled: false # global.flameHub.ingress.enabled also enables this
+        hostname: "" # empty = global.flameHub.gatewayApi.hostname
         path: "/core"
     env:
         masterImagesBranch: ""
 
 serverMessenger:
-    publicHttps: false
+    publicHttps: false # global.flameHub.publicHttps also enables this
     ingress:
         enabled: false
-        ssl: false
         hostname: ""
         path: "/"
         pathType: "Prefix"
         className: ""
         annotations: {}
     gatewayApi:
-        enabled: false
-        hostname: ""
+        enabled: false # global.flameHub.ingress.enabled also enables this
+        hostname: "" # empty = global.flameHub.gatewayApi.hostname
         path: "/messenger"
 
 serverStorage:
-    publicHttps: false
+    publicHttps: false # global.flameHub.publicHttps also enables this
     ingress:
         enabled: false
-        ssl: false
         hostname: ""
         path: "/"
         pathType: "Prefix"
@@ -114,15 +110,14 @@ serverStorage:
             nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
             nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
     gatewayApi:
-        enabled: false
-        hostname: ""
+        enabled: false # global.flameHub.ingress.enabled also enables this
+        hostname: "" # empty = global.flameHub.gatewayApi.hostname
         path: "/storage"
 
 serverTelemetry:
-    publicHttps: false
+    publicHttps: false # global.flameHub.publicHttps also enables this
     ingress:
         enabled: false
-        ssl: false
         hostname: ""
         path: "/"
         pathType: "Prefix"
@@ -134,8 +129,8 @@ serverTelemetry:
         subPathAnnotations:
             nginx.ingress.kubernetes.io/rewrite-target: /$2
     gatewayApi:
-        enabled: false
-        hostname: ""
+        enabled: false # global.flameHub.ingress.enabled also enables this
+        hostname: "" # empty = global.flameHub.gatewayApi.hostname
         path: "/telemetry"
         grafanaPath: "/grafana"
 
@@ -159,7 +154,7 @@ auth:
 
 # Authentication Provider
 authup:
-    publicHttps: false
+    publicHttps: false # global.flameHub.publicHttps also enables this
     auth:
         existingSecret: "flame-hub-auth"
 
@@ -170,7 +165,6 @@ authup:
         clientSecret: "" # Leave empty for auto-generation
     ingress:
         enabled: false
-        ssl: false
         hostname: ""
         className: ""
         annotations:
@@ -178,8 +172,8 @@ authup:
             nginx.ingress.kubernetes.io/proxy-buffers-number: "8"
             nginx.ingress.kubernetes.io/proxy-busy-buffers-size: "512k"
     gatewayApi:
-        enabled: false
-        hostname: ""
+        enabled: false # global.flameHub.ingress.enabled also enables this
+        hostname: "" # empty = global.flameHub.gatewayApi.hostname
         path: "/auth"
 
 rabbitmq:
@@ -389,7 +383,6 @@ harbor:
     externalURL: "" # Required by Harbor, e.g. https://harbor.hub.local
     ingress:
         enabled: true # Harbor always needs its own hostname/domain, even when global path-based ingress is enabled
-        ssl: false
         className: ""
         # Default annotations for ingress nginx
         # Replace or remove if you use a different ingress controller
@@ -402,7 +395,7 @@ harbor:
     gatewayApi:
         # hostname is taken from externalURL
         # no option to set path, as harbor does not support it
-        enabled: false
+        enabled: false # global.flameHub.ingress.enabled also enables this
         tls:
             enabled: false
             mode: "Terminate"
