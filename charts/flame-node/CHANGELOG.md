@@ -1,5 +1,41 @@
 # Changelog
 
+## [0.0.11](https://github.com/PrivateAIM/helm/compare/flame-node-0.0.10...flame-node-0.0.11) (2026-03-25)
+
+
+### Features
+
+* add HUB_LOGGING environment variable ([95d8309](https://github.com/PrivateAIM/helm/commit/95d8309bfc0910fa305576f0e6f750f0310fc49c))
+* integrate Harbor ([#86](https://github.com/PrivateAIM/helm/issues/86)) ([dd1ac29](https://github.com/PrivateAIM/helm/commit/dd1ac2939e91dd0e80209a9fd854b97c1c6978d8))
+* **kong:** add custom minio-gateway plugin configuration ([206fd2f](https://github.com/PrivateAIM/helm/commit/206fd2f798389276f16bca6c2b1aa3af1af64bb2))
+* **node:** add default roles to keycloak and update HA ([ce24387](https://github.com/PrivateAIM/helm/commit/ce243879ec87dd293e1dbc951e9d0dab48e2c357))
+* **node:** add postgres env vars to hub adapter deployment ([cdadf58](https://github.com/PrivateAIM/helm/commit/cdadf586fc69809e9dee60db21e5b3e0f3e95327))
+
+
+### Bug Fixes
+
+* correct typo in enableHubLogging description for clarity ([4f931d3](https://github.com/PrivateAIM/helm/commit/4f931d398783443db4011a680d6f0046d5e19fb2))
+* **node:** add hostname for local keycloak ([371aeca](https://github.com/PrivateAIM/helm/commit/371aecae3d22a4616d17c065d6fd2eada0a69fc9))
+* **node:** increase buffer size for JWT in UI ([1040aa2](https://github.com/PrivateAIM/helm/commit/1040aa2113a7d705448d33d89bd921d8f6ac6c6a))
+* typos and add labels to po resources ([4d6ee9d](https://github.com/PrivateAIM/helm/commit/4d6ee9d55b2cabfcdf3cc4a4a39c73e8f4ab01b7))
+* update hub authentication variables to use client ID and secret ([c7da749](https://github.com/PrivateAIM/helm/commit/c7da7499df4bf63cccb02ad128a2ea931d10e832))
+* update HUB_LOGGING and STATUS_LOOP_INTERVAL values to ensure correct type handling ([f2d1737](https://github.com/PrivateAIM/helm/commit/f2d17374baae6bba978be9015415c98198fe6bfc))
+* **values:** add robot user and secret fields for hub authentication ([4612449](https://github.com/PrivateAIM/helm/commit/4612449440d0e77de016661d22a6006b0901b6c6))
+* **values:** update hub authentication to use client ID and secret ([989c326](https://github.com/PrivateAIM/helm/commit/989c3260db28cdd97ed0f460acb6ee8077f817b7))
+* **values:** update image tag to new-hub for testing ([de18eb6](https://github.com/PrivateAIM/helm/commit/de18eb6aeadcc67a0a59447c15aa4e7fb322bd8e))
+
+
+### Performance Improvements
+
+* **node:** have hub adapter wait for keycloak init ([f35f109](https://github.com/PrivateAIM/helm/commit/f35f1094d8899b651d5b1cf29216edc0d21e8365))
+* **node:** set internal KC to prod ([eb9df33](https://github.com/PrivateAIM/helm/commit/eb9df3341a51fa250dd2fd6cdc3de8ba37c5aa66))
+* **node:** set wait-for-keycloak initcontainer to use kc health ep ([219ee42](https://github.com/PrivateAIM/helm/commit/219ee42e08052d674e4201868ad1b4114015fd64))
+
+
+### Reverts
+
+* **node:** revert node UI env vars ([0e282b4](https://github.com/PrivateAIM/helm/commit/0e282b4e0dd3fccb0fa36094299cf5dacfcb2b58))
+
 ## [0.0.10](https://github.com/PrivateAIM/helm/compare/flame-node-0.0.9...flame-node-0.0.10) (2025-11-21)
 
 

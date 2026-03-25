@@ -109,13 +109,13 @@ spec:
               value: {{ .Values.hub.endpoints.auth | default "https://auth.privateaim.dev" | quote }}
             - name: HUB_URL_CORE
               value: {{ .Values.hub.endpoints.core | default "https://core.privateaim.dev" | quote }}
-            - name: HUB_ROBOT_USER
-              value:  {{ required "A robot ID for the Hub is required." .Values.hub.auth.robotUser | quote }}
-            - name: HUB_ROBOT_SECRET
+            - name: HUB_CLIENT_ID
+              value:  {{ required "A client ID for the Hub is required." .Values.hub.auth.clientID | quote }}
+            - name: HUB_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
                   name: {{ include "hub.secretName" . }}
-                  key: robotSecret
+                  key: clientSecret
             - name: HUB_LOGGING
               value:  {{ .Values.podOrchestrator.enableHubLogging | toString | default "true" | quote }}
             - name: STATUS_LOOP_INTERVAL

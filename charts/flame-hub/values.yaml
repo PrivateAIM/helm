@@ -174,7 +174,9 @@ authup:
         hostname: ""
         className: ""
         annotations:
-            nginx.ingress.kubernetes.io/proxy-buffer-size: "16k" # for large auth token
+            nginx.ingress.kubernetes.io/proxy-buffer-size: "256k"
+            nginx.ingress.kubernetes.io/proxy-buffers-number: "8"
+            nginx.ingress.kubernetes.io/proxy-busy-buffers-size: "512k"
     gatewayApi:
         enabled: false
         hostname: ""
