@@ -9,6 +9,22 @@ The chart will use whichever storage class is the default in your cluster, unles
 
 ## Ingress
 See the `values.yaml` for ingress options. The default ingress configuration will use path-based routing for all services except Harbor (which requires its own hostname). You will have to provide an extra (sub)domain if you want to use the harbor component of this chart.
+The ingress resources provided generally only provide HTTP listeners. The `publicHttps` field in the values just specifies if public URLs will be constructed using the `https://` prefix.
+
+## Gateway API
+This chart supports [Gateway API](https://gateway-api.sigs.k8s.io/) as an alternative to Ingress. It is designed for use with [F5 NGINX Gateway Fabric](https://docs.nginx.com/nginx-gateway-fabric/install/helm/#install-from-the-oci-registry) but may work with other Gateway controllers.
+
+See the [FLAME Hub Deployment Guide](https://github.com/PrivateAIM/hub-deployment) for instructions on installing NGINX Gateway Fabric and configuring Gateway API.
+
+### Enabling Gateway API
+
+Set `global.flameHub.gatewayApi.enabled: true` along with required values or set each service's `gatewayApi.enabled` field to `true`.
+
+### Key Differences from Ingress
+
+- While `global.flameHub.gatewayApi.enabled` enables gatewayApi for all services, the per-service configuration (domain, path) is still done in each service's values section.
+- If you are using NGF and have `nginxGatewayFabric.snippets` enabled in the `global.flameHub` section, the correct proxy parameters will be set. Otherwise, please use the annotations field to achieve the same configuration, or else the Hub will not be usable.
+- Unlike ingress-nginx, Gateway Controllers usually expose a LoadBalancer Service. If you want to expose your cluster directly, extra steps are necessary.
 
 
 ## Credentials
