@@ -2,10 +2,23 @@ global:
     imagePullPolicy: "IfNotPresent"
 
     flameHub:
+        # enable this ingress for path based routing
+        # alternatively you can enable ingress for each Hub service individually (subdomain-based routing)
+        # enabling this ingress will expose all Hub services on the same domain at different paths (e.g. /core/, /messenger/, /storage/, /telemetry/)
         ingress:
             enabled: true
             ssl: false
             hostname: "localhost"
+            className: ""
+            # Default annotations for ingress nginx
+            # Replace or remove if you use a different ingress controller
+            annotations:
+                # Example annotations for ingress nginx
+                nginx.ingress.kubernetes.io/rewrite-target: /$2 # for path based routing
+                nginx.ingress.kubernetes.io/proxy-buffer-size: "16k" # for large auth token
+                nginx.ingress.kubernetes.io/proxy-body-size: "0" # for large file uploads
+                nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+                nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
 
 image:
     registry: ghcr.io
@@ -16,45 +29,66 @@ image:
 # internal services
 clientUI:
     cookieDomain: ""
+    # service specific ingress configuration. If you use this, you will need a separate domain for each service
     ingress:
         enabled: false
+        ssl: false
         hostname: ""
         path: "/"
         pathType: "Prefix"
+        className: ""
+        annotations: {}
 
 serverCore:
     ingress:
-        ssl: false
         enabled: false
+        ssl: false
         hostname: ""
         path: "/"
         pathType: "Prefix"
+        className: ""
+        annotations: {}
     env:
         masterImagesBranch: ""
 
 serverMessenger:
     ingress:
-        ssl: false
         enabled: false
+        ssl: false
         hostname: ""
         path: "/"
         pathType: "Prefix"
+        className: ""
+        annotations: {}
 
 serverStorage:
     ingress:
-        ssl: false
         enabled: false
+        ssl: false
         hostname: ""
         path: "/"
         pathType: "Prefix"
+        # Default annotations for ingress nginx (e.g. for large file uploads)
+        # Replace or remove if you use a different ingress controller
+        annotations:
+            nginx.ingress.kubernetes.io/proxy-body-size: "0"
+            nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+            nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
 
 serverTelemetry:
     ingress:
-        ssl: false
         enabled: false
+        ssl: false
         hostname: ""
         path: "/"
         pathType: "Prefix"
+        # Default annotations for ingress nginx
+        # Replace or remove if you use a different ingress controller
+        annotations:
+            nginx.ingress.kubernetes.io/proxy-body-size: "0"
+        # Annotations for the grafana sub-path ingress (rewrite-target)
+        subPathAnnotations:
+            nginx.ingress.kubernetes.io/rewrite-target: /$2
 
 serverCoreWorker:
     enabled: true
@@ -86,8 +120,13 @@ authup:
         clientSecret: "" # Leave empty for auto-generation
     ingress:
         enabled: false
-        hostname: ""
         ssl: false
+        hostname: ""
+        className: ""
+        annotations:
+            nginx.ingress.kubernetes.io/proxy-buffer-size: "256k"
+            nginx.ingress.kubernetes.io/proxy-buffers-number: "8"
+            nginx.ingress.kubernetes.io/proxy-busy-buffers-size: "512k"
 
 rabbitmq:
     nameOverride: "rabbitmq"
@@ -293,16 +332,32 @@ harbor:
     adminPassword: "" # Leave empty for auto-generation
     existingSecret: "flame-hub-auth"
     existingSecretAdminPasswordKey: "harbor-admin-password"
-    exposureType: "proxy"
     externalURL: "" # Required by Harbor, e.g. https://harbor.hub.local
     ingress:
-        enabled: true # Harbor always needs its own hostname, this is independent of global path-based ingress
+        enabled: true # Harbor always needs its own hostname/domain, even when global path-based ingress is enabled
+        ssl: false
+        hostname: ""
+        path: "/"
+        pathType: "Prefix"
+        className: ""
+        # Default annotations for ingress nginx
+        # Replace or remove if you use a different ingress controller
+        annotations:
+            nginx.ingress.kubernetes.io/proxy-body-size: "0"
+            nginx.ingress.kubernetes.io/proxy-read-timeout: "900"
+            nginx.ingress.kubernetes.io/proxy-send-timeout: "900"
+            nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+            nginx.ingress.kubernetes.io/upstream-vhost: '{{ include "harbor.host" . }}'
     migration:
         enabled: true
     # persistence:
     #     persistentVolumeClaim:
     #         registry:
     #             storageClass: "mayastor-replicated"
+    # exposureType controls the way the harbor subchart is exposed. The harbor subchart provides
+    # its own ingress, but we need to use exposureType proxy (nginx) to allow access internally.
+    # Ingress is handled by the ingress section above.
+    exposureType: "proxy"
     nginx:
         behindReverseProxy: true
         tls:

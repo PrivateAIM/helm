@@ -3,7 +3,16 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
     name: {{ .Release.Name }}-flame-hub-server-core
+    {{- with .Values.serverCore.ingress.annotations }}
+    annotations:
+        {{- range $key, $value := . }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
+    {{- end }}
 spec:
+    {{- if .Values.serverCore.ingress.className }}
+    ingressClassName: {{ .Values.serverCore.ingress.className }}
+    {{- end }}
     rules:
         - host: {{ .Values.serverCore.ingress.hostname }}
           http:
