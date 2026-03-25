@@ -1,8 +1,8 @@
-{{- if and (eq (include "flameHub.gatewayApi.nginxSnippetsTimeouts" .) "true") .Values.harbor.enabled (not .Values.externalHarbor.enabled) (or .Values.global.flameHub.gatewayApi.enabled .Values.harbor.gatewayApi.enabled) -}}
+{{- if and .Values.global.flameHub.gatewayApi.nginxGatewayFabric.snippets .Values.harbor.enabled (not .Values.externalHarbor.enabled) (or .Values.global.flameHub.gatewayApi.enabled .Values.harbor.gatewayApi.enabled) -}}
 apiVersion: gateway.nginx.org/v1alpha1
 kind: SnippetsFilter
 metadata:
-    name: {{ .Release.Name }}-harbor-ngf-timeouts
+    name: {{ .Release.Name }}-harbor-ngf-snippets
     namespace: {{ .Release.Namespace }}
 spec:
     snippets:
@@ -10,6 +10,8 @@ spec:
           value: |
             proxy_connect_timeout 60s;
             proxy_buffer_size 16k;
+            proxy_buffers 4 16k;
+            proxy_busy_buffers_size 16k;
             client_max_body_size 0;
             proxy_send_timeout 900s;
             proxy_read_timeout 900s;

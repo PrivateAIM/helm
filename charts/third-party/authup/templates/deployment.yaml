@@ -39,10 +39,8 @@ spec:
             - containerPort: 3000
               protocol: TCP
           env:
-            {{- with .Values.cookieDomain }}
               -   name: COOKIE_DOMAIN
-                  value: "{{- toString . | trim }}"
-            {{- end }}
+                  value: {{ default (include "flameHub.uiDomain" .) .Values.cookieDomain | trim | quote }}
             {{- with .Values.publicURL }}
               -   name: PUBLIC_URL
                   value: "{{- toString . | trim }}"

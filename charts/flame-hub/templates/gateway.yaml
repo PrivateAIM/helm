@@ -46,7 +46,7 @@ spec:
     {{- $harborTls := dict "enabled" .Values.harbor.gatewayApi.tls.enabled "mode" (coalesce .Values.harbor.gatewayApi.tls.mode .Values.global.flameHub.gatewayApi.tls.mode) "certificateRef" (coalesce .Values.harbor.gatewayApi.tls.certificateRef .Values.global.flameHub.gatewayApi.tls.certificateRef) }}
     {{- include "flameHub.gatewayListeners" (dict "name" "harbor" "hostname" (include "harbor.host" .) "tls" $harborTls) | nindent 4 }}
     {{- end }}
-{{- if eq (include "flameHub.gatewayApi.nginxSnippetsTimeouts" .) "true" }}
+{{- if .Values.global.flameHub.gatewayApi.nginxGatewayFabric.snippets }}
 ---
 apiVersion: gateway.nginx.org/v1alpha1
 kind: SnippetsPolicy

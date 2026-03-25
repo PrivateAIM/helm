@@ -13,13 +13,24 @@ spec:
             - path:
                 type: PathPrefix
                 value: {{ .Values.authup.gatewayApi.path }}
-          {{- if ne .Values.authup.gatewayApi.path "/" }}
+          {{- $rewrite := ne .Values.authup.gatewayApi.path "/" }}
+          {{- $ngfSnip := .Values.global.flameHub.gatewayApi.nginxGatewayFabric.snippets }}
+          {{- if or $rewrite $ngfSnip }}
           filters:
+          {{- if $rewrite }}
             - type: URLRewrite
               urlRewrite:
                 path:
                   type: ReplacePrefixMatch
                   replacePrefixMatch: /
+          {{- end }}
+          {{- if $ngfSnip }}
+            - type: ExtensionRef
+              extensionRef:
+                group: gateway.nginx.org
+                kind: SnippetsFilter
+                name: {{ .Release.Name }}-authup-ngf-snippets
+          {{- end }}
           {{- end }}
           backendRefs:
             - name: {{ .Release.Name }}-authup-server-core

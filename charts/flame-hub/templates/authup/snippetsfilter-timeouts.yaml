@@ -1,0 +1,14 @@
+{{- if and .Values.global.flameHub.gatewayApi.nginxGatewayFabric.snippets (or .Values.global.flameHub.gatewayApi.enabled .Values.authup.gatewayApi.enabled) -}}
+apiVersion: gateway.nginx.org/v1alpha1
+kind: SnippetsFilter
+metadata:
+    name: {{ .Release.Name }}-authup-ngf-snippets
+    namespace: {{ .Release.Namespace }}
+spec:
+    snippets:
+        - context: http.server.location
+          value: |
+            proxy_buffer_size 16k;
+            proxy_buffers 4 16k;
+            proxy_busy_buffers_size 16k;
+{{- end }}

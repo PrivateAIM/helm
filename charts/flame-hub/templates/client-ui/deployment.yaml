@@ -26,10 +26,8 @@ spec:
             - containerPort: 3000
               protocol: TCP
           env:
-            {{- with .Values.clientUI.cookieDomain }}
               -   name: NUXT_PUBLIC_COOKIE_DOMAIN
-                  value: "{{- toString . | trim }}"
-            {{- end }}
+                  value: {{ default (include "flameHub.uiDomain" .) .Values.clientUI.cookieDomain | trim | quote }}
               -   name: NUXT_CORE_URL
                   value: "http://{{ .Release.Name }}-flame-hub-server-core:3000/"
               -   name: NUXT_PUBLIC_CORE_URL

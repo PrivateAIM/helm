@@ -14,7 +14,7 @@ spec:
                 type: PathPrefix
                 value: {{ .Values.serverStorage.gatewayApi.path }}
           {{- $rewrite := ne .Values.serverStorage.gatewayApi.path "/" }}
-          {{- $ngfSnip := eq (include "flameHub.gatewayApi.nginxSnippetsTimeouts" .) "true" }}
+          {{- $ngfSnip := .Values.global.flameHub.gatewayApi.nginxGatewayFabric.snippets }}
           {{- if or $rewrite $ngfSnip }}
           filters:
           {{- if $rewrite }}
@@ -29,7 +29,7 @@ spec:
               extensionRef:
                 group: gateway.nginx.org
                 kind: SnippetsFilter
-                name: {{ .Release.Name }}-flame-hub-server-storage-ngf-timeouts
+                name: {{ .Release.Name }}-flame-hub-server-storage-ngf-snippets
           {{- end }}
           {{- end }}
           {{- if not $ngfSnip }}

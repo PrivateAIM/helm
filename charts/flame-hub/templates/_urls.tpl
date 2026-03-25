@@ -80,6 +80,33 @@ telemetry publicURL
 {{- end -}}
 
 {{/*
+clientUI hostname / ui domain
+*/}}
+{{- define "flameHub.uiDomain" -}}
+{{- $hostname := "" -}}
+{{- if hasKey .Values "clientUI" -}}
+  {{- if .Values.clientUI.ingress.enabled -}}
+    {{- $hostname = .Values.clientUI.ingress.hostname -}}
+  {{- else if .Values.global.flameHub.ingress.enabled -}}
+    {{- $hostname = .Values.global.flameHub.ingress.hostname -}}
+  {{- else if or .Values.clientUI.gatewayApi.enabled .Values.global.flameHub.gatewayApi.enabled -}}
+    {{- $hostname = .Values.clientUI.gatewayApi.hostname | default .Values.global.flameHub.gatewayApi.hostname -}}
+  {{- end -}}
+{{- else -}}
+  {{- if .Values.global.flameHub.ingress.enabled -}}
+    {{- $hostname = .Values.global.flameHub.ingress.hostname -}}
+  {{- else if .Values.global.flameHub.gatewayApi.enabled -}}
+    {{- $hostname = .Values.global.flameHub.gatewayApi.hostname -}}
+  {{- end -}}
+{{- end -}}
+{{- if $hostname -}}
+{{- $hostname -}}
+{{- else -}}
+{{- fail "Hostname for UI domain is not defined!" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 authup publicURL
 */}}
 {{- define "authup.publicURL" -}}
