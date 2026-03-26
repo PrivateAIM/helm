@@ -1,0 +1,73 @@
+{{- $globalEnabled := .Values.global.flameHub.gatewayApi.enabled -}}
+{{- $harborEnabled := and .Values.harbor.enabled (not .Values.externalHarbor.enabled) (or $globalEnabled .Values.harbor.gatewayApi.enabled) -}}
+{{- $globalHostname := .Values.global.flameHub.gatewayApi.hostname -}}
+
+{{/* Collect unique hostnames from enabled services */}}
+{{- $seen := dict -}}
+{{- $listeners := list -}}
+{{- range $svc := list
+    (dict "name" "client-ui"         "enabled" (or $globalEnabled $.Values.clientUI.gatewayApi.enabled)         "hostname" $.Values.clientUI.gatewayApi.hostname)
+    (dict "name" "server-core"       "enabled" (or $globalEnabled $.Values.serverCore.gatewayApi.enabled)       "hostname" $.Values.serverCore.gatewayApi.hostname)
+    (dict "name" "server-messenger"  "enabled" (or $globalEnabled $.Values.serverMessenger.gatewayApi.enabled)  "hostname" $.Values.serverMessenger.gatewayApi.hostname)
+    (dict "name" "server-storage"    "enabled" (or $globalEnabled $.Values.serverStorage.gatewayApi.enabled)    "hostname" $.Values.serverStorage.gatewayApi.hostname)
+    (dict "name" "server-telemetry"  "enabled" (or $globalEnabled $.Values.serverTelemetry.gatewayApi.enabled)  "hostname" $.Values.serverTelemetry.gatewayApi.hostname)
+    (dict "name" "authup"            "enabled" (or $globalEnabled $.Values.authup.gatewayApi.enabled)            "hostname" $.Values.authup.gatewayApi.hostname)
+-}}
+{{- if $svc.enabled -}}
+{{- $h := $svc.hostname | default $globalHostname -}}
+{{- if not $h -}}
+{{- fail (printf "%s.gatewayApi.hostname or global.flameHub.gatewayApi.hostname is required when %s.gatewayApi.enabled=true" $svc.name $svc.name) -}}
+{{- end -}}
+{{- if not (hasKey $seen $h) -}}
+{{- $_ := set $seen $h true -}}
+{{- $listeners = append $listeners (dict "name" $svc.name "hostname" $h) -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{- if or (gt (len $listeners) 0) $harborEnabled -}}
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: {{ .Release.Name }}-flame-hub-gateway
+  {{- if .Values.global.flameHub.gatewayApi.gateway.annotations }}
+  annotations:
+    {{- range $key, $value := .Values.global.flameHub.gatewayApi.gateway.annotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+  {{- end }}
+spec:
+  gatewayClassName: {{ required "global.flameHub.gatewayApi.gateway.className is required when any gatewayApi is enabled" .Values.global.flameHub.gatewayApi.gateway.className }}
+  listeners:
+    {{- range $l := $listeners }}
+    {{- if $.Values.global.flameHub.gatewayApi.tls.enabled }}
+    {{- $_ := required (printf "global.flameHub.gatewayApi.tls.certificateRef is required when TLS is enabled for gateway listener %q" $l.name) $.Values.global.flameHub.gatewayApi.tls.certificateRef }}
+    {{- end }}
+    {{- include "flameHub.gatewayListeners" (dict "name" $l.name "hostname" $l.hostname "tls" $.Values.global.flameHub.gatewayApi.tls) | nindent 4 }}
+    {{- end }}
+    {{- if $harborEnabled }}
+    {{- $harborTls := dict "enabled" (coalesce .Values.harbor.gatewayApi.tls.enabled .Values.global.flameHub.gatewayApi.tls.enabled) "mode" (coalesce .Values.harbor.gatewayApi.tls.mode .Values.global.flameHub.gatewayApi.tls.mode) "certificateRef" (coalesce .Values.harbor.gatewayApi.tls.certificateRef .Values.global.flameHub.gatewayApi.tls.certificateRef) }}
+    {{- if $harborTls.enabled }}
+    {{- $_ := required "harbor.gatewayApi.tls.certificateRef (or global.flameHub.gatewayApi.tls.certificateRef) is required when TLS is enabled for gateway listener \"harbor\"" $harborTls.certificateRef }}
+    {{- end }}
+    {{- include "flameHub.gatewayListeners" (dict "name" "harbor" "hostname" (include "harbor.host" .) "tls" $harborTls) | nindent 4 }}
+    {{- end }}
+{{- if .Values.global.flameHub.gatewayApi.nginxGatewayFabric.snippets }}
+---
+apiVersion: gateway.nginx.org/v1alpha1
+kind: SnippetsPolicy
+metadata:
+  name: {{ .Release.Name }}-flame-hub-gateway-ngf-snippets
+  namespace: {{ .Release.Namespace }}
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: {{ .Release.Name }}-flame-hub-gateway
+  snippets:
+    - context: http
+      value: |
+        large_client_header_buffers 8 32k;
+        proxy_set_header Proxy "";
+{{- end }}
+{{- end }}

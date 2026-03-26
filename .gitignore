@@ -4,6 +4,7 @@
 node_modules
 values_*
 !charts/flame-hub/values_min.yaml
+!charts/flame-hub/values_min_gateway.yaml
 Chart.lock
 .monokle
 *.tgz
