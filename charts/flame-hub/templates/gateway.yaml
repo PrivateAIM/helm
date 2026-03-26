@@ -1,5 +1,5 @@
-{{- $harborEnabled := and .Values.harbor.enabled (not .Values.externalHarbor.enabled) .Values.harbor.gatewayApi.enabled -}}
 {{- $globalEnabled := .Values.global.flameHub.gatewayApi.enabled -}}
+{{- $harborEnabled := and .Values.harbor.enabled (not .Values.externalHarbor.enabled) (or $globalEnabled .Values.harbor.gatewayApi.enabled) -}}
 {{- $globalHostname := .Values.global.flameHub.gatewayApi.hostname -}}
 
 {{/* Collect unique hostnames from enabled services */}}
