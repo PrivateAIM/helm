@@ -62,7 +62,7 @@ clientUI:
     # Per-service gateway API route. Set hostname to override the global default.
     # For path-based routing, use the default paths below. For domain-based, set hostname and path: "/".
     gatewayApi:
-        enabled: false # global.flameHub.ingress.enabled also enables this
+        enabled: false # global.flameHub.gatewayApi.enabled also enables this
         hostname: "" # empty = global.flameHub.gatewayApi.hostname
         path: "/"
 
@@ -76,7 +76,7 @@ serverCore:
         className: ""
         annotations: {}
     gatewayApi:
-        enabled: false # global.flameHub.ingress.enabled also enables this
+        enabled: false # global.flameHub.gatewayApi.enabled also enables this
         hostname: "" # empty = global.flameHub.gatewayApi.hostname
         path: "/core"
     env:
@@ -92,7 +92,7 @@ serverMessenger:
         className: ""
         annotations: {}
     gatewayApi:
-        enabled: false # global.flameHub.ingress.enabled also enables this
+        enabled: false # global.flameHub.gatewayApi.enabled also enables this
         hostname: "" # empty = global.flameHub.gatewayApi.hostname
         path: "/messenger"
 
@@ -110,7 +110,7 @@ serverStorage:
             nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
             nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
     gatewayApi:
-        enabled: false # global.flameHub.ingress.enabled also enables this
+        enabled: false # global.flameHub.gatewayApi.enabled also enables this
         hostname: "" # empty = global.flameHub.gatewayApi.hostname
         path: "/storage"
 
@@ -129,7 +129,7 @@ serverTelemetry:
         subPathAnnotations:
             nginx.ingress.kubernetes.io/rewrite-target: /$2
     gatewayApi:
-        enabled: false # global.flameHub.ingress.enabled also enables this
+        enabled: false # global.flameHub.gatewayApi.enabled also enables this
         hostname: "" # empty = global.flameHub.gatewayApi.hostname
         path: "/telemetry"
         grafanaPath: "/grafana"
@@ -172,7 +172,7 @@ authup:
             nginx.ingress.kubernetes.io/proxy-buffers-number: "8"
             nginx.ingress.kubernetes.io/proxy-busy-buffers-size: "512k"
     gatewayApi:
-        enabled: false # global.flameHub.ingress.enabled also enables this
+        enabled: false # global.flameHub.gatewayApi.enabled also enables this
         hostname: "" # empty = global.flameHub.gatewayApi.hostname
         path: "/auth"
 
@@ -395,7 +395,7 @@ harbor:
     gatewayApi:
         # hostname is taken from externalURL
         # no option to set path, as harbor does not support it
-        enabled: false # global.flameHub.ingress.enabled also enables this
+        enabled: false # global.flameHub.gatewayApi.enabled also enables this
         tls:
             enabled: false
             mode: "Terminate"
