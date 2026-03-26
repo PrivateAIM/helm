@@ -1,11 +1,14 @@
 global:
   flameHub:
-    ingress:
-      # enable this ingress for path based routing
-      # alternatively you can enable ingress for each Hub service individually (subdomain-based routing)
-      # see the values.yaml for more details and examples
+    gatewayApi:
+      # enable gateway API for all services
       enabled: true
       hostname: "hub.local"
+      gateway:
+        className: "nginx" # Must match your GatewayClass name
+      # enable snippets for timeout/body-size configuration (requires NGINX Gateway Fabric)
+      nginxGatewayFabric:
+        snippets: true
 
 authup:
   publicURL: "https://hub.local"
@@ -20,6 +23,9 @@ grafana:
 
 harbor:
   enabled: true
+  # Harbor requires its own hostname with Gateway API
+  gatewayApi:
+    enabled: true
   # Specify a default Harbor admin password for local testing
   adminPassword: "" # Leave empty for auto-generation
   externalURL: "https://harbor.hub.local/" # don't forget https://
