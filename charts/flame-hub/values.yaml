@@ -39,7 +39,7 @@ global:
             # Requires snippets to be enabled in your NGINX Gateway Fabric install.
             # (NGINX Gateway Fabric does not support annotations.)
             nginxGatewayFabric:
-                snippets: true
+                snippets: false
 
 image:
     registry: ghcr.io

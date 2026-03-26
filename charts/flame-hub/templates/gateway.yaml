@@ -40,10 +40,16 @@ spec:
   gatewayClassName: {{ required "global.flameHub.gatewayApi.gateway.className is required when any gatewayApi is enabled" .Values.global.flameHub.gatewayApi.gateway.className }}
   listeners:
     {{- range $l := $listeners }}
+    {{- if $.Values.global.flameHub.gatewayApi.tls.enabled }}
+    {{- $_ := required (printf "global.flameHub.gatewayApi.tls.certificateRef is required when TLS is enabled for gateway listener %q" $l.name) $.Values.global.flameHub.gatewayApi.tls.certificateRef }}
+    {{- end }}
     {{- include "flameHub.gatewayListeners" (dict "name" $l.name "hostname" $l.hostname "tls" $.Values.global.flameHub.gatewayApi.tls) | nindent 4 }}
     {{- end }}
     {{- if $harborEnabled }}
     {{- $harborTls := dict "enabled" (coalesce .Values.harbor.gatewayApi.tls.enabled .Values.global.flameHub.gatewayApi.tls.enabled) "mode" (coalesce .Values.harbor.gatewayApi.tls.mode .Values.global.flameHub.gatewayApi.tls.mode) "certificateRef" (coalesce .Values.harbor.gatewayApi.tls.certificateRef .Values.global.flameHub.gatewayApi.tls.certificateRef) }}
+    {{- if $harborTls.enabled }}
+    {{- $_ := required "harbor.gatewayApi.tls.certificateRef (or global.flameHub.gatewayApi.tls.certificateRef) is required when TLS is enabled for gateway listener \"harbor\"" $harborTls.certificateRef }}
+    {{- end }}
     {{- include "flameHub.gatewayListeners" (dict "name" "harbor" "hostname" (include "harbor.host" .) "tls" $harborTls) | nindent 4 }}
     {{- end }}
 {{- if .Values.global.flameHub.gatewayApi.nginxGatewayFabric.snippets }}
