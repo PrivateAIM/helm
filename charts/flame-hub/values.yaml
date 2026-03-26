@@ -516,3 +516,13 @@ harbor:
 externalHarbor:
     enabled: false
     URL: ""
+
+# FLAME Node chart distribution
+# When enabled, a post-install/post-upgrade Job downloads the flame-node chart
+# from GitHub releases and pushes it to the Hub's Harbor registry so that
+# Nodes without internet access can pull it.
+flameNode:
+    provideChartForNode: false
+    chartVersion: "0.0.10"
+    githubRepo: "PrivateAIM/helm"
+    harborProject: "library"
