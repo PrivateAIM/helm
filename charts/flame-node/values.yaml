@@ -1099,7 +1099,13 @@ victoria-logs:
       size: 20Gi
 
     ingress:
-      enabled: true
+      enabled: '{{ .Values.global.node.ingress.enabled | default false }}'
+      hosts:
+        - name: '{{ regexReplaceAll "^https?://(.*)" (include "node.ingress.hostname" .) "${1}" }}'
+          path: /events(/|$)(.*)
+      annotations:
+        nginx.ingress.kubernetes.io/use-regex: "true"
+        nginx.ingress.kubernetes.io/rewrite-target: /$2
 
   vector:
     enabled: true
