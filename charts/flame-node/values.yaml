@@ -86,13 +86,13 @@ certificateConfigMap: ""
 hub:
   endpoints:
     ## @param hub.endpoints.core Hub core API endpoint
-    core: https://core.privateaim.dev
+    core: https://staging-core.privateaim.net
     ## @param hub.endpoints.auth Hub auth API endpoint
-    auth: https://auth.privateaim.dev
+    auth: https://staging-auth.privateaim.net
     ## @param hub.endpoints.messenger Hub messenger API endpoint. Overrides broker.HUB_BASE_URL if provided
-    messenger: https://messenger.privateaim.dev
+    messenger: https://staging-messenger.privateaim.net
     ## @param hub.endpoints.storage Hub storage API endpoint
-    storage: https://storage.privateaim.dev
+    storage: https://staging-storage.privateaim.net
   ## Credentials used for retrieving a valid token from the hub using a robot account
   auth:
     clientID:

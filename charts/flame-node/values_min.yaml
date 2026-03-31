@@ -9,8 +9,8 @@ global:
 hub:
   ## Credentials used for retrieving a valid token from the hub using a robot account
   auth:
-    robotUser:
-    robotSecret:
+    clientID:
+    clientSecret:
   ## Values required by the storage service for encrypting intermediate results sent to the Hub
   crypto:
     ## @param hub.crypto.privateKey Content of the private key to be added to the secret. Need to use the "|" scalar:
