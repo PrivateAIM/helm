@@ -138,6 +138,10 @@ serverCoreWorker:
     enabled: true
     # Use a docker-in-docker sidecar container instead of mounting the docker socket from the host
     useSidecarDinD: true
+    persistence:
+        size: "100Gi"
+        # See /charts/third-party/openebs for details
+        # storageClass: "mayastor-replicated"
 
 # Credentials configuration
 auth:
