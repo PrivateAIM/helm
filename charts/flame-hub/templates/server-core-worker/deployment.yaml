@@ -6,6 +6,8 @@ metadata:
     app: "{{ .Release.Name }}-flame-hub-server-core-worker"
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: "{{ .Release.Name }}-flame-hub-server-core-worker"
