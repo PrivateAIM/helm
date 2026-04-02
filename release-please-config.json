@@ -20,7 +20,14 @@
     "charts/third-party/authup": {
       "component": "authup",
       "release-type": "helm",
-      "skip-github-release": true
+      "skip-github-release": true,
+      "extra-files": [
+        {
+          "type": "yaml",
+          "path": "charts/flame-hub/Chart.yaml",
+          "jsonpath": "$.dependencies[?(@.name=='authup')].version"
+        }
+      ]
     }
   },
   "plugins": [
