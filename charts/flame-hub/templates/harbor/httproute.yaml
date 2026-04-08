@@ -1,0 +1,67 @@
+{{/* Harbor route is independent since it always needs its own hostname. */}}
+{{- if and .Values.harbor.enabled (not .Values.externalHarbor.enabled) -}}
+{{- if or .Values.global.flameHub.gatewayApi.enabled .Values.harbor.gatewayApi.enabled -}}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+    name: {{ .Release.Name }}-harbor
+spec:
+    parentRefs:
+        - name: {{ .Release.Name }}-flame-hub-gateway
+    hostnames:
+        - {{ include "harbor.host" . | quote }}
+    rules:
+        - matches:
+            - path:
+                type: PathPrefix
+                value: /api/
+            - path:
+                type: PathPrefix
+                value: /service/
+            - path:
+                type: PathPrefix
+                value: /v2
+            - path:
+                type: PathPrefix
+                value: /chartrepo/
+            - path:
+                type: PathPrefix
+                value: /c/
+          {{- if .Values.global.flameHub.gatewayApi.nginxGatewayFabric.snippets }}
+          filters:
+            - type: ExtensionRef
+              extensionRef:
+                group: gateway.nginx.org
+                kind: SnippetsFilter
+                name: {{ .Release.Name }}-harbor-ngf-snippets
+          {{- end }}
+          {{- if not .Values.global.flameHub.gatewayApi.nginxGatewayFabric.snippets }}
+          timeouts:
+              request: 900s
+              backendRequest: 900s
+          {{- end }}
+          backendRefs:
+            - name: {{ .Release.Name }}-harbor-core
+              port: 80
+        - matches:
+            - path:
+                type: PathPrefix
+                value: /
+          {{- if .Values.global.flameHub.gatewayApi.nginxGatewayFabric.snippets }}
+          filters:
+            - type: ExtensionRef
+              extensionRef:
+                group: gateway.nginx.org
+                kind: SnippetsFilter
+                name: {{ .Release.Name }}-harbor-ngf-snippets
+          {{- end }}
+          {{- if not .Values.global.flameHub.gatewayApi.nginxGatewayFabric.snippets }}
+          timeouts:
+              request: 900s
+              backendRequest: 900s
+          {{- end }}
+          backendRefs:
+            - name: {{ .Release.Name }}-harbor-portal
+              port: 80
+{{- end }}
+{{- end }}

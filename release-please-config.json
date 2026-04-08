@@ -10,7 +10,14 @@
     "charts/flame-hub": {
       "component": "flame-hub",
       "release-type": "helm",
-      "skip-github-release": true
+      "skip-github-release": true,
+      "extra-files": [
+        {
+          "type": "yaml",
+          "path": "Chart.yaml",
+          "jsonpath": "$.dependencies[?(@.name=='authup')].version"
+        }
+      ]
     },
     "charts/flame-node": {
       "component": "flame-node",

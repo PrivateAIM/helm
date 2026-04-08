@@ -101,9 +101,9 @@ spec:
               value: {{ .Values.hub.endpoints.core | default "https://core.privateaim.dev" | quote }}
             - name: HUB_AUTH_SERVICE_URL
               value: {{ .Values.hub.endpoints.auth | default "https://auth.privateaim.dev" | quote }}
-            - name: AUTOSTART
+            - name: AUTOSTART__ENABLED
               value: {{ .Values.autostart.enabled | default "false" | quote }}
-            - name: AUTOSTART_INTERVAL
+            - name: AUTOSTART__INTERVAL
               value: {{ .Values.autostart.interval | default "60" | quote }}
             - name: ROLE_CLAIM_NAME
               value: {{ .Values.rbac.roleClaimName | default "" | quote }}
@@ -136,13 +136,13 @@ spec:
             - name: EXTRA_CA_CERTS
               value: "/mnt/certs/certs.pem"
             {{- end }}
-            - name: HUB_ROBOT_USER
-              value: {{ required "A robot ID for the Hub is required." .Values.hub.auth.robotUser | quote }}  # To be properly filled in
-            - name: HUB_ROBOT_SECRET
+            - name: HUB_NODE_CLIENT_ID
+              value: {{ required "A client ID for the Hub is required." .Values.hub.auth.clientID | quote }}
+            - name: HUB_NODE_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
                   name: {{ include "hub.secretName" . }}
-                  key: robotSecret
+                  key: clientSecret
             {{- with .Values.hubAdapter.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}

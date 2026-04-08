@@ -1,0 +1,41 @@
+{{- if or .Values.global.flameHub.gatewayApi.enabled .Values.serverTelemetry.gatewayApi.enabled -}}
+{{- $hostname := .Values.serverTelemetry.gatewayApi.hostname | default .Values.global.flameHub.gatewayApi.hostname -}}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+    name: {{ .Release.Name }}-flame-hub-server-telemetry
+spec:
+    parentRefs:
+        - name: {{ .Release.Name }}-flame-hub-gateway
+    hostnames:
+        - {{ $hostname | quote }}
+    rules:
+        - matches:
+            - path:
+                type: PathPrefix
+                value: {{ .Values.serverTelemetry.gatewayApi.grafanaPath }}
+          filters:
+            - type: URLRewrite
+              urlRewrite:
+                path:
+                  type: ReplacePrefixMatch
+                  replacePrefixMatch: /
+          backendRefs:
+            - name: {{ .Release.Name }}-grafana
+              port: 3000
+        - matches:
+            - path:
+                type: PathPrefix
+                value: {{ .Values.serverTelemetry.gatewayApi.path }}
+          {{- if ne .Values.serverTelemetry.gatewayApi.path "/" }}
+          filters:
+            - type: URLRewrite
+              urlRewrite:
+                path:
+                  type: ReplacePrefixMatch
+                  replacePrefixMatch: /
+          {{- end }}
+          backendRefs:
+            - name: {{ .Release.Name }}-flame-hub-server-telemetry
+              port: 3000
+{{- end }}

@@ -73,3 +73,48 @@ Create the name of the service account to use
 {{ .Values.auth.secretName }}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Validate ingress mode: global path-based ingress and individual service ingresses are mutually exclusive.
+*/}}
+{{- define "flameHub.validateIngressMode" -}}
+{{- $globalIngressEnabled := .Values.global.flameHub.ingress.enabled -}}
+{{- $individualIngressEnabled := or
+    .Values.clientUI.ingress.enabled
+    .Values.serverCore.ingress.enabled
+    .Values.serverMessenger.ingress.enabled
+    .Values.serverStorage.ingress.enabled
+    .Values.serverTelemetry.ingress.enabled
+    .Values.authup.ingress.enabled
+-}}
+{{- if and $globalIngressEnabled $individualIngressEnabled -}}
+{{- fail "Ingress configuration is mutually exclusive: disable global.flameHub.ingress.enabled or disable individual service ingress settings (clientUI, serverCore, serverMessenger, serverStorage, serverTelemetry, authup)." -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Generate a pair of HTTP (+ optional HTTPS) gateway listeners for a given name and hostname.
+Expects a dict with keys: name, hostname, tls (the global TLS config dict).
+*/}}
+{{- define "flameHub.gatewayListeners" -}}
+- name: {{ .name }}-http
+  hostname: {{ .hostname | quote }}
+  protocol: HTTP
+  port: 80
+  allowedRoutes:
+    namespaces:
+      from: Same
+{{- if .tls.enabled }}
+- name: {{ .name }}-https
+  hostname: {{ .hostname | quote }}
+  protocol: HTTPS
+  port: 443
+  tls:
+    mode: {{ .tls.mode | default "Terminate" }}
+    certificateRefs:
+      - name: {{ .tls.certificateRef }}
+  allowedRoutes:
+    namespaces:
+      from: Same
+{{- end }}
+{{- end -}}
