@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+    name: "{{ .Release.Name }}-flame-hub-server-core-worker"
+    labels:
+        app: "{{ .Release.Name }}-flame-hub-server-core-worker"
+spec:
+    accessModes:
+        - ReadWriteOnce
+    resources:
+        requests:
+            storage: {{ .Values.serverCoreWorker.persistence.size | quote }}
+    {{- if .Values.serverCoreWorker.persistence.storageClass }}
+    storageClassName: {{ .Values.serverCoreWorker.persistence.storageClass | quote }}
+    {{- end }}

@@ -54,6 +54,13 @@ autostart:
   ## @param autostart.interval How often (in seconds) the Hub Adapter will probe the Hub for new analyses
   interval: 60
 
+keycloak:
+  secretSync:
+    ## @param keycloak.secretSync.skip Set to true to disable the post-install/post-upgrade Job that syncs
+    ## client secrets from Keycloak's database with the K8s Secret via the keycloak Admin API.
+    ## Only disable this if you are managing Keycloak client secrets out-of-band.
+    skip: false
+
 ## For defining ingress specific metadata
 ingress:
   ## @param ingress.enabled Enable ingress record generation for the Node UI
@@ -86,13 +93,13 @@ certificateConfigMap: ""
 hub:
   endpoints:
     ## @param hub.endpoints.core Hub core API endpoint
-    core: https://core.privateaim.dev
+    core: https://staging-core.privateaim.net
     ## @param hub.endpoints.auth Hub auth API endpoint
-    auth: https://auth.privateaim.dev
+    auth: https://staging-auth.privateaim.net
     ## @param hub.endpoints.messenger Hub messenger API endpoint. Overrides broker.HUB_BASE_URL if provided
-    messenger: https://messenger.privateaim.dev
+    messenger: https://staging-messenger.privateaim.net
     ## @param hub.endpoints.storage Hub storage API endpoint
-    storage: https://storage.privateaim.dev
+    storage: https://staging-storage.privateaim.net
   ## Credentials used for retrieving a valid token from the hub using a robot account
   auth:
     clientID:
@@ -674,6 +681,11 @@ messageBroker:
 
 ui:
   env: production
+
+  ## @param nuxtAuthSecret Used for encrypting JWTs, if not set, then a rolling restart is issued for Node UI
+  ## deployment with every upgrade
+  ## Can be generated with `openssl rand -base64 32`
+  nuxtAuthSecret: ""
 
   ## Keycloak related information
   idp:

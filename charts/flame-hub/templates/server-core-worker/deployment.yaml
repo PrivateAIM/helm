@@ -6,6 +6,8 @@ metadata:
     app: "{{ .Release.Name }}-flame-hub-server-core-worker"
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: "{{ .Release.Name }}-flame-hub-server-core-worker"
@@ -85,10 +87,16 @@ spec:
           volumeMounts:
               -   name: "{{ .Release.Name }}-docker-sidecar-socket"
                   mountPath: /var/run
+              -   name: "{{ .Release.Name }}-flame-hub-server-core-worker"
+                  mountPath: /usr/src/project/packages/server-core-worker/writable
+                  subPath: project
           {{- else }}
           volumeMounts:
               -   mountPath: "/var/run/docker.sock"
                   name: "{{ .Release.Name }}-flame-hub-server-core-worker-docker-volume"
+              -   name: "{{ .Release.Name }}-flame-hub-server-core-worker"
+                  mountPath: /usr/src/project/packages/server-core-worker/writable
+                  subPath: project
           securityContext:
               privileged: true
           {{- end }}
@@ -132,15 +140,17 @@ spec:
           args: ["--mtu", "1350"]
           {{- end }}
           volumeMounts:
-            - name: "{{ .Release.Name }}-docker-sidecar-graph-storage"
+            - name: "{{ .Release.Name }}-flame-hub-server-core-worker"
               mountPath: /var/lib/docker
+              subPath: dind
             - name: "{{ .Release.Name }}-docker-sidecar-socket"
               mountPath: /var/run
         {{- end }}
       volumes:
+          - name: "{{ .Release.Name }}-flame-hub-server-core-worker"
+            persistentVolumeClaim:
+              claimName: "{{ .Release.Name }}-flame-hub-server-core-worker"
           {{- if .Values.serverCoreWorker.useSidecarDinD }}
-          - name: "{{ .Release.Name }}-docker-sidecar-graph-storage"
-            emptyDir: {}
           - name: "{{ .Release.Name }}-docker-sidecar-socket"
             emptyDir: {}
           {{- else }}

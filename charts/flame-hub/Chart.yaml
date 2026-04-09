@@ -54,4 +54,4 @@ dependencies:
 
   - name: authup
     repository: file://../third-party/authup
-    version: 0.0.10
+    version: 0.0.11
