@@ -682,6 +682,11 @@ messageBroker:
 ui:
   env: production
 
+  ## @param nuxtAuthSecret Used for encrypting JWTs, if not set, then a rolling restart is issued for Node UI
+  ## deployment with every upgrade
+  ## Can be generated with `openssl rand -base64 32`
+  nuxtAuthSecret: ""
+
   ## Keycloak related information
   idp:
     ## @param idp.debug If true, the clientId and clientSecret will use pre-defined values
