@@ -54,6 +54,13 @@ autostart:
   ## @param autostart.interval How often (in seconds) the Hub Adapter will probe the Hub for new analyses
   interval: 60
 
+keycloak:
+  secretSync:
+    ## @param keycloak.secretSync.skip Set to true to disable the post-install/post-upgrade Job that syncs
+    ## client secrets from Keycloak's database with the K8s Secret via the keycloak Admin API.
+    ## Only disable this if you are managing Keycloak client secrets out-of-band.
+    skip: false
+
 ## For defining ingress specific metadata
 ingress:
   ## @param ingress.enabled Enable ingress record generation for the Node UI

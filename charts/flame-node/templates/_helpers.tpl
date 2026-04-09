@@ -250,28 +250,6 @@ Create valid redirect URIs for keycloak i.e. http & https
 {{- printf "[ \"https://%s/*\", \"http://%s/*\" ]" $hostnameStripped $hostnameStripped -}}
 {{- end -}}
 
-{{/*
-Generate a stable NUXT_AUTH_SECRET for the node-ui, persisted in the keycloak-client-secrets Secret.
-Uses lookup to preserve the value across upgrades.
-*/}}
-{{- define "ui.nuxtAuthSecret" -}}
-{{- $secretName := printf "%s-keycloak-client-secrets" .Release.Name -}}
-{{- $secretKey := "nuxtAuthSecret" -}}
-{{- $secret := (lookup "v1" "Secret" .Release.Namespace $secretName) -}}
-{{- if and $secret (hasKey $secret.data $secretKey) }}
-    {{- index $secret.data $secretKey }}
-{{- else }}
-    {{- if not (index .Release "nuxt_secret") -}}
-        {{-   $_ := set .Release "nuxt_secret" dict -}}
-    {{- end -}}
-    {{- $key := printf "%s_%s" .Release.Name "nuxt_auth_secret" -}}
-    {{- if not (index .Release.nuxt_secret $key) -}}
-        {{-   $_ := set .Release.nuxt_secret $key (randAlphaNum 32) -}}
-    {{- end -}}
-    {{- print (index .Release.nuxt_secret $key | b64enc) -}}
-{{- end }}
-{{- end -}}
-
 {{/*Hub Adapter helpers*/}}
 
 {{/*
