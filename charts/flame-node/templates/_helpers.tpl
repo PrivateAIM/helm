@@ -68,7 +68,7 @@ Return the service route for the internal keycloak instance"
 Return the endpoint for the internal keycloak instance with the (cleaned) relative path e.g. "/keycloak"
 */}}
 {{- define "keycloak.base.endpoint" -}}
-{{- printf "http://%s:80/keycloak" (include "keycloak.svc.route" .) -}}
+{{- printf "http://%s:80%s" (include "keycloak.svc.route" .) .Values.keycloakx.http.relativePath -}}
 {{- end -}}
 
 {{/*
@@ -97,7 +97,7 @@ Return the user IDP hostname
         {{- printf "http://%s" .Values.userIdp.hostname -}}
     {{- end -}}
 {{- else if and $hostname (or .Values.global.node.ingress.enabled .Values.ingress.enabled) (not (contains "localhost" $hostname)) -}}
-    {{- printf "%s/keycloak/realms/flame" $hostname -}}
+    {{- printf "%s%s/realms/flame" $hostname .Values.keycloakx.http.relativePath -}}
 {{- end -}}
 {{- end -}}
 
@@ -144,7 +144,7 @@ Return the endpoint for user authentication
 {{- if (include "userIdp.hostname" .) -}}
     {{- print (include "userIdp.hostname" .) -}}
 {{- else -}}
-    {{- print "http://localhost:8080/keycloak/realms/flame" -}}
+    {{- printf "http://localhost:8080%s/realms/flame" .Values.keycloakx.http.relativePath -}}
 {{- end -}}
 {{- end -}}
 
@@ -248,6 +248,28 @@ Create valid redirect URIs for keycloak i.e. http & https
 {{- define "ui.keycloak.redirectUris" -}}
 {{- $hostnameStripped := regexReplaceAll "^https?://(.*)" (include "node.ingress.hostname" .) "${1}" -}}
 {{- printf "[ \"https://%s/*\", \"http://%s/*\" ]" $hostnameStripped $hostnameStripped -}}
+{{- end -}}
+
+{{/*
+Generate a stable NUXT_AUTH_SECRET for the node-ui, persisted in the keycloak-client-secrets Secret.
+Uses lookup to preserve the value across upgrades.
+*/}}
+{{- define "ui.nuxtAuthSecret" -}}
+{{- $secretName := printf "%s-keycloak-client-secrets" .Release.Name -}}
+{{- $secretKey := "nuxtAuthSecret" -}}
+{{- $secret := (lookup "v1" "Secret" .Release.Namespace $secretName) -}}
+{{- if and $secret (hasKey $secret.data $secretKey) }}
+    {{- index $secret.data $secretKey }}
+{{- else }}
+    {{- if not (index .Release "nuxt_secret") -}}
+        {{-   $_ := set .Release "nuxt_secret" dict -}}
+    {{- end -}}
+    {{- $key := printf "%s_%s" .Release.Name "nuxt_auth_secret" -}}
+    {{- if not (index .Release.nuxt_secret $key) -}}
+        {{-   $_ := set .Release.nuxt_secret $key (randAlphaNum 32) -}}
+    {{- end -}}
+    {{- print (index .Release.nuxt_secret $key | b64enc) -}}
+{{- end }}
 {{- end -}}
 
 {{/*Hub Adapter helpers*/}}

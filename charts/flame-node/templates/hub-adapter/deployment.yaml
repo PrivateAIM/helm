@@ -50,7 +50,7 @@ spec:
             - sh
             - -c
             - |
-              until curl -sf {{ include "keycloak.svc.route" . }}:9000/keycloak/health/ready; do
+              until curl -sf {{ include "keycloak.svc.route" . }}:9000{{ .Values.keycloakx.http.relativePath }}/health/ready; do
                 echo "Waiting for Keycloak..."
                 sleep 5
               done
