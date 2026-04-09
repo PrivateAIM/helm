@@ -56,6 +56,15 @@ Return the secret containing the hub robot secret
 {{- end -}}
 {{- end -}}
 
+{{- define "keycloak.relativePath.normalized" -}}
+{{- $path := .Values.keycloakx.http.relativePath | default "/" -}}
+{{- if eq $path "/" -}}
+{{- print "" -}}
+{{- else -}}
+{{- printf "/%s" (trimAll "/" $path) -}}
+{{- end -}}
+{{- end -}}
+
 {{/*
 Return the service route for the internal keycloak instance"
 */}}
@@ -68,7 +77,7 @@ Return the service route for the internal keycloak instance"
 Return the endpoint for the internal keycloak instance with the (cleaned) relative path e.g. "/keycloak"
 */}}
 {{- define "keycloak.base.endpoint" -}}
-{{- printf "http://%s:80/keycloak" (include "keycloak.svc.route" .) -}}
+{{- printf "http://%s:80%s" (include "keycloak.svc.route" .) (include "keycloak.relativePath.normalized" .) -}}
 {{- end -}}
 
 {{/*
@@ -97,7 +106,7 @@ Return the user IDP hostname
         {{- printf "http://%s" .Values.userIdp.hostname -}}
     {{- end -}}
 {{- else if and $hostname (or .Values.global.node.ingress.enabled .Values.ingress.enabled) (not (contains "localhost" $hostname)) -}}
-    {{- printf "%s/keycloak/realms/flame" $hostname -}}
+    {{- printf "%s%s/realms/flame" $hostname (include "keycloak.relativePath.normalized" .) -}}
 {{- end -}}
 {{- end -}}
 
@@ -144,7 +153,7 @@ Return the endpoint for user authentication
 {{- if (include "userIdp.hostname" .) -}}
     {{- print (include "userIdp.hostname" .) -}}
 {{- else -}}
-    {{- print "http://localhost:8080/keycloak/realms/flame" -}}
+    {{- printf "http://localhost:8080%s/realms/flame" (include "keycloak.relativePath.normalized" .) -}}
 {{- end -}}
 {{- end -}}
 
