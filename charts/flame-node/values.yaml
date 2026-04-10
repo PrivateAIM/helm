@@ -1,15 +1,21 @@
-global:
-  node:
-    ## @param global.node.hostname Host name to be assigned to the Node UI (/) and Hub Adapter API (/api) and keycloak (/keycloak)  
-    ## This overrides ingress.hostname or gateway.hostname and is also supplied to the bundled keycloak helm chart
-    hostname:
-    ingress:
-      ## @param global.node.ingress.enabled Toggle whether ingress should be enabled
-      ## This overrides ingress.enabled
-      enabled: false
-    ## For defining gateway specific metadata
-    gateway:
-      enabled: false
+## @param expose.type Routing mode. One of 'ingress' (Kubernetes Ingress API), 'gateway' (Kubernetes Gateway API), or 'none' (no external routing)
+expose:
+  type: none
+  ## @param expose.hostname Hostname for all node components (UI, Hub Adapter, Keycloak). Include scheme if desired (e.g. https://node.example.com)
+  hostname: ""
+  tls:
+    ## @param expose.tls.secretName Name of the TLS secret (only applies when expose.type is 'ingress')
+    secretName: ""
+  ingress:
+    ## @param expose.ingress.className IngressClass name (only applies when expose.type is 'ingress')
+    className: ""
+    ## @param expose.ingress.annotations Additional annotations for Ingress resources
+    annotations: {}
+    ## @param expose.ingress.pathType Ingress path type
+    pathType: ImplementationSpecific
+  gateway:
+    ## @param expose.gateway.gatewayClassName GatewayClass name (only applies when expose.type is 'gateway')
+    gatewayClassName: nginx
 
 ## @param offline Forces the UI and hub adapter to use the internal service endpoint for authentication
 ## this is useful for when you are using a locally resolveable domain i.e. localhost or similar as defined in /etc/hosts
@@ -64,29 +70,7 @@ keycloak:
     ## Only disable this if you are managing Keycloak client secrets out-of-band.
     skip: false
 
-## For defining ingress specific metadata
-ingress:
-  ## @param ingress.enabled Enable ingress record generation for the Node UI
-  ## You should generally use global.node.ingress.enabled instead
-  enabled: false
-  ## @param ingress.hostname Default host for the ingress record (evaluated as template)
-  ## You should generally use global.node.hostname instead
-  hostname: ""
-  ## @param ingress.pathType Ingress path type
-  pathType: ImplementationSpecific
-  ## @param ingress.path Default file path for the ingress hostname
-  path: /
-  ## @param ingress.annotations Additional annotations for the Ingress resource
-  annotations: {}
-  ## @param ingress.className IngressClass that will be be used to implement the Ingress (Kubernetes 1.18+)
-  className: ""
-  # @param ingress.tlsSecretName Specify a tls secret to enable TLS for the given hostname
-  tlsSecretName: ""
 
-gateway:
-  enabled: false
-  hostname: ""
-  gatewayClassName: nginx
 
 ## Add Custom CA certificate(s)
 ## @param certificateConfigMap Name of an existing ConfigMap that contains additional CA certificates
@@ -310,13 +294,6 @@ keycloakx:
 
   # Additional environment variables for Keycloak
   extraEnv: |
-    {{- if .Values.global.node.hostname }}
-    - name: KC_HOSTNAME
-      value: '{{ printf "%s%s" (tpl .Values.global.node.hostname $ | trimSuffix "/") .Values.http.relativePath }}'
-    {{- else }}
-    - name: KC_HOSTNAME
-      value: '{{ printf "http://localhost:8080/%s" .Values.http.relativePath }}'
-    {{- end }}
     - name: JAVA_OPTS_APPEND
       value: >-
         -Djgroups.dns.query={{ include "keycloak.fullname" . }}-headless
@@ -349,31 +326,13 @@ keycloakx:
   extraEnvFrom: |
     - secretRef:
         name: flame-keycloak-credentials-secret
+    - configMapRef:
+        name: {{ .Release.Name }}-keycloak-env
 
   ingress:
-    enabled: true
-    rules:
-      - # Ingress host
-        host: '{{ regexReplaceAll "^https?://(.*)" (tpl (coalesce .Values.global.node.hostname .Values.ingress.hostname "localhost") $) "${1}" | trimSuffix "/" }}'
-        paths:
-          - path: '{{ tpl .Values.http.relativePath $ | trimSuffix "/" }}/'
-            pathType: ImplementationSpecific
-
-    # TLS configuration
-    tls: [] # Must be set to empty if no TLS present otherwise will initialize with default example host
-
+    enabled: false
     console:
-      # If `true`, an Ingress is created for console path only
-      enabled: true
-      rules:
-        - # Ingress host
-          host: '{{ regexReplaceAll "^https?://(.*)" (tpl (coalesce .Values.global.node.hostname .Values.ingress.hostname "localhost") $) "${1}" | trimSuffix "/" }}'
-          paths:
-            - path: '{{ tpl .Values.http.relativePath $ | trimSuffix "/" }}/admin'
-              pathType: ImplementationSpecific
-
-      # Console TLS configuration KlpndHhf8K0Aj2R7JmNlSE2a7XJcSKPV
-      tls: []
+      enabled: false
 
 # hub-api-adapter Values
 hubAdapter:
