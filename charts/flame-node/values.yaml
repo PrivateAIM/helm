@@ -1139,21 +1139,27 @@ victoria-logs:
           source: |
             .log = parse_json(.message) ?? .message
             del(.message)
-            level, err = parse_regex(.log, r'(?:\[(?P<bracketed>DEBUG|INFO|WARNING|ERROR|CRITICAL)\]|^(?P<prefixed>DEBUG|INFO|WARNING|ERROR|CRITICAL):)')
-            if err == null {
-              if level.bracketed != null {
-                .level = level.bracketed
-              } else {
-                .level = level.prefixed
-              }
+            spring_level, spring_err = parse_regex(.log, r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+[+-]\d{2}:\d{2}\s+(?P<level>TRACE|DEBUG|INFO|WARN|WARNING|ERROR|FATAL)\s+\d+\s+---')
+            if spring_err == null {
+              .level = spring_level.level
             } else {
-              spring_level, spring_err = parse_regex(.log, r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+[+-]\d{2}:\d{2}\s+(?P<level>TRACE|DEBUG|INFO|WARN|WARNING|ERROR|FATAL)\s+\d+\s+---')
-              if spring_err == null {
-                .level = spring_level.level
+              keycloak_level, keycloak_err = parse_regex(.log, r'^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2},\d+\s+(?P<level>TRACE|DEBUG|INFO|WARN|WARNING|ERROR|FATAL)\s+')
+              if keycloak_err == null {
+                .level = keycloak_level.level
               } else {
-                keycloak_level, keycloak_err = parse_regex(.log, r'^\w+\s+\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2},\d+\s+(?P<level>TRACE|DEBUG|INFO|WARN|WARNING|ERROR|FATAL)\s+')
-                if keycloak_err == null {
-                  .level = keycloak_level.level
+                ha_level, ha_err = parse_regex(.log, r'^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}\s+\[(?P<level>TRACE|DEBUG|INFO|WARN|WARNING|ERROR|FATAL)\]')
+                if ha_err == null {
+                  .level = ha_level.level
+                } else {
+                  analysis_level, analysis_err = parse_regex(.log, r'^\[flame\s+--\s+(?P<level>TRACE|DEBUG|INFO|WARN|WARNING|ERROR|FATAL)\s+--')
+                  if analysis_err == null {
+                    .level = analysis_level.level
+                  } else {
+                    uvicorn_level, uvicorn_err = parse_regex(.log, r'^(?P<level>TRACE|DEBUG|INFO|WARN|WARNING|ERROR|FATAL|CRITICAL):\s')
+                    if uvicorn_err == null {
+                      .level = uvicorn_level.level
+                    }
+                  }
                 }
               }
             }
