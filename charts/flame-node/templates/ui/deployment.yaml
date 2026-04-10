@@ -83,7 +83,7 @@ spec:
                   name: {{ include "ui.keycloak.secretName" . }}
                   key: {{ include "ui.keycloak.secretKey" . }}
             - name: NUXT_AUTH_SECRET
-              value: {{ randAlphaNum 32 | b64enc }}
+              value: {{ .Values.ui.nuxtAuthSecret | default (randAlphaNum 32) | b64enc }}
             {{- if $hasCerts }}
             - name: NODE_EXTRA_CA_CERTS
               value: "/mnt/certs/certs.pem"
