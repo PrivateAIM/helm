@@ -10,3 +10,4 @@ Chart.lock
 *.tgz
 !charts/flame-node/flame-node-data-store/charts/*.tgz
 *.pem
+docs/

@@ -55,7 +55,7 @@ spec:
                 sleep 5
               done
       containers:
-        - name: api-gateway
+        - name: hub-adapter
           securityContext:
             {{- toYaml .Values.hubAdapter.securityContext | nindent 12 }}
           image: "{{ .Values.hubAdapter.image.repository }}:{{ .Values.hubAdapter.image.tag | default "latest" }}"
@@ -152,6 +152,12 @@ spec:
           {{- end }}
           {{- with .Values.hubAdapter.readinessProbe }}
           readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 5000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 6
             {{- toYaml . | nindent 12 }}
           {{- end }}
           resources:
