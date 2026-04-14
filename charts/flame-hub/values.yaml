@@ -159,6 +159,10 @@ auth:
 # Authentication Provider
 authup:
     publicHttps: false # global.flameHub.publicHttps also enables this
+    image:
+        repository: "authup/authup"
+        tag: "latest"
+        pullPolicy: "Always"
     auth:
         existingSecret: "flame-hub-auth"
 
