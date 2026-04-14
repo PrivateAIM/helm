@@ -33,7 +33,7 @@ spec:
               ]
       containers:
         - name: "{{ .Release.Name }}-authup-server-core"
-          image: "{{ .Values.image.repository | default "authup/authup" }}{{ .Values.image.repository | default "authup/authup" }}:{{ .Values.image.tag | default "latest" }}"
+          image: "{{ .Values.image.repository | default "authup/authup" }}:{{ .Values.image.tag | default "latest" }}"
           imagePullPolicy: {{ .Values.image.pullPolicy | default "Always" }}
           ports:
             - containerPort: 3000
