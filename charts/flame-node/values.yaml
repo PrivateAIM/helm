@@ -609,7 +609,7 @@ messageBroker:
   image:
     repository: ghcr.io/privateaim/node-message-broker
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.6.1
+    tag: 0.6.2
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -1112,6 +1112,7 @@ victoria-logs:
 
     ingress:
       enabled: '{{ .Values.global.node.ingress.enabled | default false }}'
+      pathType: ImplementationSpecific
       hosts:
         - name: '{{ regexReplaceAll "^https?://(.*)" (include "node.ingress.hostname" .) "${1}" }}'
           path: /events(/|$)(.*)
@@ -1139,9 +1140,13 @@ victoria-logs:
         internal_metrics:
           type: internal_metrics
       transforms:
+        pod_filter:
+          type: filter
+          inputs: [k8s]
+          condition: .kubernetes.pod_labels."app.kubernetes.io/name" != "mongodb"
         parser:
           type: remap
-          inputs: [k8s]
+          inputs: [pod_filter]
           # "log.level" for Spring (message broker) and "parsed.level" for Python components
           source: |
             parsed, err = parse_json(.message)
