@@ -84,6 +84,8 @@ spec:
                   value: "http://{{ .Release.Name }}-authup-server-core:3000/"
               -   name: TELEMETRY_URL
                   value: "http://{{ .Release.Name }}-flame-hub-server-telemetry:3000/"
+              -   name: PUBLIC_URL
+                  value: {{ include "serverCore.publicURL" . | trim | quote }}
               -   name: SKIP_PROJECT_APPROVAL
                   value: "true"
               -   name: SKIP_ANALYSIS_APPROVAL
