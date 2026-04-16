@@ -444,14 +444,27 @@ hubAdapter:
     #   memory: 128Mi
 
   # This is to set up the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
-  livenessProbe: &probe
+  startupProbe:
+    httpGet:
+      path: /healthz
+      port: healthcp
+    failureThreshold: 30
+    periodSeconds: 2
+    timeoutSeconds: 3
+  livenessProbe:
     httpGet:
       path: /healthz
       port: healthcp
     failureThreshold: 3
-    periodSeconds: 60
-    initialDelaySeconds: 60
-  readinessProbe: *probe
+    periodSeconds: 10
+    timeoutSeconds: 3
+  readinessProbe:
+    httpGet:
+      path: /healthz
+      port: healthcp
+    failureThreshold: 3
+    periodSeconds: 5
+    timeoutSeconds: 3
 
   # Additional environment variables on the output Deployment definition.
   extraEnv: []
@@ -747,14 +760,27 @@ ui:
     #   memory: 128Mi
 
   # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
-  livenessProbe: &probe
+  startupProbe:
+    httpGet:
+      path: /healthz
+      port: ui
+    failureThreshold: 30
+    periodSeconds: 2
+    timeoutSeconds: 3
+  livenessProbe:
     httpGet:
       path: /healthz
       port: ui
     failureThreshold: 3
-    periodSeconds: 60
-    initialDelaySeconds: 60
-  readinessProbe: *probe
+    periodSeconds: 10
+    timeoutSeconds: 3
+  readinessProbe:
+    httpGet:
+      path: /healthz
+      port: ui
+    failureThreshold: 3
+    periodSeconds: 5
+    timeoutSeconds: 3
 
   # Additional environment variables on the output Deployment definition.
   extraEnv: []

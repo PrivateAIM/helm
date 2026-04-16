@@ -91,6 +91,10 @@ spec:
             {{- with .Values.ui.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
+          {{- with .Values.ui.startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           {{- with .Values.ui.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
