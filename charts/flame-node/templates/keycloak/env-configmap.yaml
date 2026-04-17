@@ -16,4 +16,8 @@ data:
   {{- else -}}
     {{- printf "http://localhost:8080%s" (include "keycloak.relativePath.normalized" .) | quote }}
   {{- end }}
+  {{- if hasPrefix "https" (include "node.hostname" .) }}
+  KC_PROXY: "edge"
+  KC_HOSTNAME_STRICT_HTTPS: "false"
+  {{- end }}
 {{- end }}
