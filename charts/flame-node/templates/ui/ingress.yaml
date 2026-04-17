@@ -1,4 +1,4 @@
-{{- if or .Values.global.node.ingress.enabled .Values.ingress.enabled -}}
+{{- if eq .Values.expose.type "ingress" -}}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -6,7 +6,7 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/proxy-buffer-size: "128k"
     nginx.ingress.kubernetes.io/client-body-buffer-size: "32k"
-    {{- with .Values.ingress.annotations }}
+    {{- with .Values.expose.ingress.annotations }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
   labels:
@@ -17,21 +17,21 @@ metadata:
     app.kubernetes.io/version: {{ .Chart.AppVersion }}
     app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
-  {{- with .Values.ingress.className }}
+  {{- with .Values.expose.ingress.className }}
   ingressClassName: {{ . }}
   {{- end }}
   rules:
-    - host: &host {{ regexReplaceAll "^https?://(.*)" (include "node.ingress.hostname" .) "${1}" }}
+    - host: &host {{ regexReplaceAll "^https?://(.*)" (include "node.hostname" .) "${1}" }}
       http:
         paths:
-          - path: {{ .Values.ingress.path }}
-            pathType: {{ .Values.ingress.pathType }}
+          - path: /
+            pathType: {{ .Values.expose.ingress.pathType }}
             backend:
               service:
                 name: {{ .Release.Name }}-node-ui-service
                 port:
                   number: 3000
-  {{- with .Values.ingress.tlsSecretName }}
+  {{- with .Values.expose.tls.secretName }}
   tls:
     - hosts: [*host]
       secretName: {{ . }}

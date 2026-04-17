@@ -1,0 +1,19 @@
+{{- if ne .Values.expose.type "none" }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-keycloak-env
+  labels:
+    component: flame-keycloak
+    app.kubernetes.io/name: flame-keycloak
+    app.kubernetes.io/component: auth
+    app.kubernetes.io/part-of: flame-node
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+data:
+  KC_HOSTNAME: {{ if .Values.expose.hostname -}}
+    {{- printf "%s%s" (include "node.hostname" . | trimSuffix "/") (include "keycloak.relativePath.normalized" .) | quote }}
+  {{- else -}}
+    {{- printf "http://localhost:8080%s" (include "keycloak.relativePath.normalized" .) | quote }}
+  {{- end }}
+{{- end }}

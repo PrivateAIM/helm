@@ -24,25 +24,23 @@ true
 {{- end -}}
 
 {{/*
-Set the hostname of the Node UI. Assumes if global ingress enabled then global hostname is supplied
+Return the normalized hostname for all node components. Source of truth: expose.hostname.
 */}}
-{{- define "node.ingress.hostname" -}}
-{{- if and .Values.global.node.ingress.enabled .Values.global.node.ingress.hostname -}}
-    {{- if hasPrefix "http" .Values.global.node.ingress.hostname -}}
-        {{- printf "%s" .Values.global.node.ingress.hostname -}}
+{{- define "node.hostname" -}}
+{{- if and (ne .Values.expose.type "none") (not .Values.expose.hostname) -}}
+    {{- fail "expose.hostname must be set when expose.type is 'ingress' or 'gateway'" -}}
+{{- end -}}
+{{- if .Values.expose.hostname -}}
+    {{- if hasPrefix "http" .Values.expose.hostname -}}
+        {{- .Values.expose.hostname -}}
     {{- else -}}
-        {{- printf "http://%s" .Values.global.node.ingress.hostname -}}
-    {{- end -}}
-{{- else if and .Values.ingress.enabled .Values.ingress.hostname -}}
-    {{- if hasPrefix "http" .Values.ingress.hostname -}}
-        {{- printf "%s" .Values.ingress.hostname -}}
-    {{- else -}}
-        {{- printf "http://%s" .Values.ingress.hostname -}}
+        {{- printf "http://%s" .Values.expose.hostname -}}
     {{- end -}}
 {{- else -}}
-    {{- print "http://localhost:3000" -}}
+    {{- "http://localhost:3000" -}}
 {{- end -}}
 {{- end -}}
+
 
 {{/*
 Return the secret containing the hub robot secret
@@ -98,14 +96,14 @@ Return the internal Keycloak JWKS endpoint
 Return the user IDP hostname
 */}}
 {{- define "userIdp.hostname" -}}
-{{- $hostname := include "node.ingress.hostname" . -}}
+{{- $hostname := include "node.hostname" . -}}
 {{- if .Values.userIdp.hostname -}}
     {{- if hasPrefix "http" .Values.userIdp.hostname -}}
         {{- print .Values.userIdp.hostname -}}
     {{- else -}}
         {{- printf "http://%s" .Values.userIdp.hostname -}}
     {{- end -}}
-{{- else if and $hostname (or .Values.global.node.ingress.enabled .Values.ingress.enabled) (not (contains "localhost" $hostname)) -}}
+{{- else if and $hostname (ne .Values.expose.type "none") (not (contains "localhost" $hostname)) -}}
     {{- printf "%s%s/realms/flame" $hostname (include "keycloak.relativePath.normalized" .) -}}
 {{- end -}}
 {{- end -}}
@@ -159,15 +157,15 @@ Return the endpoint for user authentication
 
 {{/*
 Return whether to enable internal routing to Keycloak for the UI
-If offline is true - true, else if external IDP hostname is provided - false, else if ingress disabled or localhost used - true, else false
+If offline is true - true, else if external IDP hostname is provided - false, else if expose.type is none or localhost used - true, else false
 */}}
 {{- define "ui.auth.internal" -}}
-{{- $ingressDisabled := not (or .Values.global.node.ingress.enabled .Values.ingress.enabled) -}}
+{{- $exposeDisabled := eq .Values.expose.type "none" -}}
 {{- if .Values.offline -}}
     true
 {{- else if .Values.userIdp.hostname -}}
     false
-{{- else if or (contains "localhost" (include "ui.userIdp.endpoint" .)) $ingressDisabled -}}
+{{- else if or (contains "localhost" (include "ui.userIdp.endpoint" .)) $exposeDisabled -}}
     true
 {{- else -}}
     false
@@ -178,17 +176,11 @@ If offline is true - true, else if external IDP hostname is provided - false, el
 Return the hub adapter endpoint
 */}}
 {{- define "ui.adapter.endpoint" -}}
-{{- if and .Values.global.node.ingress.enabled .Values.global.node.ingress.hostname (not (contains "localhost" .Values.global.node.ingress.hostname)) -}}
-    {{- if hasPrefix "http" .Values.global.node.ingress.hostname -}}
-        {{- printf "%s/api" .Values.global.node.ingress.hostname -}}
+{{- if and (ne .Values.expose.type "none") .Values.expose.hostname (not (contains "localhost" .Values.expose.hostname)) -}}
+    {{- if hasPrefix "http" .Values.expose.hostname -}}
+        {{- printf "%s/api" .Values.expose.hostname -}}
     {{- else -}}
-        {{- printf "http://%s/api" .Values.global.node.ingress.hostname -}}
-    {{- end -}}
-{{- else if and .Values.ingress.enabled .Values.ingress.hostname (not (contains "localhost" .Values.ingress.hostname)) -}}
-    {{- if hasPrefix "http" .Values.ingress.hostname -}}
-        {{- printf "%s/api" .Values.ingress.hostname -}}
-    {{- else -}}
-        {{- printf "http://%s/api" .Values.ingress.hostname -}}
+        {{- printf "http://%s/api" .Values.expose.hostname -}}
     {{- end -}}
 {{- else -}}
     {{- print "http://localhost:5000" -}}
@@ -255,17 +247,17 @@ Generate a random clientSecret value for the node-ui client in keycloak if none 
 Create valid redirect URIs for keycloak i.e. http & https
 */}}
 {{- define "ui.keycloak.redirectUris" -}}
-{{- $hostnameStripped := regexReplaceAll "^https?://(.*)" (include "node.ingress.hostname" .) "${1}" -}}
+{{- $hostnameStripped := regexReplaceAll "^https?://(.*)" (include "node.hostname" .) "${1}" -}}
 {{- printf "[ \"https://%s/*\", \"http://%s/*\" ]" $hostnameStripped $hostnameStripped -}}
 {{- end -}}
 
 {{/*Hub Adapter helpers*/}}
 
 {{/*
-Set the API's root path. If ingress is enabled, defaults to "/api" else remains blank
+Set the API's root path. If expose is configured (not none), defaults to "/api" else remains blank
 */}}
 {{- define "adapter.root.path" -}}
-{{- if or .Values.global.node.ingress.enabled .Values.ingress.enabled -}}
+{{- if ne .Values.expose.type "none" -}}
     {{- print "/api" -}}
 {{- else -}}
     {{- print "" -}}

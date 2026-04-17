@@ -1,9 +1,9 @@
-# Global values
-global:
-  node:
-    ingress:
-      enabled: true
-      hostname: "https://my.domain.de"
+# Routing — choose 'ingress', 'gateway', or 'none'
+expose:
+  type: ingress
+  hostname: "my.domain.de"
+  ingress:
+    className: "nginx"
 
 ## Hub services and data
 hub:
