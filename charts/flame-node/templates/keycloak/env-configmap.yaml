@@ -1,3 +1,4 @@
+{{- if ne .Values.expose.type "none" }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -15,3 +16,4 @@ data:
   {{- else -}}
     {{- printf "http://localhost:8080%s" (include "keycloak.relativePath.normalized" .) | quote }}
   {{- end }}
+{{- end }}

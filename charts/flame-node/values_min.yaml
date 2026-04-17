@@ -1,7 +1,9 @@
 # Routing — choose 'ingress', 'gateway', or 'none'
 expose:
   type: ingress
-  hostname: "https://my.domain.de"
+  hostname: "my.domain.de"
+  ingress:
+    className: "nginx"
 
 ## Hub services and data
 hub:

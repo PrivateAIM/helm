@@ -1,4 +1,5 @@
 {{- if eq .Values.expose.type "gateway" -}}
+{{- $_ := required "expose.hostname is required when expose.type=gateway" .Values.expose.hostname -}}
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:

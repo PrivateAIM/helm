@@ -27,6 +27,9 @@ true
 Return the normalized hostname for all node components. Source of truth: expose.hostname.
 */}}
 {{- define "node.hostname" -}}
+{{- if and (ne .Values.expose.type "none") (not .Values.expose.hostname) -}}
+    {{- fail "expose.hostname must be set when expose.type is 'ingress' or 'gateway'" -}}
+{{- end -}}
 {{- if .Values.expose.hostname -}}
     {{- if hasPrefix "http" .Values.expose.hostname -}}
         {{- .Values.expose.hostname -}}
