@@ -17,4 +17,17 @@ spec:
     allowedRoutes:
       namespaces:
         from: Same
+  {{- with .Values.expose.tls.secretName }}
+  - protocol: HTTPS
+    port: 443
+    name: node-https
+    hostname: {{ regexReplaceAll "^https?://(.*)" $.Values.expose.hostname "${1}" }}
+    tls:
+      mode: Terminate
+      certificateRefs:
+      - name: {{ . }}
+    allowedRoutes:
+      namespaces:
+        from: Same
+  {{- end }}
 {{- end }}

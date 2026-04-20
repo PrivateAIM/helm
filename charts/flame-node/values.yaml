@@ -4,7 +4,7 @@ expose:
   ## @param expose.hostname Hostname for all node components (UI, Hub Adapter, Keycloak). Include scheme if desired (e.g. https://node.example.com)
   hostname: ""
   tls:
-    ## @param expose.tls.secretName Name of the TLS secret (only applies when expose.type is 'ingress')
+    ## @param expose.tls.secretName Name of the TLS secret (applies when expose.type is 'ingress' or 'gateway')
     secretName: ""
   ingress:
     ## @param expose.ingress.className IngressClass name (only applies when expose.type is 'ingress')
