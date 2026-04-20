@@ -88,14 +88,14 @@ spec:
               -   name: "{{ .Release.Name }}-docker-sidecar-socket"
                   mountPath: /var/run
               -   name: "{{ .Release.Name }}-flame-hub-server-core-worker"
-                  mountPath: /usr/src/project/packages/server-core-worker/writable
+                  mountPath: /usr/src/project/apps/server-core-worker/writable
                   subPath: project
           {{- else }}
           volumeMounts:
               -   mountPath: "/var/run/docker.sock"
                   name: "{{ .Release.Name }}-flame-hub-server-core-worker-docker-volume"
               -   name: "{{ .Release.Name }}-flame-hub-server-core-worker"
-                  mountPath: /usr/src/project/packages/server-core-worker/writable
+                  mountPath: /usr/src/project/apps/server-core-worker/writable
                   subPath: project
           securityContext:
               privileged: true
