@@ -24,7 +24,7 @@ spec:
     - host: &host {{ regexReplaceAll "^https?://(.*)" (include "node.hostname" .) "${1}" }}
       http:
         paths:
-          - path: /events(/|$)(.*)
+          - path: /logs(/|$)(.*)
             pathType: ImplementationSpecific
             backend:
               service:

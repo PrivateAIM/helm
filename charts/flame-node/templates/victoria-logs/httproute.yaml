@@ -16,7 +16,7 @@ spec:
   - matches:
     - path:
         type: PathPrefix
-        value: /events
+        value: /logs
     filters:
     - type: URLRewrite
       urlRewrite:

@@ -372,7 +372,7 @@ hubAdapter:
   image:
     repository: ghcr.io/privateaim/node-hub-api-adapter
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.5.1
+    tag: 0.6.0
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -688,7 +688,7 @@ ui:
   image:
     repository: ghcr.io/privateaim/node-ui
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.5.4
+    tag: 0.6.0
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -1101,12 +1101,9 @@ victoria-logs:
       enabled: true
       size: 20Gi
 
-    ingress:
-      enabled: false
-
   ## @param victoria-logs.logLevelFilter Minimum log level to ingest. Logs below this level are dropped by Vector.
   ## Valid values: DEBUG, INFO, WARNING, ERROR, CRITICAL (case-insensitive). Empty string disables filtering. 
-  logLevelFilter: ""
+  logLevelFilter: "INFO"
 
   vector:
     enabled: true
