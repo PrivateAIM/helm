@@ -1101,12 +1101,11 @@ victoria-logs:
       enabled: true
       size: 20Gi
 
-  ## @param victoria-logs.logLevelFilter Minimum log level to ingest. Logs below this level are dropped by Vector.
-  ## Valid values: DEBUG, INFO, WARNING, ERROR, CRITICAL (case-insensitive). Empty string disables filtering. 
-  logLevelFilter: "INFO"
-
   vector:
     enabled: true
+    ## @param victoria-logs.vector.logLevelFilter Minimum log level to ingest. Logs below this level are dropped by Vector.
+    ## Valid values: DEBUG, INFO, WARNING, ERROR, CRITICAL (case-insensitive). Empty string disables filtering. 
+    logLevelFilter: "INFO"
     customConfig:
       data_dir: /vector-data-dir
       api:

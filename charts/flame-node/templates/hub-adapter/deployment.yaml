@@ -77,8 +77,10 @@ spec:
                   key: {{ include "adapter.keycloak.secretKey" . }}
             - name: IDP_URL
               value: {{ include "adapter.userIdp.endpoint" . }}
+            {{- if .Values.eventLogging.enabled }}
             - name: VICTORIA_LOGS_URL
               value: {{ printf "http://%s-victoria-logs-server.%s.svc.cluster.local:9428" .Release.Name .Release.Namespace }}
+            {{- end }}
             - name: NODE_SVC_OIDC_URL
               value: {{ include "keycloak.service.endpoint" . }}
             - name: OVERRIDE_JWKS
