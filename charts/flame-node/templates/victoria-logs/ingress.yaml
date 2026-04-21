@@ -1,0 +1,39 @@
+{{- if and (eq .Values.expose.type "ingress") .Values.eventLogging.enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-victoria-logs-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    {{- with .Values.expose.ingress.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  labels:
+    component: victoria-logs
+    app.kubernetes.io/name: victoria-logs
+    app.kubernetes.io/component: logging
+    app.kubernetes.io/part-of: flame-node
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  {{- with .Values.expose.ingress.className }}
+  ingressClassName: {{ . }}
+  {{- end }}
+  rules:
+    - host: &host {{ regexReplaceAll "^https?://(.*)" (include "node.hostname" .) "${1}" }}
+      http:
+        paths:
+          - path: /events(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: {{ .Release.Name }}-victoria-logs-server
+                port:
+                  number: 9428
+  {{- with .Values.expose.tls.secretName }}
+  tls:
+    - hosts: [*host]
+      secretName: {{ . }}
+  {{- end }}
+{{- end }}

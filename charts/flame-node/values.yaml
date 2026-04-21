@@ -1102,14 +1102,7 @@ victoria-logs:
       size: 20Gi
 
     ingress:
-      enabled: '{{ .Values.global.node.ingress.enabled | default false }}'
-      pathType: ImplementationSpecific
-      hosts:
-        - name: '{{ regexReplaceAll "^https?://(.*)" (include "node.ingress.hostname" .) "${1}" }}'
-          path: /events(/|$)(.*)
-      annotations:
-        nginx.ingress.kubernetes.io/use-regex: "true"
-        nginx.ingress.kubernetes.io/rewrite-target: /$2
+      enabled: false
 
   ## @param victoria-logs.logLevelFilter Minimum log level to ingest. Logs below this level are dropped by Vector.
   ## Valid values: DEBUG, INFO, WARNING, ERROR, CRITICAL (case-insensitive). Empty string disables filtering. 
