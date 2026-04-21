@@ -1,16 +1,17 @@
 {{- if eq .Values.expose.type "ingress" -}}
+{{- $kcPath := include "keycloak.relativePath.normalized" . -}}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ .Release.Name }}-hub-adapter-ingress
+  name: {{ .Release.Name }}-keycloak-ingress
   annotations:
     {{- with .Values.expose.ingress.annotations }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
   labels:
-    component: flame-hub-adapter
-    app.kubernetes.io/name: flame-hub-adapter
-    app.kubernetes.io/component: gateway
+    component: flame-keycloak
+    app.kubernetes.io/name: flame-keycloak
+    app.kubernetes.io/component: auth
     app.kubernetes.io/part-of: flame-node
     app.kubernetes.io/version: {{ .Chart.AppVersion }}
     app.kubernetes.io/instance: {{ .Release.Name }}
@@ -22,13 +23,20 @@ spec:
     - host: &host {{ regexReplaceAll "^https?://(.*)" (include "node.hostname" .) "${1}" }}
       http:
         paths:
-          - path: {{ (include "adapter.root.path" .) }}
+          - path: {{ $kcPath }}/
             pathType: {{ .Values.expose.ingress.pathType }}
             backend:
               service:
-                name: {{ .Release.Name }}-hub-adapter-service
+                name: {{ .Release.Name }}-keycloak-http
                 port:
-                  number: 5000
+                  number: 80
+          - path: {{ $kcPath }}/admin
+            pathType: {{ .Values.expose.ingress.pathType }}
+            backend:
+              service:
+                name: {{ .Release.Name }}-keycloak-http
+                port:
+                  number: 80
   {{- with .Values.expose.tls.secretName }}
   tls:
     - hosts: [*host]

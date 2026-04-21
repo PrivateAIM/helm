@@ -4,6 +4,8 @@ metadata:
     name: "{{ .Release.Name }}-flame-hub-server-core-worker"
     labels:
         app: "{{ .Release.Name }}-flame-hub-server-core-worker"
+    annotations:
+        helm.sh/resource-policy: keep
 spec:
     accessModes:
         - ReadWriteOnce

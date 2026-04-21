@@ -6,6 +6,11 @@ ingress:
     path: "/"
     pathType: "Prefix"
 
+image:
+    repository: "authup/authup"
+    tag: "latest"
+    pullPolicy: "Always"
+
 auth:
     # Use an existing secret with keys: client-secret, redis-connection-string, postgresql-password
     existingSecret: ""

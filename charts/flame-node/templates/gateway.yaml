@@ -1,0 +1,33 @@
+{{- if eq .Values.expose.type "gateway" -}}
+{{- $_ := required "expose.hostname is required when expose.type=gateway" .Values.expose.hostname -}}
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: {{ .Release.Name }}-node-gateway
+  labels:
+    app.kubernetes.io/part-of: flame-node
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  gatewayClassName: {{ .Values.expose.gateway.gatewayClassName }}
+  listeners:
+  - protocol: HTTP
+    port: 80
+    name: node-http
+    hostname: {{ regexReplaceAll "^https?://(.*)" .Values.expose.hostname "${1}" }}
+    allowedRoutes:
+      namespaces:
+        from: Same
+  {{- with .Values.expose.tls.secretName }}
+  - protocol: HTTPS
+    port: 443
+    name: node-https
+    hostname: {{ regexReplaceAll "^https?://(.*)" $.Values.expose.hostname "${1}" }}
+    tls:
+      mode: Terminate
+      certificateRefs:
+      - name: {{ . }}
+    allowedRoutes:
+      namespaces:
+        from: Same
+  {{- end }}
+{{- end }}

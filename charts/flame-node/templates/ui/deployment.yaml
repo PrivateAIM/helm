@@ -62,11 +62,11 @@ spec:
             - name: NO_PROXY
               value: {{ .Values.proxy.noProxy | default "" | quote }}
             - name: NUXT_PUBLIC_BASE_URL
-              value: {{ include "node.ingress.hostname" . | default "http://localhost:3000" }}
+              value: {{ include "node.hostname" . | default "http://localhost:3000" }}
             - name: NUXT_PUBLIC_HUB_ADAPTER_URL
               value: {{ include "ui.adapter.endpoint" . }}
             - name: NUXT_PUBLIC_ORIGIN
-              value: {{ printf "%s/flame/api/auth" (include "node.ingress.hostname" .) | default "http://localhost:3000/flame/api/auth" }}
+              value: {{ printf "%s/flame/api/auth" (include "node.hostname" .) | default "http://localhost:3000/flame/api/auth" }}
             - name: NUXT_PUBLIC_IDP_PROVIDER
               value: {{ .Values.userIdp.provider | default "keycloak" | quote }}
             - name: NUXT_PUBLIC_IDP_ISSUER
