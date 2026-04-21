@@ -372,7 +372,7 @@ hubAdapter:
   image:
     repository: ghcr.io/privateaim/node-hub-api-adapter
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.5.1
+    tag: 0.6.0
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -587,7 +587,7 @@ messageBroker:
   image:
     repository: ghcr.io/privateaim/node-message-broker
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.6.1
+    tag: 0.6.2
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -688,7 +688,7 @@ ui:
   image:
     repository: ghcr.io/privateaim/node-ui
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.5.4
+    tag: 0.6.0
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -1091,3 +1091,82 @@ mongodb:
     requestedSize: 500Mi
 
     className:
+
+victoria-logs:
+  server:
+    ## Data retention period. Possible units character: h(ours), d(ays), w(eeks), y(ears), if no unit character specified - month. 
+    ## The minimum retention period is 24h. See these [docs](https://docs.victoriametrics.com/victorialogs/#retention)
+    retentionPeriod: 1y
+    persistentVolume:
+      enabled: true
+      size: 20Gi
+
+  vector:
+    enabled: true
+    ## @param victoria-logs.vector.logLevelFilter Minimum log level to ingest. Logs below this level are dropped by Vector.
+    ## Valid values: DEBUG, INFO, WARNING, ERROR, CRITICAL (case-insensitive). Empty string disables filtering. 
+    logLevelFilter: "INFO"
+    customConfig:
+      data_dir: /vector-data-dir
+      api:
+        enabled: false
+        address: 0.0.0.0:8686
+        playground: true
+      sources:
+        k8s:
+          type: kubernetes_logs
+          # Only parse logs from the current namespace to avoid unnecessary overhead and potential security issues
+          extra_field_selector: "metadata.namespace={{ .Release.Namespace }}"
+        internal_metrics:
+          type: internal_metrics
+      transforms:
+        pod_filter:
+          type: filter
+          inputs: [k8s]
+          condition: .kubernetes.pod_labels."app.kubernetes.io/name" != "mongodb"
+        parser:
+          type: remap
+          inputs: [pod_filter]
+          # "log.level" for Spring (message broker) and "parsed.level" for Python components
+          source: |
+            parsed, err = parse_json(.message)
+            if err == null {
+              .log = parsed
+              .level = upcase(string(parsed."log.level") ?? string(parsed.level) ?? "UNKNOWN")
+            } else {
+              .log = .message
+              .level = "UNKNOWN"
+            }
+            if .level == "WARN" { .level = "WARNING" }
+            del(.message)
+        level_filter:
+          type: filter
+          inputs: [parser]
+          # Vector is **very** particular about the syntax of the condition, hence the somewhat convoluted way of implementing log level filtering
+          condition: '
+            event_level = upcase(string(.level) ?? "UNKNOWN");
+            min_level = upcase("{{ .Values.logLevelFilter | default "" }}");
+            level_num = if event_level == "DEBUG" { 0 } else if event_level == "INFO" { 1 } else if event_level == "WARNING" { 2 } else if event_level == "ERROR" { 3 } else if event_level == "CRITICAL" { 4 } else { -1 };
+            min_num = if min_level == "DEBUG" { 0 } else if min_level == "INFO" { 1 } else if min_level == "WARNING" { 2 } else if min_level == "ERROR" { 3 } else if min_level == "CRITICAL" { 4 } else { 0 };
+            min_level == "" || level_num >= min_num
+            '
+      sinks:
+        exporter:
+          type: prometheus_exporter
+          address: 0.0.0.0:9090
+          inputs: [internal_metrics]
+        vlogs:
+          type: elasticsearch
+          inputs: [level_filter]
+          mode: bulk
+          api_version: v8
+          compression: gzip
+          healthcheck:
+            enabled: false
+          request:
+            headers:
+              VL-Time-Field: timestamp,@timestamp
+              VL-Stream-Fields: level,kubernetes.pod_name,kubernetes.pod_labels.component,kubernetes.container_name
+              VL-Msg-Field: message,msg,_msg,log.msg,log.message,log
+              AccountID: "0"
+              ProjectID: "0"

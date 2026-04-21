@@ -55,7 +55,7 @@ spec:
                 sleep 5
               done
       containers:
-        - name: api-gateway
+        - name: hub-adapter
           securityContext:
             {{- toYaml .Values.hubAdapter.securityContext | nindent 12 }}
           image: "{{ .Values.hubAdapter.image.repository }}:{{ .Values.hubAdapter.image.tag | default "latest" }}"
@@ -77,8 +77,10 @@ spec:
                   key: {{ include "adapter.keycloak.secretKey" . }}
             - name: IDP_URL
               value: {{ include "adapter.userIdp.endpoint" . }}
-            - name: LOG_EVENTS
-              value: {{ .Values.eventLogging.enabled | default "true" | quote }}
+            {{- if .Values.eventLogging.enabled }}
+            - name: VICTORIA_LOGS_URL
+              value: {{ printf "http://%s-victoria-logs-server.%s.svc.cluster.local:9428" .Release.Name .Release.Namespace }}
+            {{- end }}
             - name: NODE_SVC_OIDC_URL
               value: {{ include "keycloak.service.endpoint" . }}
             - name: OVERRIDE_JWKS
@@ -146,6 +148,10 @@ spec:
             {{- with .Values.hubAdapter.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
+          {{- with .Values.hubAdapter.startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           {{- with .Values.hubAdapter.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
