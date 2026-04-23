@@ -32,6 +32,7 @@ global:
                 enabled: false
                 mode: "Terminate"
                 certificateRef: ""
+                certificateRefNamespace: "" # optional namespace for certificateRef
             gateway:
                 className: ""
                 annotations: {}
@@ -408,6 +409,7 @@ harbor:
             enabled: false
             mode: "Terminate"
             certificateRef: ""
+            certificateRefNamespace: "" # optional override; defaults to global.flameHub.gatewayApi.tls.certificateRefNamespace
     migration:
         enabled: true
     # persistence:
