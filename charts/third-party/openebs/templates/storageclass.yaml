@@ -6,6 +6,7 @@ kind: StorageClass
 metadata:
   name: {{ .name }}
 provisioner: io.openebs.csi-mayastor
+allowVolumeExpansion: {{ .allowVolumeExpansion | default true }}
 parameters:
   protocol: {{ .protocol | default "nvmf" }}
   repl: "{{ .replicationFactor }}"

@@ -36,6 +36,7 @@ openebs:
       - name: mayastor-replicated
         replicationFactor: 3
         protocol: nvmf
+        allowVolumeExpansion: true
 
     # DiskPools to create - one per node with dedicated block device
     # Example:
