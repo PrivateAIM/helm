@@ -113,6 +113,9 @@ Expects a dict with keys: name, hostname, tls (the global TLS config dict).
     mode: {{ .tls.mode | default "Terminate" }}
     certificateRefs:
       - name: {{ .tls.certificateRef }}
+        {{- if .tls.certificateRefNamespace }}
+        namespace: {{ .tls.certificateRefNamespace }}
+        {{- end }}
   allowedRoutes:
     namespaces:
       from: Same
