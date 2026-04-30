@@ -456,6 +456,9 @@ harbor:
                       'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done',
                   ]
     jobservice:
+        updateStrategy:
+            type: Recreate
+            rollingUpdate: null
         image:
             #repository: "tada5hi/harbor-jobservice"
             repository: "bitnamilegacy/harbor-jobservice"
@@ -471,6 +474,9 @@ harbor:
                   ]
 
     registry:
+        updateStrategy:
+            type: Recreate
+            rollingUpdate: null
         relativeurls: true # Needed for server-core-worker because of TCP forwarding (see https://github.com/distribution/distribution/issues/970#issuecomment-284227065)
         server:
             image:
@@ -492,6 +498,8 @@ harbor:
                       'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done',
                   ]
     trivy:
+        updateStrategy:
+            type: OnDelete
         image:
             #repository: "tada5hi/harbor-adapter-trivy"
             repository: "bitnamilegacy/harbor-adapter-trivy"
