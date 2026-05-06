@@ -96,6 +96,10 @@ spec:
               value: {{ .Values.proxy.httpsProxy | default "" }}
             - name: RESULT_CLIENT_ID
               value: "service1"
+            - name: NET_STATS_ENABLED
+              value: {{ .Values.podOrchestrator.netStats.enabled | default "true" | quote }}
+            - name: NET_STATS_IMAGE
+              value: {{ .Values.podOrchestrator.netStats.image | default "busybox:1.37" | quote }}
             - name: RESULT_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:

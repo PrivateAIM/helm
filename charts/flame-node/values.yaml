@@ -465,6 +465,12 @@ podOrchestrator:
   ## This will enable logging to be sent to the hub for better observability of the node.
   enableHubLogging: true
 
+  netStats:
+    ## @param netStats.enabled Enable the netstats sidecar container for network performance monitoring
+    enabled: true
+    ## @param netStats.image The image for the netstats sidecar container
+    image: busybox:1.37
+
   # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
   replicaCount: 1
 
