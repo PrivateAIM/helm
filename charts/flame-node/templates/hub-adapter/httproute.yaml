@@ -11,7 +11,7 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
   parentRefs:
-  - name: {{ .Release.Name }}-node-gateway
+  {{- include "flame-node.gateway.parentRefs" . | nindent 2 }}
   rules:
   - matches:
     - path:

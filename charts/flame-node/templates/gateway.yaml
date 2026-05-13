@@ -1,4 +1,4 @@
-{{- if eq .Values.expose.type "gateway" -}}
+{{- if and (eq .Values.expose.type "gateway") (not .Values.expose.gateway.external) -}}
 {{- $_ := required "expose.hostname is required when expose.type=gateway" .Values.expose.hostname -}}
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
