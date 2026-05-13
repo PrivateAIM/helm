@@ -468,6 +468,13 @@ Extract proxy password
 {{- end }}
 
 {{/*
+Strip scheme from expose.hostname for Gateway API hostnames (HTTPRoute.spec.hostnames, listener hostname).
+*/}}
+{{- define "flame-node.gateway.routeHostname" -}}
+{{- regexReplaceAll "^https?://(.*)" .Values.expose.hostname "${1}" -}}
+{{- end -}}
+
+{{/*
 Return the parentRefs list item for HTTPRoutes targeting the node Gateway.
 When expose.gateway.external is true, references the user-supplied external Gateway;
 otherwise references the chart-managed Gateway.

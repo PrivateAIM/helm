@@ -12,6 +12,8 @@ metadata:
 spec:
   parentRefs:
   {{- include "flame-node.gateway.parentRefs" . | nindent 2 }}
+  hostnames:
+  - {{ include "flame-node.gateway.routeHostname" . | quote }}
   rules:
   - matches:
     - path:
