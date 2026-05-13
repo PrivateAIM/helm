@@ -25,7 +25,8 @@
 {{- end -}}
 {{- end -}}
 
-{{- if or (gt (len $listeners) 0) $harborEnabled -}}
+{{- if and (or (gt (len $listeners) 0) $harborEnabled) (not (default false .Values.global.flameHub.gatewayApi.gateway.external)) -}}
+{{- $gwClass := required "global.flameHub.gatewayApi.gateway.gatewayClassName or className is required when any gatewayApi is enabled and external is false" (coalesce .Values.global.flameHub.gatewayApi.gateway.gatewayClassName .Values.global.flameHub.gatewayApi.gateway.className) -}}
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
@@ -37,7 +38,7 @@ metadata:
     {{- end }}
   {{- end }}
 spec:
-  gatewayClassName: {{ required "global.flameHub.gatewayApi.gateway.className is required when any gatewayApi is enabled" .Values.global.flameHub.gatewayApi.gateway.className }}
+  gatewayClassName: {{ $gwClass }}
   listeners:
     {{- range $l := $listeners }}
     {{- if $.Values.global.flameHub.gatewayApi.tls.enabled }}
