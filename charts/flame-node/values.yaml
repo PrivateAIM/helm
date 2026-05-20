@@ -14,8 +14,18 @@ expose:
     ## @param expose.ingress.pathType Ingress path type
     pathType: ImplementationSpecific
   gateway:
-    ## @param expose.gateway.gatewayClassName GatewayClass name (only applies when expose.type is 'gateway')
+    ## @param expose.gateway.gatewayClassName GatewayClass name (only applies when expose.type is 'gateway' and external is false)
     gatewayClassName: nginx
+    ## @param expose.gateway.external When true, the chart does not create a Gateway resource and instead attaches HTTPRoutes to an existing external Gateway
+    external: false
+    ## @param expose.gateway.parentRef Reference to the external Gateway for HTTPRoutes (only used when external is true)
+    parentRef:
+      ## @param expose.gateway.parentRef.name Name of the external Gateway resource (required when external is true)
+      name: ""
+      ## @param expose.gateway.parentRef.namespace Namespace of the external Gateway (omit for same-namespace)
+      namespace: ""
+      ## @param expose.gateway.parentRef.sectionName Listener name on the external Gateway to attach to (optional)
+      sectionName: ""
 
 ## @param offline Forces the UI and hub adapter to use the internal service endpoint for authentication
 ## this is useful for when you are using a locally resolveable domain i.e. localhost or similar as defined in /etc/hosts

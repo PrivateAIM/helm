@@ -466,3 +466,32 @@ Extract proxy password
     {{- print "" -}}
 {{- end -}}
 {{- end }}
+
+{{/*
+Strip scheme from expose.hostname for Gateway API hostnames (HTTPRoute.spec.hostnames, listener hostname).
+*/}}
+{{- define "flame-node.gateway.routeHostname" -}}
+{{- regexReplaceAll "^https?://(.*)" .Values.expose.hostname "${1}" -}}
+{{- end -}}
+
+{{/*
+Return the parentRefs list item for HTTPRoutes targeting the node Gateway.
+When expose.gateway.external is true, references the user-supplied external Gateway;
+otherwise references the chart-managed Gateway.
+*/}}
+{{- define "flame-node.gateway.parentRefs" -}}
+{{- if .Values.expose.gateway.external -}}
+{{- $name := required "expose.gateway.parentRef.name is required when expose.gateway.external=true" .Values.expose.gateway.parentRef.name -}}
+- group: gateway.networking.k8s.io
+  kind: Gateway
+  name: {{ $name }}
+  {{- if .Values.expose.gateway.parentRef.namespace }}
+  namespace: {{ .Values.expose.gateway.parentRef.namespace }}
+  {{- end }}
+  {{- if .Values.expose.gateway.parentRef.sectionName }}
+  sectionName: {{ .Values.expose.gateway.parentRef.sectionName }}
+  {{- end }}
+{{- else -}}
+- name: {{ .Release.Name }}-node-gateway
+{{- end -}}
+{{- end -}}

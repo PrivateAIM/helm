@@ -6,7 +6,7 @@ metadata:
     name: {{ .Release.Name }}-flame-hub-server-telemetry
 spec:
     parentRefs:
-        - name: {{ .Release.Name }}-flame-hub-gateway
+{{- include "flame-hub.gateway.parentRefs" . | nindent 8 }}
     hostnames:
         - {{ $hostname | quote }}
     rules:

@@ -5,7 +5,7 @@ metadata:
     name: {{ .Release.Name }}-flame-hub-server-core
 spec:
     parentRefs:
-        - name: {{ .Release.Name }}-flame-hub-gateway
+{{- include "flame-hub.gateway.parentRefs" . | nindent 8 }}
     hostnames:
         - {{ .Values.serverCore.gatewayApi.hostname | default .Values.global.flameHub.gatewayApi.hostname | quote }}
     rules:

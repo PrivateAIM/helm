@@ -121,3 +121,27 @@ Expects a dict with keys: name, hostname, tls (the global TLS config dict).
       from: Same
 {{- end }}
 {{- end -}}
+
+{{/*
+Return the parentRefs list item for HTTPRoutes targeting the Hub Gateway.
+When global.flameHub.gatewayApi.gateway.external is true, references the user-supplied external Gateway;
+otherwise references the chart-managed Gateway.
+*/}}
+{{- define "flame-hub.gateway.parentRefs" -}}
+{{- $gw := .Values.global.flameHub.gatewayApi.gateway -}}
+{{- $pr := $gw.parentRef | default dict -}}
+{{- if default false $gw.external -}}
+{{- $name := required "global.flameHub.gatewayApi.gateway.parentRef.name is required when global.flameHub.gatewayApi.gateway.external=true" $pr.name -}}
+- group: gateway.networking.k8s.io
+  kind: Gateway
+  name: {{ $name }}
+  {{- if $pr.namespace }}
+  namespace: {{ $pr.namespace }}
+  {{- end }}
+  {{- if $pr.sectionName }}
+  sectionName: {{ $pr.sectionName }}
+  {{- end }}
+{{- else -}}
+- name: {{ .Release.Name }}-flame-hub-gateway
+{{- end -}}
+{{- end -}}
