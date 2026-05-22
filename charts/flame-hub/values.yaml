@@ -34,7 +34,18 @@ global:
                 certificateRef: ""
                 certificateRefNamespace: "" # optional namespace for certificateRef
             gateway:
-                className: ""
+                ## @param global.flameHub.gatewayApi.gateway.gatewayClassName GatewayClass name (only applies when external is false)
+                gatewayClassName: ""
+                ## @param global.flameHub.gatewayApi.gateway.external When true, the chart does not create a Gateway resource and instead attaches HTTPRoutes to an existing external Gateway
+                external: false
+                ## @param global.flameHub.gatewayApi.gateway.parentRef Reference to the external Gateway for HTTPRoutes (only used when external is true)
+                parentRef:
+                    ## @param global.flameHub.gatewayApi.gateway.parentRef.name Name of the external Gateway resource (required when external is true)
+                    name: ""
+                    ## @param global.flameHub.gatewayApi.gateway.parentRef.namespace Namespace of the external Gateway (omit for same-namespace)
+                    namespace: ""
+                    ## @param global.flameHub.gatewayApi.gateway.parentRef.sectionName Listener name on the external Gateway to attach to (optional)
+                    sectionName: ""
                 annotations: {}
             # Set to true to use SnippetsFilter-based proxy timeouts (see harbor/server-storage httproutes).
             # Requires snippets to be enabled in your NGINX Gateway Fabric install.
@@ -45,7 +56,7 @@ global:
 image:
     registry: ghcr.io
     repository: privateaim/hub
-    tag: latest
+    tag: 0.10.0
     pullPolicy: Always
 
 # internal services

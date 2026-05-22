@@ -7,7 +7,7 @@ metadata:
     name: {{ .Release.Name }}-harbor
 spec:
     parentRefs:
-        - name: {{ .Release.Name }}-flame-hub-gateway
+{{- include "flame-hub.gateway.parentRefs" . | nindent 8 }}
     hostnames:
         - {{ include "harbor.host" . | quote }}
     rules:
