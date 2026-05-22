@@ -64,8 +64,7 @@ Return the secret containing the hub robot secret
 {{- end -}}
 
 {{/*
-Return the short service route for the internal keycloak instance"
-cURL will be used to check the health of Keycloak during startup, and it needs to use the short route to work correctly within the cluster.
+Return the service route for the internal keycloak instance"
 */}}
 {{- define "keycloak.svc.route" -}}
 {{- printf "%s-keycloak-http.%s.svc.cluster.local" .Release.Name .Release.Namespace -}}
