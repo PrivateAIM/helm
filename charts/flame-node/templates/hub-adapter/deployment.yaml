@@ -91,7 +91,6 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.proxy.existingSecret }}
                   key: httpProxy
-                  optional: true
               {{- else }}
               value: {{ .Values.proxy.httpProxy | default "" | quote }}
               {{- end }}
@@ -101,7 +100,6 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.proxy.existingSecret }}
                   key: httpsProxy
-                  optional: true
               {{- else }}
               value: {{ .Values.proxy.httpsProxy | default "" | quote }}
               {{- end }}
