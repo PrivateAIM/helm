@@ -77,13 +77,29 @@ spec:
                 secretKeyRef:
                   name: {{ include "postgresql.user.secretName" . }}
                   key: DB_PASSWORD
-          {{- if .Values.proxy.httpProxy }}
+          {{- if or .Values.proxy.httpProxy .Values.proxy.existingSecret }}
             - name: PROXY__HTTP_URL
-              value: {{ .Values.proxy.httpProxy }}
+              {{- if .Values.proxy.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.proxy.existingSecret }}
+                  key: httpProxy
+                  optional: true
+              {{- else }}
+              value: {{ .Values.proxy.httpProxy | quote }}
+              {{- end }}
           {{- end }}
-          {{- if .Values.proxy.httpsProxy }}
+          {{- if or .Values.proxy.httpsProxy .Values.proxy.existingSecret }}
             - name: PROXY__HTTPS_URL
-              value: {{ .Values.proxy.httpsProxy }}
+              {{- if .Values.proxy.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.proxy.existingSecret }}
+                  key: httpsProxy
+                  optional: true
+              {{- else }}
+              value: {{ .Values.proxy.httpsProxy | quote }}
+              {{- end }}
           {{- end }}
             - name: MINIO__ENDPOINT
               value: {{ .Release.Name }}-minio:9000

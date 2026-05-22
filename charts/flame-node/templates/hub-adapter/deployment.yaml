@@ -44,7 +44,7 @@ spec:
         {{- toYaml .Values.hubAdapter.podSecurityContext | nindent 8 }}
       initContainers:
         - name: wait-for-keycloak
-          image: curlimages/curl:latest
+          image: curlimages/curl:8.20.0
           imagePullPolicy: IfNotPresent
           command:
             - sh
@@ -86,11 +86,27 @@ spec:
             - name: OVERRIDE_JWKS
               value: {{ include "adapter.jwks.endpoint" . }}
             - name: HTTP_PROXY
-              value: {{ .Values.proxy.httpProxy | default "" }}
+              {{- if .Values.proxy.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.proxy.existingSecret }}
+                  key: httpProxy
+                  optional: true
+              {{- else }}
+              value: {{ .Values.proxy.httpProxy | default "" | quote }}
+              {{- end }}
             - name: HTTPS_PROXY
-              value: {{ .Values.proxy.httpsProxy | default "" }}
+              {{- if .Values.proxy.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.proxy.existingSecret }}
+                  key: httpsProxy
+                  optional: true
+              {{- else }}
+              value: {{ .Values.proxy.httpsProxy | default "" | quote }}
+              {{- end }}
             - name: NO_PROXY
-              value: {{ .Values.proxy.noProxy | default "" }}
+              value: {{ .Values.proxy.noProxy | default "" | quote }}
             - name: STORAGE_SERVICE_URL
               value: {{ printf "http://%s-storage-service.%s.svc.cluster.local:8080" .Release.Name .Release.Namespace }}
             - name: PODORC_SERVICE_URL

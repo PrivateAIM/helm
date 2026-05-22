@@ -52,9 +52,23 @@ rbac:
 
 ## @param proxy Proxy URLs pertaining to `HTTP_PROXY`, `HTTPS_PROXY` and `NO_PROXY` environment variables
 proxy:
+  ## @param proxy.httpProxy Full proxy URL, e.g. http://user:pass@proxy.example.de:3128. Ignored when existingSecret is set.
   httpProxy:
+  ## @param proxy.httpsProxy Full proxy URL. Ignored when existingSecret is set.
   httpsProxy:
+  ## @param proxy.noProxy List of domains to exclude from proxying.
   noProxy:
+  ## @param proxy.existingSecret Name of an existing K8s Secret containing proxy credentials.
+  ## When set, all proxy env vars (HTTP_PROXY, HTTPS_PROXY, PROXY_URL) are sourced from this
+  ## secret via secretKeyRef instead of from proxy.httpProxy / proxy.httpsProxy above.
+  ## The secret must contain:
+  ##   httpProxy  - full proxy URL with credentials, e.g. http://user:pass@proxy.example.de:3128
+  ##   httpsProxy - full proxy URL with credentials (may equal httpProxy)
+  ## Create the secret with:
+  ##   kubectl create secret generic my-proxy-secret \
+  ##     --from-literal=httpProxy='http://user:pass@proxy.example.de:3128' \
+  ##     --from-literal=httpsProxy='http://user:pass@proxy.example.de:3128'
+  existingSecret: ""
 
 # Autostart service configuration
 autostart:
@@ -83,13 +97,13 @@ certificateConfigMap: ""
 hub:
   endpoints:
     ## @param hub.endpoints.core Hub core API endpoint
-    core: https://staging-core.privateaim.net
+    core: https://core.staging.privateaim.net
     ## @param hub.endpoints.auth Hub auth API endpoint
-    auth: https://staging-auth.privateaim.net
+    auth: https://auth.staging.privateaim.net
     ## @param hub.endpoints.messenger Hub messenger API endpoint. Overrides broker.HUB_BASE_URL if provided
-    messenger: https://staging-messenger.privateaim.net
+    messenger: https://messenger.staging.privateaim.net
     ## @param hub.endpoints.storage Hub storage API endpoint
-    storage: https://staging-storage.privateaim.net
+    storage: https://storage.staging.privateaim.net
   ## Credentials used for retrieving a valid token from the hub using a robot account
   auth:
     clientID:
