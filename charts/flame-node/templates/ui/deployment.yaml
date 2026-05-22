@@ -56,9 +56,23 @@ spec:
             - name: NODE_ENV
               value: {{ .Values.ui.env | default "production" | quote }}
             - name: HTTP_PROXY
+              {{- if .Values.proxy.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.proxy.existingSecret }}
+                  key: httpProxy
+              {{- else }}
               value: {{ .Values.proxy.httpProxy | default "" | quote }}
+              {{- end }}
             - name: HTTPS_PROXY
+              {{- if .Values.proxy.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.proxy.existingSecret }}
+                  key: httpsProxy
+              {{- else }}
               value: {{ .Values.proxy.httpsProxy | default "" | quote }}
+              {{- end }}
             - name: NO_PROXY
               value: {{ .Values.proxy.noProxy | default "" | quote }}
             - name: NUXT_PUBLIC_BASE_URL

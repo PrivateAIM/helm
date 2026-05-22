@@ -91,9 +91,23 @@ spec:
                   name: {{ include "postgresql.user.secretName" . }}
                   key: DB_PASSWORD
             - name: PO_HTTP_PROXY
-              value: {{ .Values.proxy.httpProxy | default "" }}
+              {{- if .Values.proxy.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.proxy.existingSecret }}
+                  key: httpProxy               
+              {{- else }}
+              value: {{ .Values.proxy.httpProxy | default "" | quote }}
+              {{- end }}
             - name: PO_HTTPS_PROXY
-              value: {{ .Values.proxy.httpsProxy | default "" }}
+              {{- if .Values.proxy.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.proxy.existingSecret }}
+                  key: httpsProxy
+              {{- else }}
+              value: {{ .Values.proxy.httpsProxy | default "" | quote }}
+              {{- end }}
             - name: RESULT_CLIENT_ID
               value: "service1"
             - name: NET_STATS_ENABLED

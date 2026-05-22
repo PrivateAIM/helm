@@ -1,4 +1,3 @@
-{{- $hasProxyAuth := include "broker.proxy.hasAuth" . -}}
 {{- $hasCerts := include "tls.hasCerts" . -}}
 apiVersion: apps/v1
 kind: Deployment
@@ -73,19 +72,18 @@ spec:
               value: {{ .Release.Name }}-mongodb
             - name: PERSISTENCE_PORT
               value: "27017"
-            {{- if or .Values.proxy.httpProxy .Values.proxy.httpsProxy }}
-            - name: PROXY_HOST
-              value: {{ include "broker.proxy.host" . | default "" | quote }}
-            - name: PROXY_PORT
-              value: {{ include "broker.proxy.port" . | default "" | quote }}
+            {{- if or .Values.proxy.httpProxy .Values.proxy.httpsProxy .Values.proxy.existingSecret }}
+            - name: PROXY_URL
+              {{- if .Values.proxy.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.proxy.existingSecret }}
+                  key: httpProxy
+              {{- else }}
+              value: {{ coalesce .Values.proxy.httpProxy .Values.proxy.httpsProxy | quote }}
+              {{- end }}
             - name: PROXY_WHITELIST
               value: "^.*nginx-analysis.*$"
-            {{- end }}
-            {{- if $hasProxyAuth }}
-            - name: PROXY_USERNAME
-              value: {{ include "broker.proxy.username" . | default "" | quote }}
-            - name: PROXY_PASSWORD_FILE
-              value: "/opt/message-broker/proxy/proxy_password.txt"
             {{- end }}
             - name: SECURITY_NODE_PRIVATE_ECDH_KEY_FILE
               value: "/opt/message-broker/crypto/private_key.pem"
@@ -123,12 +121,6 @@ spec:
               name: "auth"
               subPath: "client_secret.txt"
               readOnly: true
-            {{- if $hasProxyAuth }}
-            - mountPath: "/opt/message-broker/proxy/proxy_password.txt"
-              name: "proxy"
-              subPath: "proxy_password.txt"
-              readOnly: true
-            {{- end }}
             {{- with .Values.messageBroker.volumeMounts }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
@@ -150,14 +142,6 @@ spec:
             items:
               - key: clientSecret
                 path: "client_secret.txt"
-        {{- if $hasProxyAuth }}
-        - name: proxy
-          secret:
-            secretName: {{ .Release.Name }}-proxy-credentials-secret
-            items:
-              - key: proxyPassword
-                path: "proxy_password.txt"
-        {{- end }}
         {{- with .Values.messageBroker.volumes }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
