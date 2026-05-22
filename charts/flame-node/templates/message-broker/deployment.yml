@@ -82,6 +82,8 @@ spec:
               {{- else }}
               value: {{ coalesce .Values.proxy.httpProxy .Values.proxy.httpsProxy | quote }}
               {{- end }}
+            - name: PROXY_WHITELIST
+              value: "^.*nginx-analysis.*$"
             {{- end }}
             - name: SECURITY_NODE_PRIVATE_ECDH_KEY_FILE
               value: "/opt/message-broker/crypto/private_key.pem"
