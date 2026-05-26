@@ -14,10 +14,6 @@ authup:
     adminPassword: "" # Leave empty for auto-generation
     # See README.md for more details on how to access auto-generated credentials
 
-grafana:
-  # disable plugins until plugin issues are fixed
-  plugins:
-
 harbor:
   enabled: true
   # Specify a default Harbor admin password for local testing
