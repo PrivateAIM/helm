@@ -1,0 +1,70 @@
+{{- if .Release.IsUpgrade }}
+# Pre-upgrade hook: delete the old Deployment so it doesn't conflict with the new DaemonSet.
+# This is needed because Helm cannot change a resource's kind in-place.
+# Safe to leave in place permanently — the Job is a no-op when the Deployment doesn't exist
+# (--ignore-not-found).
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: "{{ .Release.Name }}-client-ui-migrate"
+  annotations:
+    "helm.sh/hook": pre-upgrade
+    "helm.sh/hook-weight": "-10"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: "{{ .Release.Name }}-client-ui-migrate"
+  annotations:
+    "helm.sh/hook": pre-upgrade
+    "helm.sh/hook-weight": "-10"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+rules:
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    resourceNames: ["{{ .Release.Name }}-flame-hub-client-ui"]
+    verbs: ["delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: "{{ .Release.Name }}-client-ui-migrate"
+  annotations:
+    "helm.sh/hook": pre-upgrade
+    "helm.sh/hook-weight": "-10"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+subjects:
+  - kind: ServiceAccount
+    name: "{{ .Release.Name }}-client-ui-migrate"
+    namespace: {{ .Release.Namespace }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: "{{ .Release.Name }}-client-ui-migrate"
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{{ .Release.Name }}-client-ui-migrate"
+  annotations:
+    "helm.sh/hook": pre-upgrade
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      serviceAccountName: "{{ .Release.Name }}-client-ui-migrate"
+      containers:
+        - name: migrate
+          image: bitnami/kubectl:latest
+          command:
+            - kubectl
+            - delete
+            - deployment
+            - "{{ .Release.Name }}-flame-hub-client-ui"
+            - "--namespace={{ .Release.Namespace }}"
+            - --ignore-not-found
+  backoffLimit: 1
+{{- end }}
