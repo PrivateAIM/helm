@@ -61,6 +61,7 @@ image:
 
 # internal services
 clientUI:
+    replicaCount: 3
     publicHttps: false # global.flameHub.publicHttps also enables this
     cookieDomain: ""
     # service specific ingress configuration. If you use this, you will need a separate domain for each service

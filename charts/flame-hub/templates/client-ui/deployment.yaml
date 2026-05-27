@@ -5,7 +5,7 @@ metadata:
   labels:
     app: "{{ .Release.Name }}-flame-hub-client-ui"
 spec:
-  replicas: 3
+  replicas: {{ .Values.clientUI.replicaCount }}
   selector:
     matchLabels:
       app: "{{ .Release.Name }}-flame-hub-client-ui"
