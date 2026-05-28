@@ -91,11 +91,16 @@ spec:
             - name: NUXT_PUBLIC_INTERNAL_KEYCLOAK_URL
               value: {{ include "keycloak.service.endpoint" . }}
             {{- end }}
+            {{- if .Values.ui.idp.clientSecret }}
+            - name: NUXT_IDP_CLIENT_SECRET
+              value: {{ .Values.ui.idp.clientSecret | quote }}
+            {{- else }}
             - name: NUXT_IDP_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
                   name: {{ include "ui.keycloak.secretName" . }}
                   key: {{ include "ui.keycloak.secretKey" . }}
+            {{- end }}
             - name: NUXT_AUTH_SECRET
               value: {{ .Values.ui.nuxtAuthSecret | default (randAlphaNum 32) | b64enc }}
             {{- if $hasCerts }}

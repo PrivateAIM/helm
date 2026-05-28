@@ -67,14 +67,14 @@ spec:
             - name: TZ
               value: {{ .Values.timezone | default "Europe/Berlin" }}
             - name: API_ROOT_PATH
-              value: {{ (include "adapter.root.path" .) | default "" }}
+              value: {{ ( include "adapter.root.path" . ) | default "" }}
             - name: API_CLIENT_ID
-              value: {{ .Values.hubAdapter.idp.clientId | default "hub-adapter" | quote }}
+              value: hub-adapter
             - name: API_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "adapter.keycloak.secretName" . }}
-                  key: {{ include "adapter.keycloak.secretKey" . }}
+                  name: {{ .Release.Name }}-keycloak-client-secrets
+                  key: hubAdapterClientSecret
             - name: IDP_URL
               value: {{ include "adapter.userIdp.endpoint" . }}
             {{- if .Values.eventLogging.enabled }}

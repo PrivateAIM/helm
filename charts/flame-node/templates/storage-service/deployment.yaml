@@ -137,7 +137,7 @@ spec:
               value: "/mnt/certs/certs.pem"
             {{- end }}
             - name: HUB_ADAPTER_CLIENT_ID
-              value: {{ .Values.hubAdapter.idp.clientId | default "hub-adapter" | quote }}
+              value: "hub-adapter"
             {{- with .Values.storageService.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
