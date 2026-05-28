@@ -190,6 +190,9 @@ Return the hub adapter endpoint
 Return the secret containing the Keycloak client secret
 */}}
 {{- define "ui.keycloak.secretName" -}}
+{{- if .Values.ui.idp.clientSecret -}}
+    {{- printf "%s-node-ui-idp-secret" .Release.Name -}}
+{{- else -}}
 {{- $secretName := .Values.ui.idp.existingSecret -}}
 {{- if and $secretName ( not .Values.ui.idp.debug ) -}}
     {{- printf "%s" (tpl $secretName $) -}}
@@ -197,15 +200,15 @@ Return the secret containing the Keycloak client secret
     {{- printf "%s-keycloak-client-secrets" .Release.Name -}}
 {{- end -}}
 {{- end -}}
+{{- end -}}
 
 {{/*
 Return the secret key that contains the Keycloak client secret
 */}}
 {{- define "ui.keycloak.secretKey" -}}
-{{- $secretName := .Values.ui.idp.existingSecret -}}
-{{- if .Values.ui.idp.debug -}}
+{{- if or .Values.ui.idp.clientSecret .Values.ui.idp.debug -}}
     {{- print "nodeUiClientSecret" -}}
-{{- else if and $secretName .Values.ui.idp.existingSecretKey -}}
+{{- else if and .Values.ui.idp.existingSecret .Values.ui.idp.existingSecretKey -}}
     {{- printf "%s" .Values.ui.idp.existingSecretKey -}}
 {{- else -}}
     {{- print "nodeUiClientSecret" -}}
