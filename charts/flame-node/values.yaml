@@ -372,19 +372,6 @@ hubAdapter:
 
   ## Keycloak related information
   idp:
-    ## @param idp.debug If true, the clientId and clientSecret will use pre-defined values
-    ## The clientSecret will be defined using the "static" k8s secret key
-    debug: false
-    ## @param idp.clientId Keycloak client ID for this service
-    clientId: hub-adapter
-    ## @param idp.clientSecret Keycloak client secret. Ignored if `idp.existingSecret` is provided
-    ## If not defined and no existingSecret provided, a random string is generated
-    clientSecret: ""
-    ## @param idp.existingSecret Existing k8s secret containing Keycloak secret for this client
-    ## idp.existingSecretKey should also be defined for custom k8s secret. Defaults to hub-adapter-kc-secret
-    existingSecret: ""
-    ## @param idp.existingSecretKey Key where the Keycloak secret is being stored inside the existing k8s secret
-    existingSecretKey: ""
     ## @param idp.jwks JWKS URI to override the endpoints fetched from the IDP issuer
     ## Meant for local testing where either no FQDN provided or using localhost and port-forwarding
     jwks: ""
@@ -700,15 +687,15 @@ ui:
     ## @param idp.debug If true, the clientId and clientSecret will use pre-defined values
     ## The clientSecret will be defined using the "static" k8s secret key
     debug: false
-    ## @param idp.clientId Keycloak client ID for this service
+    ## @param idp.clientId IDP's client ID for this service
     clientId: node-ui
-    ## @param idp.clientSecret Keycloak client secret. Ignored if `idp.existingSecret` is provided
+    ## @param idp.clientSecret IDP client secret. Ignored if `idp.existingSecret` is provided
     ## If not defined and no existingSecret provided, a random string is generated
     clientSecret: ""
-    ## @param idp.existingSecret Existing k8s secret containing Keycloak secret for this client
-    ## idp.existingSecretKey should also be defined for custom k8s secret. Defaults to hub-adapter-kc-secret
+    ## @param idp.existingSecret Existing k8s secret containing IDP secret for this client
+    ## idp.existingSecretKey should also be defined for custom k8s secret. Defaults to nodeUiClientSecret
     existingSecret: ""
-    ## @param idp.existingSecretKey Key where the Keycloak secret is being stored inside the existing k8s secret
+    ## @param idp.existingSecretKey Key where the client secret is being stored inside the existing k8s secret
     existingSecretKey: ""
 
   # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/

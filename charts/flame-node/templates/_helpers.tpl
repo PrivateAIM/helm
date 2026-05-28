@@ -143,7 +143,6 @@ Return the secret containing the postgres admin credentials
 {{- end -}}
 
 {{/*UI helpers*/}}
-
 {{/*
 Return the endpoint for user authentication
 */}}
@@ -191,6 +190,9 @@ Return the hub adapter endpoint
 Return the secret containing the Keycloak client secret
 */}}
 {{- define "ui.keycloak.secretName" -}}
+{{- if .Values.ui.idp.clientSecret -}}
+    {{- printf "%s-node-ui-idp-secret" .Release.Name -}}
+{{- else -}}
 {{- $secretName := .Values.ui.idp.existingSecret -}}
 {{- if and $secretName ( not .Values.ui.idp.debug ) -}}
     {{- printf "%s" (tpl $secretName $) -}}
@@ -198,50 +200,21 @@ Return the secret containing the Keycloak client secret
     {{- printf "%s-keycloak-client-secrets" .Release.Name -}}
 {{- end -}}
 {{- end -}}
+{{- end -}}
 
 {{/*
 Return the secret key that contains the Keycloak client secret
 */}}
 {{- define "ui.keycloak.secretKey" -}}
-{{- $secretName := .Values.ui.idp.existingSecret -}}
-{{- if .Values.ui.idp.debug -}}
+{{- if or .Values.ui.idp.clientSecret .Values.ui.idp.debug -}}
     {{- print "nodeUiClientSecret" -}}
-{{- else if and $secretName .Values.ui.idp.existingSecretKey -}}
+{{- else if and .Values.ui.idp.existingSecret .Values.ui.idp.existingSecretKey -}}
     {{- printf "%s" .Values.ui.idp.existingSecretKey -}}
 {{- else -}}
     {{- print "nodeUiClientSecret" -}}
 {{- end -}}
 {{- end -}}
 
-{{/*
-Generate a random clientSecret value for the node-ui client in keycloak if none provided
-*/}}
-{{- define "ui.keycloak.clientSecret" -}}
-{{- if .Values.ui.idp.debug -}}
-    {{- print "UU4ySGVPMkxlWE1ZMTBWclA0Y2YyeDVKSFRGSW5tNGY="  | b64enc -}}
-{{- else if .Values.ui.idp.clientSecret -}}
-    {{- print .Values.ui.idp.clientSecret  | b64enc -}}
-{{- else -}}
-    {{- $secretName := include "ui.keycloak.secretName" . -}}
-    {{- $secretKey := include "ui.keycloak.secretKey" . -}}
-    {{- $secret := (lookup "v1" "Secret" .Release.Namespace $secretName) -}}
-    {{- if and $secret (hasKey $secret.data $secretKey) }}
-        {{- index $secret.data $secretKey }}
-    {{- else }}
-        {{- /* Create "ui_secret" dict inside ".Release" to store the secret during this template render */ -}}
-        {{- if not (index .Release "ui_secret") -}}
-            {{-   $_ := set .Release "ui_secret" dict -}}
-        {{- end -}}
-        {{- $key := printf "%s_%s" .Release.Name "ui_client_secret" -}}
-        {{- /* If $key does not yet exist in .Release.ui_secret, then generate and store it */ -}}
-        {{- if not (index .Release.ui_secret $key) -}}
-            {{-   $_ := set .Release.ui_secret $key (randAlphaNum 32) -}}
-        {{- end -}}
-        {{- /* Return the consistently generated value */ -}}
-        {{- print (index .Release.ui_secret $key | b64enc) -}}
-    {{- end }}
-{{- end -}}
-{{- end -}}
 
 {{/*
 Create valid redirect URIs for keycloak i.e. http & https
@@ -252,7 +225,6 @@ Create valid redirect URIs for keycloak i.e. http & https
 {{- end -}}
 
 {{/*Hub Adapter helpers*/}}
-
 {{/*
 Set the API's root path. If expose is configured (not none), defaults to "/api" else remains blank
 */}}
@@ -276,62 +248,6 @@ Return the endpoint for user authentication
 {{- end -}}
 
 {{/*
-Return the secret containing the Keycloak client secret
-*/}}
-{{- define "adapter.keycloak.secretName" -}}
-{{- $secretName := .Values.hubAdapter.idp.existingSecret -}}
-{{- if and $secretName ( not .Values.hubAdapter.idp.debug ) -}}
-    {{- printf "%s" (tpl $secretName $) -}}
-{{- else -}}
-    {{- printf "%s-keycloak-client-secrets" .Release.Name -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Generate a random clientSecret value for the hub-adapter client in keycloak if none provided
-*/}}
-{{- define "adapter.keycloak.clientSecret" -}}
-{{- if .Values.hubAdapter.idp.debug -}}
-    {{- print "cFR2THJCS3V5MHZ4cnV2VXByd3NYcEV0dzg0ZEROOUM=" | b64enc -}}
-{{- else if .Values.hubAdapter.idp.clientSecret -}}
-    {{- print .Values.hubAdapter.idp.clientSecret | b64enc -}}
-{{- else -}}
-    {{- $secretName := include "adapter.keycloak.secretName" . -}}
-    {{- $secretKey := include "adapter.keycloak.secretKey" . -}}
-    {{- $secret := (lookup "v1" "Secret" .Release.Namespace $secretName) -}}
-    {{- if and $secret (hasKey $secret.data $secretKey) }}
-        {{- index $secret.data $secretKey }}
-    {{- else }}
-        {{- /* Create "hub_secret" dict inside ".Release" to store the secret during this template render */ -}}
-        {{- if not (index .Release "hub_secret") -}}
-            {{-   $_ := set .Release "hub_secret" dict -}}
-        {{- end -}}
-        {{- $key := printf "%s_%s" .Release.Name "hub_client_secret" -}}
-        {{- /* If $key does not yet exist in .Release.hub_secret, then generate and store it */ -}}
-        {{- if not (index .Release.hub_secret $key) -}}
-            {{-   $_ := set .Release.hub_secret $key (randAlphaNum 32) -}}
-        {{- end -}}
-        {{- /* Return the consistently generated value */ -}}
-        {{- print (index .Release.hub_secret $key | b64enc) -}}
-    {{- end }}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Return the secret key that contains the Keycloak client secret
-*/}}
-{{- define "adapter.keycloak.secretKey" -}}
-{{- $secretName := .Values.hubAdapter.idp.existingSecret -}}
-{{- if .Values.hubAdapter.idp.debug -}}
-    {{- print "hubAdapterClientSecret" -}}
-{{- else if and $secretName .Values.hubAdapter.idp.existingSecretKey -}}
-    {{- printf "%s" .Values.hubAdapter.idp.existingSecretKey -}}
-{{- else -}}
-    {{- print "hubAdapterClientSecret" -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
 Return the JWKS endpoint for user and client authentication which overrides what is fetched by the API.
 */}}
 {{- define "adapter.jwks.endpoint" -}}
@@ -344,38 +260,7 @@ Return the JWKS endpoint for user and client authentication which overrides what
 {{- end -}}
 {{- end -}}
 
-{{/*Pod Orchestrator helpers*/}}
-
-{{/*
-Generate a random clientSecret value for the PO client in keycloak if none provided
-*/}}
-{{- define "po.keycloak.clientSecret" -}}
-{{- if .Values.podOrchestrator.idp.debug -}}
-    {{- print "9dd01665c2f3f02f93c32d03bd854569f03cd62f439ccf9f0861c141b9d6330e" -}}
-{{- else -}}
-    {{- $secretName := printf "%s-keycloak-client-secrets" .Release.Name -}}
-    {{- $secretKey := "podOrcClientSecret" -}}
-    {{- $secret := (lookup "v1" "Secret" .Release.Namespace $secretName) -}}
-    {{- if and $secret (hasKey $secret.data $secretKey) }}
-        {{- index $secret.data $secretKey }}
-    {{- else }}
-        {{- /* Create "po_secret" dict inside ".Release" to store the secret during this template render */ -}}
-        {{- if not (index .Release "po_secret") -}}
-            {{-   $_ := set .Release "po_secret" dict -}}
-        {{- end -}}
-        {{- $key := printf "%s_%s" .Release.Name "po_client_secret" -}}
-        {{- /* If $key does not yet exist in .Release.po_secret, then generate and store it */ -}}
-        {{- if not (index .Release.po_secret $key) -}}
-            {{-   $_ := set .Release.po_secret $key (randAlphaNum 32) -}}
-        {{- end -}}
-        {{- /* Return the consistently generated value */ -}}
-        {{- print (index .Release.po_secret $key | b64enc) -}}
-    {{- end -}}
-{{- end -}}
-{{- end -}}
-
 {{/*Storage Service helpers*/}}
-
 {{/*
 Return the secret containing private key
 */}}
