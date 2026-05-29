@@ -31,7 +31,7 @@ data:
           } ]
         }
       },
-      "users" : [ {
+      "users" : [ {{ if (eq .Values.keycloakx.defaultUserEnabled true) }}{
         "username" : "flameuser",
         "firstName" : "Johnny",
         "lastName" : "Storm",
@@ -53,7 +53,7 @@ data:
         },
         "notBefore" : 0,
         "groups" : [ ]
-      }, {
+      }, {{ end }}{
         "username" : "service-account-service1",
         "emailVerified" : false,
         "enabled" : true,

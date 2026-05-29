@@ -10,8 +10,18 @@ minio:
     create: true
     name: node-datastore-minio-sa
   
-  rootUser: "admin"
-  rootPassword: "admin123"
+  rootUser: ""
+  rootPassword: ""
+
+  ## Use existing Secret that store following variables:
+  ##
+  ## | Chart var    | .data.<key> in Secret |
+  ## |:-------------|:----------------------|
+  ## | rootUser     | rootUser              |
+  ## | rootPassword | rootPassword          |
+  ##
+  ## When set, rootUser and rootPassword above are ignored.
+  existingSecret: ""
 
   mode: standalone
   replicas: 1

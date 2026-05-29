@@ -30,7 +30,8 @@ dependencies:
   - name: flame-node-data-store
     repository: file://./flame-node-data-store
     version: 0.1.0
-    condition: flame-node-data-store.enabled
+    alias: dataStore
+    condition: dataStore.enabled
   - name: kong
     repository: https://charts.konghq.com
     version: 2.52.0

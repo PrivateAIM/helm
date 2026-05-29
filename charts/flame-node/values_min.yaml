@@ -26,10 +26,13 @@ hub:
     existingSecret:
 
 # keycloak values
-keycloak:
+keycloakx:
+  ## @param keycloakx.defaultUserEnabled Enable the creation of the default "flameuser" in keycloak
+  defaultUserEnabled: false
   auth:
-    adminUser: admin
-    adminPassword: admin
+    adminUsername: ""
+    adminPassword: ""
+    # existingSecret: ""
 
 proxy:
   httpProxy:
@@ -37,8 +40,12 @@ proxy:
   noProxy:
 
 ## If enabled, this will deploy a FHIR and MinIO server that can be used for testing
-flame-node-data-store:
+dataStore:
   enabled: false
+  minio:
+    rootUser: ""
+    rootPassword: ""
+    # existingSecret: ""
 
 ## @param rbac Role Based Access Control settings for authenticated users. Controls feature access in the node UI
 rbac:
