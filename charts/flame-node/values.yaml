@@ -298,9 +298,9 @@ keycloakx:
 
   auth:
     ## @param keycloakx.auth.adminUsername Bootstrap admin username for Keycloak. Ignored when existingSecret is set.
-    adminUsername: admin
+    adminUsername: ""
     ## @param keycloakx.auth.adminPassword Bootstrap admin password for Keycloak. Ignored when existingSecret is set.
-    adminPassword: admin
+    adminPassword: ""
     ## @param keycloakx.auth.existingSecret Name of an existing Secret containing Keycloak bootstrap credentials.
     ## When set, the chart does not create the credentials Secret and keycloakx.auth.adminUsername/adminPassword are ignored.
     ## The Secret must contain the keys KC_BOOTSTRAP_ADMIN_USERNAME and KC_BOOTSTRAP_ADMIN_PASSWORD.
