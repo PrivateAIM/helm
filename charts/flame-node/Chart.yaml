@@ -56,5 +56,5 @@ dependencies:
   - name: victoria-logs-single
     version: 0.12.1
     repository: https://victoriametrics.github.io/helm-charts
-    alias: victoria-logs
-    condition: eventLogging.enabled
+    alias: victorialogs
+    condition: victorialogs.enabled

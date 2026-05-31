@@ -77,9 +77,9 @@ spec:
                   key: hubAdapterClientSecret
             - name: IDP_URL
               value: {{ include "adapter.userIdp.endpoint" . }}
-            {{- if .Values.eventLogging.enabled }}
+            {{- if .Values.victorialogs.enabled }}
             - name: VICTORIA_LOGS_URL
-              value: {{ printf "http://%s-victoria-logs-server.%s.svc.cluster.local:9428" .Release.Name .Release.Namespace }}
+              value: {{ printf "http://%s-victorialogs-server.%s.svc.cluster.local:9428" .Release.Name .Release.Namespace }}
             {{- end }}
             - name: NODE_SVC_OIDC_URL
               value: {{ include "keycloak.service.endpoint" . }}

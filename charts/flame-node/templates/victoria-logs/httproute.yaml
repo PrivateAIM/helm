@@ -1,8 +1,8 @@
-{{- if and (eq .Values.expose.type "gateway") .Values.eventLogging.enabled -}}
+{{- if and (eq .Values.expose.type "gateway") .Values.victorialogs.enabled .Values.victorialogs.ingress.enabled -}}
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
-  name: {{ .Release.Name }}-victoria-logs-route
+  name: {{ .Release.Name }}-victorialogs-route
   labels:
     component: victoria-logs
     app.kubernetes.io/name: victoria-logs
@@ -26,6 +26,6 @@ spec:
           type: ReplacePrefixMatch
           replacePrefixMatch: /
     backendRefs:
-    - name: {{ .Release.Name }}-victoria-logs-server
+    - name: {{ .Release.Name }}-victorialogs-server
       port: 9428
 {{- end }}

@@ -32,10 +32,6 @@ expose:
 ## Overrides hubAdapter.idp.jwks and enables NUXT_PUBLIC_INTERNAL_KEYCLOAK_URL for the UI
 offline: false
 
-eventLogging:
-  ## @param eventLogging.enabled Enable event logging
-  enabled: true
-
 ## @param timezone Set the timezone for all components in the FLAME Node, use "TZ identifier" from https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
 timezone: Europe/Berlin
 
@@ -1168,7 +1164,16 @@ mongodb:
 
     className:
 
-victoria-logs:
+victorialogs:
+  ## @param victorialogs.enabled Enable Victoria Logs for log collection and analysis in the Flame Node. 
+  ## This will deploy a Victoria Logs instance and a Vector agent configured to send logs to it.
+  ## If disabled, the event viewer in the UI will also no longer function, as it relies on Victoria Logs for log storage and querying.
+  enabled: true
+  ## @param victorialogs.ingress.enabled Enable ingress for Victoria Logs. Only relevant if victorialogs.enabled is true.
+  ## WARNING: Enabling this will expose Victoria Logs to the network, which may have security implications as auth is not required to access the UI. 
+  ## Make sure to secure it properly if you enable this.
+  ingress:
+    enabled: false
   server:
     ## Data retention period. Possible units character: h(ours), d(ays), w(eeks), y(ears), if no unit character specified - month. 
     ## The minimum retention period is 24h. See these [docs](https://docs.victoriametrics.com/victorialogs/#retention)
