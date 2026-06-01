@@ -1,5 +1,60 @@
 # Changelog
 
+## [0.1.0](https://github.com/PrivateAIM/helm/compare/root-0.0.11...root-0.1.0) (2026-06-01)
+
+
+### ⚠ BREAKING CHANGES
+
+* harden flame-node chart security
+* allow passing proxy info as secret in flame-node
+
+### Features
+
+* allow passing proxy info as secret in flame-node ([cb9629a](https://github.com/PrivateAIM/helm/commit/cb9629a5010a841b3331dee6cfc9bf32a9b91398))
+* **authup:** Add image configuration for authup service in values.yaml and deployment template ([89aaa6c](https://github.com/PrivateAIM/helm/commit/89aaa6cb10c0bcb2957b2772d55c6a1307c44092))
+* external gateway option ([#129](https://github.com/PrivateAIM/helm/issues/129)) ([c6ae564](https://github.com/PrivateAIM/helm/commit/c6ae5647fc3942238e22ab47771d628a18eb972b))
+* **gateway:** add certificateRefNamespace support for TLS configuration ([38f67cb](https://github.com/PrivateAIM/helm/commit/38f67cb66fd750f1e3fe4b71f39b0af40b9f1b28))
+* harden flame-node chart security ([e4fa99f](https://github.com/PrivateAIM/helm/commit/e4fa99fa6c0db36afc5016602874d4d6c3a825f4))
+* **hub:** add PUBLIC_URL environment variable to server core deployment ([d6c3183](https://github.com/PrivateAIM/helm/commit/d6c3183f8353d216278e7a1570af2b836af24232))
+* **hub:** make replica count configurable for client UI ([#134](https://github.com/PrivateAIM/helm/issues/134)) ([0e049a3](https://github.com/PrivateAIM/helm/commit/0e049a38bc68b5731ae0fd9c033ca9c531251319))
+* **hub:** Support Gateway API and provide gateway template with necessary nginx parameters ([#118](https://github.com/PrivateAIM/helm/issues/118)) ([9954b2a](https://github.com/PrivateAIM/helm/commit/9954b2a9cb794135cd21cd84ee63f3d51ce72cef))
+* **node:** add env vars for PO deploy for net stats ([793e119](https://github.com/PrivateAIM/helm/commit/793e11998cd4b1787d9ff031421c2abf2b1cc7df))
+* **node:** add gateway api support to victorialogs ([7548a2e](https://github.com/PrivateAIM/helm/commit/7548a2e3a4b2bdfabc1e26852615b82fc9842bee))
+* **node:** add keycloak secret sync job with rbac ([38778fa](https://github.com/PrivateAIM/helm/commit/38778fa768a120721c22c641e2f3cc0dd46c1ac5))
+* **node:** add victoria logs to Chart.yaml and values.yaml ([0d18328](https://github.com/PrivateAIM/helm/commit/0d1832810d971ec98e85e86ffaf2ec6e425e38c8))
+* **node:** allow user to set custom nuxt auth secret for node ui ([22a4b9c](https://github.com/PrivateAIM/helm/commit/22a4b9c8a4bf492ec41375ee8fb551d3daa01bef))
+* **node:** log level parsing in victorialogs ([1473dd7](https://github.com/PrivateAIM/helm/commit/1473dd719de2d92b517d2f525ff145e08aa8b48c))
+* **openebs:** allow volume expansion with mayastor-replicated ([96add7f](https://github.com/PrivateAIM/helm/commit/96add7f5d654b0e4afcfddc8913446fddbbcec18))
+
+
+### Bug Fixes
+
+* Add extra-files configuration for authup dependency in release-please-config.json ([d791a7a](https://github.com/PrivateAIM/helm/commit/d791a7a0ee0f73d7cd4c3d4d5294377c7e8f8450))
+* **authup:** remove double repository ([5de1225](https://github.com/PrivateAIM/helm/commit/5de1225de389489ef90a34f3cccdac8fd7be50e0))
+* Hub chart dependency authup bumped to 0.0.11 ([2409053](https://github.com/PrivateAIM/helm/commit/2409053d81e36ac75583790f74bd9093b1d3db7a))
+* **hub:** appropriate pod update strategy for harbor RWO PVCs ([37da737](https://github.com/PrivateAIM/helm/commit/37da737907690e2e5f2d34bcead720013c15c8db))
+* **hub:** load grafana VL plugin through extra env instead of chart value plugins. ([#132](https://github.com/PrivateAIM/helm/issues/132)) ([7ad228a](https://github.com/PrivateAIM/helm/commit/7ad228a0f0fb3985160382bfed55bf27d0f314e6))
+* **hub:** Persist Docker Images and Master Images Repo for Hub Core W… ([#122](https://github.com/PrivateAIM/helm/issues/122)) ([d1d2bed](https://github.com/PrivateAIM/helm/commit/d1d2beda60e103a82e682bb739567d8c081ecd69))
+* **hub:** pvc mount path for master-images repo, pvc resource policy keep ([26863a5](https://github.com/PrivateAIM/helm/commit/26863a598db0f85075c89644525d515c3f16accd))
+* **node:** add support for gateway TLS termination ([11105ed](https://github.com/PrivateAIM/helm/commit/11105ed23c0719ae6ae79c89fbd7e45762f3a106))
+* **node:** improve hostname parsing in edge cases ([6240a92](https://github.com/PrivateAIM/helm/commit/6240a925bee9a46a94436df95ef4fd702e339041))
+* **node:** make use of keycloak http relativePath in URL generation ([8ba9abd](https://github.com/PrivateAIM/helm/commit/8ba9abd15a488562716800c6c617a7b5b3c53111))
+* **node:** modify kc settings for upstream TLS termination ([22d77f8](https://github.com/PrivateAIM/helm/commit/22d77f898b44a14d8fa7a8eae54514e194df4696))
+* **node:** update victorialogs alias names ([8beca80](https://github.com/PrivateAIM/helm/commit/8beca80956670af3d0d2fc9313d1ff321eb7d9b8))
+* Update extra-files path for authup dependency in release-please-config.json ([3cce20b](https://github.com/PrivateAIM/helm/commit/3cce20ba0240d525c4552b578253930cf7d3bfee))
+
+
+### Performance Improvements
+
+* **node:** optimize ui and HA probes ([c8ef560](https://github.com/PrivateAIM/helm/commit/c8ef5600db1775a2cab6e450ae998a8bdff7845e))
+* **node:** remove mogodb logs from victorialogs ([2916202](https://github.com/PrivateAIM/helm/commit/29162021fdb31b6687a1fa69861ca517555587bc))
+
+
+### Reverts
+
+* **mb:** add proxy whitelist back ([12937cd](https://github.com/PrivateAIM/helm/commit/12937cd5ce607a4754168f7437a6c12d43bc9e6d))
+* **node:** revert helpers ([fa8a5ee](https://github.com/PrivateAIM/helm/commit/fa8a5ee08868201feaa2532295d1d75bd3f82139))
+
 ## [0.0.11](https://github.com/PrivateAIM/helm/compare/root-0.0.10...root-0.0.11) (2026-03-25)
 
 

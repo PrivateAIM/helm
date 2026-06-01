@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.0](https://github.com/PrivateAIM/helm/compare/authup-0.0.11...authup-0.1.0) (2026-06-01)
+
+
+### Features
+
+* **authup:** Add image configuration for authup service in values.yaml and deployment template ([89aaa6c](https://github.com/PrivateAIM/helm/commit/89aaa6cb10c0bcb2957b2772d55c6a1307c44092))
+
+
+### Bug Fixes
+
+* **authup:** remove double repository ([5de1225](https://github.com/PrivateAIM/helm/commit/5de1225de389489ef90a34f3cccdac8fd7be50e0))
+
 ## [0.0.11](https://github.com/PrivateAIM/helm/compare/authup-0.0.10...authup-0.0.11) (2026-03-25)
 
 

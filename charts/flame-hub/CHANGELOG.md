@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.1.0](https://github.com/PrivateAIM/helm/compare/flame-hub-0.0.11...flame-hub-0.1.0) (2026-06-01)
+
+
+### Features
+
+* **authup:** Add image configuration for authup service in values.yaml and deployment template ([89aaa6c](https://github.com/PrivateAIM/helm/commit/89aaa6cb10c0bcb2957b2772d55c6a1307c44092))
+* external gateway option ([#129](https://github.com/PrivateAIM/helm/issues/129)) ([c6ae564](https://github.com/PrivateAIM/helm/commit/c6ae5647fc3942238e22ab47771d628a18eb972b))
+* **gateway:** add certificateRefNamespace support for TLS configuration ([38f67cb](https://github.com/PrivateAIM/helm/commit/38f67cb66fd750f1e3fe4b71f39b0af40b9f1b28))
+* **hub:** add PUBLIC_URL environment variable to server core deployment ([d6c3183](https://github.com/PrivateAIM/helm/commit/d6c3183f8353d216278e7a1570af2b836af24232))
+* **hub:** make replica count configurable for client UI ([#134](https://github.com/PrivateAIM/helm/issues/134)) ([0e049a3](https://github.com/PrivateAIM/helm/commit/0e049a38bc68b5731ae0fd9c033ca9c531251319))
+* **hub:** Support Gateway API and provide gateway template with necessary nginx parameters ([#118](https://github.com/PrivateAIM/helm/issues/118)) ([9954b2a](https://github.com/PrivateAIM/helm/commit/9954b2a9cb794135cd21cd84ee63f3d51ce72cef))
+
+
+### Bug Fixes
+
+* Hub chart dependency authup bumped to 0.0.11 ([2409053](https://github.com/PrivateAIM/helm/commit/2409053d81e36ac75583790f74bd9093b1d3db7a))
+* **hub:** appropriate pod update strategy for harbor RWO PVCs ([37da737](https://github.com/PrivateAIM/helm/commit/37da737907690e2e5f2d34bcead720013c15c8db))
+* **hub:** load grafana VL plugin through extra env instead of chart value plugins. ([#132](https://github.com/PrivateAIM/helm/issues/132)) ([7ad228a](https://github.com/PrivateAIM/helm/commit/7ad228a0f0fb3985160382bfed55bf27d0f314e6))
+* **hub:** Persist Docker Images and Master Images Repo for Hub Core W… ([#122](https://github.com/PrivateAIM/helm/issues/122)) ([d1d2bed](https://github.com/PrivateAIM/helm/commit/d1d2beda60e103a82e682bb739567d8c081ecd69))
+* **hub:** pvc mount path for master-images repo, pvc resource policy keep ([26863a5](https://github.com/PrivateAIM/helm/commit/26863a598db0f85075c89644525d515c3f16accd))
+
 ## [0.0.11](https://github.com/PrivateAIM/helm/compare/flame-hub-0.0.10...flame-hub-0.0.11) (2026-03-25)
 
 
