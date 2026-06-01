@@ -1,11 +1,13 @@
 global:
   flameHub:
+    ingress:
+      enabled: false
     gatewayApi:
       # enable gateway API for all services
       enabled: true
       hostname: "hub.local"
       gateway:
-        className: "nginx" # Must match your GatewayClass name
+        gatewayClassName: "nginx" # Must match your GatewayClass name
       # enable snippets for timeout/body-size configuration (requires NGINX Gateway Fabric)
       nginxGatewayFabric:
         snippets: true
@@ -16,10 +18,6 @@ authup:
     # Specify a default FLAME admin password for local testing
     adminPassword: "" # Leave empty for auto-generation
     # See README.md for more details on how to access auto-generated credentials
-
-grafana:
-  # disable plugins until plugin issues are fixed
-  plugins:
 
 harbor:
   enabled: true
