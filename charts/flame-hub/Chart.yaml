@@ -2,56 +2,37 @@ apiVersion: v2
 name: flame-hub
 description: A Helm chart for Kubernetes
 type: application
-
-# This is the chart version. This version number should be incremented each time you make changes
-# to the chart and its templates, including the app version.
-# Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: "0.0.11"
-
-# This is the version number of the application being deployed. This version number should be
-# incremented each time you make changes to the application. Versions are not expected to
-# follow Semantic Versioning. They should reflect the version the application is using.
-# It is recommended to use it with quotes.
-appVersion: "0.1.0"
-
+version: 0.1.0
+appVersion: 0.1.0
 dependencies:
   - name: common
     version: 2.31.4
     repository: oci://registry-1.docker.io/bitnamicharts
-
   - name: postgresql
     version: 18.5.1
     repository: oci://registry-1.docker.io/bitnamicharts
-
   - name: redis
     version: 22.0.6
     repository: oci://registry-1.docker.io/bitnamicharts
-
   - name: rabbitmq
     version: 16.0.14
     repository: oci://registry-1.docker.io/bitnamicharts
-
   - name: minio
     version: 17.0.21
     repository: oci://registry-1.docker.io/bitnamicharts
-
   - name: grafana
     version: 12.1.8
     repository: oci://registry-1.docker.io/bitnamicharts
-
   - name: victoria-logs-cluster
     version: 0.0.24
     repository: https://victoriametrics.github.io/helm-charts/
-
   - name: prometheus
     version: 2.1.23
     repository: oci://registry-1.docker.io/bitnamicharts
-
   - condition: harbor.enabled
     name: harbor
     version: 27.0.3
     repository: oci://registry-1.docker.io/bitnamicharts
-
   - name: authup
     repository: file://../third-party/authup
-    version: 0.0.11
+    version: 0.1.0
