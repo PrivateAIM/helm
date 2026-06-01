@@ -30,7 +30,8 @@ dependencies:
   - name: flame-node-data-store
     repository: file://./flame-node-data-store
     version: 0.1.0
-    condition: flame-node-data-store.enabled
+    alias: dataStore
+    condition: dataStore.enabled
   - name: kong
     repository: https://charts.konghq.com
     version: 2.52.0
@@ -55,5 +56,5 @@ dependencies:
   - name: victoria-logs-single
     version: 0.12.1
     repository: https://victoriametrics.github.io/helm-charts
-    alias: victoria-logs
-    condition: eventLogging.enabled
+    alias: victorialogs
+    condition: victorialogs.enabled

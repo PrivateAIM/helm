@@ -25,20 +25,32 @@ hub:
     ##       kubectl create secret generic SECRET_NAME --from-file=./private_key.pem
     existingSecret:
 
-# keycloak values
-keycloak:
+# Settings for the bundled keycloak instance. If you are using an external IDP, you can disable the keycloak deployment and set up the appropriate values in the "userIdp" and "ui" sections of the values file.
+keycloakx:
+  ## @param keycloakx.defaultUserEnabled Enable the creation of the default "flameuser" in keycloak
+  defaultUserEnabled: false
   auth:
-    adminUser: admin
-    adminPassword: admin
+    adminUsername: ""
+    adminPassword: ""
+    # existingSecret: ""
+
+# userIdp:
+#   hostname:
+#   provider: keycloak
 
 proxy:
   httpProxy:
   httpsProxy:
   noProxy:
+  # existingSecret:
 
 ## If enabled, this will deploy a FHIR and MinIO server that can be used for testing
-flame-node-data-store:
+dataStore:
   enabled: false
+  minio:
+    rootUser: ""
+    rootPassword: ""
+    # existingSecret: ""
 
 ## @param rbac Role Based Access Control settings for authenticated users. Controls feature access in the node UI
 rbac:

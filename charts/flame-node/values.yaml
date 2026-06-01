@@ -32,10 +32,6 @@ expose:
 ## Overrides hubAdapter.idp.jwks and enables NUXT_PUBLIC_INTERNAL_KEYCLOAK_URL for the UI
 offline: false
 
-eventLogging:
-  ## @param eventLogging.enabled Enable event logging
-  enabled: true
-
 ## @param timezone Set the timezone for all components in the FLAME Node, use "TZ identifier" from https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
 timezone: Europe/Berlin
 
@@ -293,6 +289,19 @@ storageService:
 
 # keycloakx values
 keycloakx:
+  ## @param keycloakx.defaultUserEnabled Enable the creation of the default "flameuser" in keycloak
+  defaultUserEnabled: false
+
+  auth:
+    ## @param keycloakx.auth.adminUsername Bootstrap admin username for Keycloak. Ignored when existingSecret is set.
+    adminUsername: ""
+    ## @param keycloakx.auth.adminPassword Bootstrap admin password for Keycloak. Ignored when existingSecret is set.
+    adminPassword: ""
+    ## @param keycloakx.auth.existingSecret Name of an existing Secret containing Keycloak bootstrap credentials.
+    ## When set, the chart does not create the credentials Secret and keycloakx.auth.adminUsername/adminPassword are ignored.
+    ## The Secret must contain the keys KC_BOOTSTRAP_ADMIN_USERNAME and KC_BOOTSTRAP_ADMIN_PASSWORD.
+    existingSecret: ""
+
   nameOverride: keycloak # Otherwise uses "keycloakx", this keeps it backwards compatible
 
   http:
@@ -347,7 +356,7 @@ keycloakx:
 
   extraEnvFrom: |
     - secretRef:
-        name: flame-keycloak-credentials-secret
+        name: {{ if .Values.auth.existingSecret }}{{ .Values.auth.existingSecret }}{{ else }}flame-keycloak-credentials-secret{{ end }}
     - configMapRef:
         name: {{ .Release.Name }}-keycloak-env
 
@@ -383,7 +392,7 @@ hubAdapter:
   image:
     repository: ghcr.io/privateaim/node-hub-api-adapter
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.6.3
+    tag: 0.6.4
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -593,9 +602,9 @@ messageBroker:
     timezone: Europe/Berlin
   broker:
     AUTH_JWKS_URL: ""
-    HUB_BASE_URL: https://api.privateaim.dev/
-    HUB_AUTH_BASE_URL: https://auth.privateaim.dev/
-    HUB_MESSENGER_BASE_URL: https://messenger.privateaim.dev/
+    HUB_BASE_URL: https://core.dev.privateaim.net/
+    HUB_AUTH_BASE_URL: https://auth.dev.privateaim.net/
+    HUB_MESSENGER_BASE_URL: https://messenger.dev.privateaim.net/
 
   # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
   replicaCount: 1
@@ -682,7 +691,7 @@ ui:
   ## Can be generated with `openssl rand -base64 32`
   nuxtAuthSecret: ""
 
-  ## Keycloak related information
+  ## IDP related information
   idp:
     ## @param idp.debug If true, the clientId and clientSecret will use pre-defined values
     ## The clientSecret will be defined using the "static" k8s secret key
@@ -705,7 +714,7 @@ ui:
   image:
     repository: ghcr.io/privateaim/node-ui
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.6.3
+    tag: 0.6.4
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -787,7 +796,7 @@ ui:
   affinity: {}
 
 ## node-data-store deploys dummy blaze (FHIR) and minio (S3) data stores for testing the Flame Node
-flame-node-data-store:
+dataStore:
   enabled: false
 
   # blaze values
@@ -815,8 +824,12 @@ flame-node-data-store:
 
   # minio values
   minio:
-    rootUser: admin
-    rootPassword: admin123
+    rootUser: ""
+    rootPassword: ""
+
+    ## @param dataStore.minio.existingSecret Name of an existing Secret with keys rootUser and rootPassword.
+    ## When set, rootUser and rootPassword above are ignored.
+    existingSecret: ""
 
     mode: standalone
     replicas: 1
@@ -840,6 +853,20 @@ postgresql:
   service:
     type: ClusterIP
     port: 5432
+
+  ## Credentials for the main PostgreSQL instance.
+  ## Passwords are auto-generated on first install and preserved across upgrades via lookup.
+  ## To use an external secret instead, change settings.existingSecret and userDatabase.existingSecret
+  ## to its name, the chart will skip creating its own secret when those are changed.
+  auth:
+    ## @param postgresql.auth.superPassword Superuser password. Auto-generated on first install if blank.
+    superPassword: ""
+    ## @param postgresql.auth.user Application database username. Changing after initial install requires manual database migration.
+    user: "flame_user"
+    ## @param postgresql.auth.password Application database password. Auto-generated on first install if blank.
+    password: ""
+    ## @param postgresql.auth.database Application database name.
+    database: "postgres_db"
 
   ## Database configuration
   settings:
@@ -896,6 +923,20 @@ kong-postgresql:
     type: ClusterIP
     port: 5432
 
+  ## Credentials for the Kong PostgreSQL instance.
+  ## Passwords are auto-generated on first install and preserved across upgrades via lookup.
+  ## To use an external secret instead, change settings.existingSecret and userDatabase.existingSecret
+  ## to its name — the chart will skip creating its own secret when those are changed.
+  auth:
+    ## @param kong-postgresql.auth.superPassword Superuser password. Auto-generated on first install if blank.
+    superPassword: ""
+    ## @param kong-postgresql.auth.user Kong database username. Changing after initial install requires manual database migration.
+    user: "flame_kong_user"
+    ## @param kong-postgresql.auth.password Kong database password. Auto-generated on first install if blank.
+    password: ""
+    ## @param kong-postgresql.auth.database Kong database name.
+    database: "kong"
+
   ## Database configuration
   settings:
     ## Optional existing secret for the Postgres superuser
@@ -926,6 +967,20 @@ keycloak-postgresql:
   service:
     type: ClusterIP
     port: 5432
+
+  ## Credentials for the Keycloak PostgreSQL instance.
+  ## Passwords are auto-generated on first install and preserved across upgrades via lookup.
+  ## To use an external secret instead, change settings.existingSecret and userDatabase.existingSecret
+  ## to its name — the chart will skip creating its own secret when those are changed.
+  auth:
+    ## @param keycloak-postgresql.auth.superPassword Superuser password. Auto-generated on first install if blank.
+    superPassword: ""
+    ## @param keycloak-postgresql.auth.user Keycloak database username. Changing after initial install requires manual database migration.
+    user: "keycloakpguser"
+    ## @param keycloak-postgresql.auth.password Keycloak database password. Auto-generated on first install if blank.
+    password: ""
+    ## @param keycloak-postgresql.auth.database Keycloak database name.
+    database: "keycloak"
 
   ## Database configuration
   settings:
@@ -1109,7 +1164,16 @@ mongodb:
 
     className:
 
-victoria-logs:
+victorialogs:
+  ## @param victorialogs.enabled Enable Victoria Logs for log collection and analysis in the Flame Node. 
+  ## This will deploy a Victoria Logs instance and a Vector agent configured to send logs to it.
+  ## If disabled, the event viewer in the UI will also no longer function, as it relies on Victoria Logs for log storage and querying.
+  enabled: true
+  ## @param victorialogs.ingress.enabled Enable ingress for Victoria Logs. Only relevant if victorialogs.enabled is true.
+  ## WARNING: Enabling this will expose Victoria Logs to the network, which may have security implications as auth is not required to access the UI. 
+  ## Make sure to secure it properly if you enable this.
+  ingress:
+    enabled: false
   server:
     ## Data retention period. Possible units character: h(ours), d(ays), w(eeks), y(ears), if no unit character specified - month. 
     ## The minimum retention period is 24h. See these [docs](https://docs.victoriametrics.com/victorialogs/#retention)

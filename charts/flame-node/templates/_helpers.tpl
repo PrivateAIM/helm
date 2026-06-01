@@ -64,6 +64,19 @@ Return the secret containing the hub robot secret
 {{- end -}}
 
 {{/*
+Return the name of the Secret containing Keycloak bootstrap admin credentials.
+When keycloakx.auth.existingSecret is set, that Secret is used and the chart does not create one.
+The Secret must contain keys KC_BOOTSTRAP_ADMIN_USERNAME and KC_BOOTSTRAP_ADMIN_PASSWORD.
+*/}}
+{{- define "keycloak.credentials.secretName" -}}
+{{- if .Values.keycloakx.auth.existingSecret -}}
+    {{- printf "%s" (tpl .Values.keycloakx.auth.existingSecret $) -}}
+{{- else -}}
+    {{- print "flame-keycloak-credentials-secret" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Return the service route for the internal keycloak instance"
 */}}
 {{- define "keycloak.svc.route" -}}
@@ -272,7 +285,6 @@ Return the secret containing private key
     {{- printf "%s-ecdh-private-key-secret" .Release.Name -}}
 {{- end -}}
 {{- end -}}
-
 
 
 {{/*
