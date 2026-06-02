@@ -273,6 +273,17 @@ Return the JWKS endpoint for user and client authentication which overrides what
 {{- end -}}
 {{- end -}}
 
+{{/*
+Return the name of the Secret containing the nuxtAuthSecret
+*/}}
+{{- define "ui.nuxtAuth.secretName" -}}
+{{- if .Values.ui.nuxtAuthExistingSecret -}}
+    {{- printf "%s" .Values.ui.nuxtAuthExistingSecret -}}
+{{- else -}}
+    {{- printf "%s-node-ui-secret" .Release.Name -}}
+{{- end -}}
+{{- end -}}
+
 {{/*Storage Service helpers*/}}
 {{/*
 Return the secret containing private key

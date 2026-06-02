@@ -97,7 +97,10 @@ spec:
                   name: {{ include "ui.keycloak.secretName" . }}
                   key: {{ include "ui.keycloak.secretKey" . }}
             - name: NUXT_AUTH_SECRET
-              value: {{ .Values.ui.nuxtAuthSecret | default (randAlphaNum 32) | b64enc }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ui.nuxtAuth.secretName" . }}
+                  key: nuxtAuthSecret
             {{- if and (eq .Values.victorialogs.enabled true) (eq .Values.victorialogs.ingress.enabled true) }}
             - name: NUXT_PUBLIC_VICTORIA_LOGS_URL
               value: {{ printf "%s/logs/select/vmui" (include "node.hostname" .) }}

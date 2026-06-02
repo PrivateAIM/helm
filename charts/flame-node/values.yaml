@@ -686,10 +686,12 @@ messageBroker:
 ui:
   env: production
 
-  ## @param nuxtAuthSecret Used for encrypting JWTs, if not set, then a rolling restart is issued for Node UI
-  ## deployment with every upgrade
-  ## Can be generated with `openssl rand -base64 32`
+  ## @param nuxtAuthSecret Used for encrypting JWTs. Auto-generated on first install and preserved across upgrades.
+  ## Set this to a fixed value to pin the secret (e.g. `openssl rand -base64 32`).
   nuxtAuthSecret: ""
+  ## @param nuxtAuthExistingSecret Name of an existing Secret containing the nuxtAuthSecret under the key "nuxtAuthSecret".
+  ## When set, the chart does not create or manage the nuxtAuthSecret and nuxtAuthSecret above is ignored.
+  nuxtAuthExistingSecret: ""
 
   ## IDP related information
   idp:
