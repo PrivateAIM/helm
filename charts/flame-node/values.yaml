@@ -112,7 +112,7 @@ hub:
     storage: https://storage.staging.privateaim.net
   ## Credentials used for retrieving a valid token from the hub using a robot account
   auth:
-    clientID:
+    clientId:
     clientSecret:
     ## @param hub.auth.existingSecret Existing k8s secret containing secret for given hub client ID
     ## The secret must have a key named "clientSecret"

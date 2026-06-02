@@ -128,7 +128,7 @@ spec:
             - name: HUB_URL_CORE
               value: {{ .Values.hub.endpoints.core | default "https://core.privateaim.dev" | quote }}
             - name: HUB_CLIENT_ID
-              value:  {{ required "A client ID for the Hub is required." .Values.hub.auth.clientID | quote }}
+              value:  {{ required "A client ID for the Hub is required." .Values.hub.auth.clientId | quote }}
             - name: HUB_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:

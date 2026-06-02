@@ -112,7 +112,7 @@ spec:
             - name: HUB__AUTH__FLOW
               value: "client"
             - name: HUB__AUTH__ID
-              value: {{ required "Hub client ID must be set." .Values.hub.auth.clientID  | quote }}
+              value: {{ required "Hub client ID must be set." .Values.hub.auth.clientId  | quote }}
             - name: HUB__AUTH__SECRET
               valueFrom:
                 secretKeyRef:

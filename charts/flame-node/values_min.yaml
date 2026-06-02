@@ -9,7 +9,7 @@ expose:
 hub:
   ## Credentials used for retrieving a valid token from the hub using a robot account
   auth:
-    clientID:
+    clientId:
     clientSecret:
   ## Values required by the storage service for encrypting intermediate results sent to the Hub
   crypto:

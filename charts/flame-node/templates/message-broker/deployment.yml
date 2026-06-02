@@ -59,7 +59,7 @@ spec:
             - name: HUB_AUTH_BASE_URL
               value: {{ required "A valid HUB Auth base URL is required." .Values.hub.endpoints.auth | default "https://auth.privateaim.net/" | quote }}
             - name: HUB_AUTH_CLIENT_ID
-              value: {{ required "A client ID for the Hub is required." .Values.hub.auth.clientID | quote }}
+              value: {{ required "A client ID for the Hub is required." .Values.hub.auth.clientId | quote }}
             - name: HUB_AUTH_CLIENT_SECRET_FILE
               value: "/opt/message-broker/auth/client_secret.txt"
             - name: HUB_BASE_URL
