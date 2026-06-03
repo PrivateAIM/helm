@@ -1,552 +1,552 @@
 global:
-    imagePullPolicy: "IfNotPresent"
+  imagePullPolicy: "IfNotPresent"
 
-    flameHub:
-        publicHttps: true # used for constructing URLs used in your browser
-        # enable this ingress for path based routing
-        # alternatively you can enable ingress for each Hub service individually (subdomain-based routing)
-        # enabling this ingress will expose all Hub services on the same domain at different paths (e.g. /core/, /messenger/, /storage/, /telemetry/)
-        ingress:
-            enabled: true
-            hostname: "localhost"
-            className: "" # ingress class you want to use (optional)
-            # Default annotations for ingress nginx
-            # Replace or remove if you use a different ingress controller
-            annotations:
-                # Example annotations for ingress nginx
-                nginx.ingress.kubernetes.io/rewrite-target: /$2 # for path based routing
-                nginx.ingress.kubernetes.io/proxy-buffer-size: "16k" # for large auth token
-                nginx.ingress.kubernetes.io/proxy-body-size: "0" # for large file uploads
-                nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
-                nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
-        # Gateway API configuration.
-        # Set enabled: true to enable all service routes at once (using the default paths below).
-        # Alternatively, enable routing per service (clientUI.gatewayApi.enabled, serverCore.gatewayApi.enabled, etc.).
-        # For path-based routing, keep the default paths and use one shared hostname.
-        # For domain-based routing, set a unique hostname per service and override path to "/".
-        # Note: Harbor cannot use path-based routing because it always needs its own hostname
-        gatewayApi:
-            enabled: false # enable gatewayApi for all services
-            hostname: "localhost"
-            tls:
-                enabled: false
-                mode: "Terminate"
-                certificateRef: ""
-                certificateRefNamespace: "" # optional namespace for certificateRef
-            gateway:
-                ## @param global.flameHub.gatewayApi.gateway.gatewayClassName GatewayClass name (only applies when external is false)
-                gatewayClassName: ""
-                ## @param global.flameHub.gatewayApi.gateway.external When true, the chart does not create a Gateway resource and instead attaches HTTPRoutes to an existing external Gateway
-                external: false
-                ## @param global.flameHub.gatewayApi.gateway.parentRef Reference to the external Gateway for HTTPRoutes (only used when external is true)
-                parentRef:
-                    ## @param global.flameHub.gatewayApi.gateway.parentRef.name Name of the external Gateway resource (required when external is true)
-                    name: ""
-                    ## @param global.flameHub.gatewayApi.gateway.parentRef.namespace Namespace of the external Gateway (omit for same-namespace)
-                    namespace: ""
-                    ## @param global.flameHub.gatewayApi.gateway.parentRef.sectionName Listener name on the external Gateway to attach to (optional)
-                    sectionName: ""
-                annotations: {}
-            # Set to true to use SnippetsFilter-based proxy timeouts (see harbor/server-storage httproutes).
-            # Requires snippets to be enabled in your NGINX Gateway Fabric install.
-            # (NGINX Gateway Fabric does not support annotations.)
-            nginxGatewayFabric:
-                snippets: false
+  flameHub:
+    publicHttps: true # used for constructing URLs used in your browser
+    # enable this ingress for path based routing
+    # alternatively you can enable ingress for each Hub service individually (subdomain-based routing)
+    # enabling this ingress will expose all Hub services on the same domain at different paths (e.g. /core/, /messenger/, /storage/, /telemetry/)
+    ingress:
+      enabled: true
+      hostname: "localhost"
+      className: "" # ingress class you want to use (optional)
+      # Default annotations for ingress nginx
+      # Replace or remove if you use a different ingress controller
+      annotations:
+        # Example annotations for ingress nginx
+        nginx.ingress.kubernetes.io/rewrite-target: /$2 # for path based routing
+        nginx.ingress.kubernetes.io/proxy-buffer-size: "16k" # for large auth token
+        nginx.ingress.kubernetes.io/proxy-body-size: "0" # for large file uploads
+        nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+        nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    # Gateway API configuration.
+    # Set enabled: true to enable all service routes at once (using the default paths below).
+    # Alternatively, enable routing per service (clientUI.gatewayApi.enabled, serverCore.gatewayApi.enabled, etc.).
+    # For path-based routing, keep the default paths and use one shared hostname.
+    # For domain-based routing, set a unique hostname per service and override path to "/".
+    # Note: Harbor cannot use path-based routing because it always needs its own hostname
+    gatewayApi:
+      enabled: false # enable gatewayApi for all services
+      hostname: "localhost"
+      tls:
+        enabled: false
+        mode: "Terminate"
+        certificateRef: ""
+        certificateRefNamespace: "" # optional namespace for certificateRef
+      gateway:
+        ## @param global.flameHub.gatewayApi.gateway.gatewayClassName GatewayClass name (only applies when external is false)
+        gatewayClassName: ""
+        ## @param global.flameHub.gatewayApi.gateway.external When true, the chart does not create a Gateway resource and instead attaches HTTPRoutes to an existing external Gateway
+        external: false
+        ## @param global.flameHub.gatewayApi.gateway.parentRef Reference to the external Gateway for HTTPRoutes (only used when external is true)
+        parentRef:
+          ## @param global.flameHub.gatewayApi.gateway.parentRef.name Name of the external Gateway resource (required when external is true)
+          name: ""
+          ## @param global.flameHub.gatewayApi.gateway.parentRef.namespace Namespace of the external Gateway (omit for same-namespace)
+          namespace: ""
+          ## @param global.flameHub.gatewayApi.gateway.parentRef.sectionName Listener name on the external Gateway to attach to (optional)
+          sectionName: ""
+        annotations: {}
+      # Set to true to use SnippetsFilter-based proxy timeouts (see harbor/server-storage httproutes).
+      # Requires snippets to be enabled in your NGINX Gateway Fabric install.
+      # (NGINX Gateway Fabric does not support annotations.)
+      nginxGatewayFabric:
+        snippets: false
 
 image:
-    registry: ghcr.io
-    repository: privateaim/hub
-    tag: 0.10.0
-    pullPolicy: Always
+  registry: ghcr.io
+  repository: privateaim/hub
+  tag: 0.10.1
+  pullPolicy: Always
 
 # internal services
 clientUI:
-    replicaCount: 3
-    publicHttps: false # global.flameHub.publicHttps also enables this
-    cookieDomain: ""
-    # service specific ingress configuration. If you use this, you will need a separate domain for each service
-    ingress:
-        enabled: false
-        hostname: ""
-        path: "/"
-        pathType: "Prefix"
-        className: ""
-        annotations: {}
-    # Per-service gateway API route. Set hostname to override the global default.
-    # For path-based routing, use the default paths below. For domain-based, set hostname and path: "/".
-    gatewayApi:
-        enabled: false # global.flameHub.gatewayApi.enabled also enables this
-        hostname: "" # empty = global.flameHub.gatewayApi.hostname
-        path: "/"
+  replicaCount: 3
+  publicHttps: false # global.flameHub.publicHttps also enables this
+  cookieDomain: ""
+  # service specific ingress configuration. If you use this, you will need a separate domain for each service
+  ingress:
+    enabled: false
+    hostname: ""
+    path: "/"
+    pathType: "Prefix"
+    className: ""
+    annotations: {}
+  # Per-service gateway API route. Set hostname to override the global default.
+  # For path-based routing, use the default paths below. For domain-based, set hostname and path: "/".
+  gatewayApi:
+    enabled: false # global.flameHub.gatewayApi.enabled also enables this
+    hostname: "" # empty = global.flameHub.gatewayApi.hostname
+    path: "/"
 
 serverCore:
-    publicHttps: false # global.flameHub.publicHttps also enables this
-    ingress:
-        enabled: false
-        hostname: ""
-        path: "/"
-        pathType: "Prefix"
-        className: ""
-        annotations: {}
-    gatewayApi:
-        enabled: false # global.flameHub.gatewayApi.enabled also enables this
-        hostname: "" # empty = global.flameHub.gatewayApi.hostname
-        path: "/core"
-    env:
-        masterImagesBranch: ""
+  publicHttps: false # global.flameHub.publicHttps also enables this
+  ingress:
+    enabled: false
+    hostname: ""
+    path: "/"
+    pathType: "Prefix"
+    className: ""
+    annotations: {}
+  gatewayApi:
+    enabled: false # global.flameHub.gatewayApi.enabled also enables this
+    hostname: "" # empty = global.flameHub.gatewayApi.hostname
+    path: "/core"
+  env:
+    masterImagesBranch: ""
 
 serverMessenger:
-    publicHttps: false # global.flameHub.publicHttps also enables this
-    ingress:
-        enabled: false
-        hostname: ""
-        path: "/"
-        pathType: "Prefix"
-        className: ""
-        annotations: {}
-    gatewayApi:
-        enabled: false # global.flameHub.gatewayApi.enabled also enables this
-        hostname: "" # empty = global.flameHub.gatewayApi.hostname
-        path: "/messenger"
+  publicHttps: false # global.flameHub.publicHttps also enables this
+  ingress:
+    enabled: false
+    hostname: ""
+    path: "/"
+    pathType: "Prefix"
+    className: ""
+    annotations: {}
+  gatewayApi:
+    enabled: false # global.flameHub.gatewayApi.enabled also enables this
+    hostname: "" # empty = global.flameHub.gatewayApi.hostname
+    path: "/messenger"
 
 serverStorage:
-    publicHttps: false # global.flameHub.publicHttps also enables this
-    ingress:
-        enabled: false
-        hostname: ""
-        path: "/"
-        pathType: "Prefix"
-        # Default annotations for ingress nginx (e.g. for large file uploads)
-        # Replace or remove if you use a different ingress controller
-        annotations:
-            nginx.ingress.kubernetes.io/proxy-body-size: "0"
-            nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
-            nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
-    gatewayApi:
-        enabled: false # global.flameHub.gatewayApi.enabled also enables this
-        hostname: "" # empty = global.flameHub.gatewayApi.hostname
-        path: "/storage"
+  publicHttps: false # global.flameHub.publicHttps also enables this
+  ingress:
+    enabled: false
+    hostname: ""
+    path: "/"
+    pathType: "Prefix"
+    # Default annotations for ingress nginx (e.g. for large file uploads)
+    # Replace or remove if you use a different ingress controller
+    annotations:
+      nginx.ingress.kubernetes.io/proxy-body-size: "0"
+      nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+      nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+  gatewayApi:
+    enabled: false # global.flameHub.gatewayApi.enabled also enables this
+    hostname: "" # empty = global.flameHub.gatewayApi.hostname
+    path: "/storage"
 
 serverTelemetry:
-    publicHttps: false # global.flameHub.publicHttps also enables this
-    ingress:
-        enabled: false
-        hostname: ""
-        path: "/"
-        pathType: "Prefix"
-        # Default annotations for ingress nginx
-        # Replace or remove if you use a different ingress controller
-        annotations:
-            nginx.ingress.kubernetes.io/proxy-body-size: "0"
-        # Annotations for the grafana sub-path ingress (rewrite-target)
-        subPathAnnotations:
-            nginx.ingress.kubernetes.io/rewrite-target: /$2
-    gatewayApi:
-        enabled: false # global.flameHub.gatewayApi.enabled also enables this
-        hostname: "" # empty = global.flameHub.gatewayApi.hostname
-        path: "/telemetry"
-        grafanaPath: "/grafana"
+  publicHttps: false # global.flameHub.publicHttps also enables this
+  ingress:
+    enabled: false
+    hostname: ""
+    path: "/"
+    pathType: "Prefix"
+    # Default annotations for ingress nginx
+    # Replace or remove if you use a different ingress controller
+    annotations:
+      nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    # Annotations for the grafana sub-path ingress (rewrite-target)
+    subPathAnnotations:
+      nginx.ingress.kubernetes.io/rewrite-target: /$2
+  gatewayApi:
+    enabled: false # global.flameHub.gatewayApi.enabled also enables this
+    hostname: "" # empty = global.flameHub.gatewayApi.hostname
+    path: "/telemetry"
+    grafanaPath: "/grafana"
 
 serverCoreWorker:
-    enabled: true
-    # Use a docker-in-docker sidecar container instead of mounting the docker socket from the host
-    useSidecarDinD: true
-    persistence:
-        size: "100Gi"
-        # See /charts/third-party/openebs for details
-        # storageClass: "mayastor-replicated"
+  enabled: true
+  # Use a docker-in-docker sidecar container instead of mounting the docker socket from the host
+  useSidecarDinD: true
+  persistence:
+    size: "100Gi"
+    # See /charts/third-party/openebs for details
+    # storageClass: "mayastor-replicated"
 
 # Credentials configuration
 auth:
-    # Name of the secret containing all credentials
-    # IMPORTANT: If you change this value, you must also update the subchart configurations to match.
-    # This is because subcharts have their own existingSecret fields that cannot be templated, unfortunately.
-    secretName: "flame-hub-auth"
+  # Name of the secret containing all credentials
+  # IMPORTANT: If you change this value, you must also update the subchart configurations to match.
+  # This is because subcharts have their own existingSecret fields that cannot be templated, unfortunately.
+  secretName: "flame-hub-auth"
 
-    # Advanced: Use your own secret instead of auto-generated one, takes precedence over secretName
-    # IMPORTANT:If you set this, you must also update the subchart configurations below to point to your secret!
-    existingSecret: ""
+  # Advanced: Use your own secret instead of auto-generated one, takes precedence over secretName
+  # IMPORTANT:If you set this, you must also update the subchart configurations below to point to your secret!
+  existingSecret: ""
 
 ## Dependencies / Subcharts
 
 # Authentication Provider
 authup:
-    publicHttps: false # global.flameHub.publicHttps also enables this
-    image:
-        repository: "authup/authup"
-        tag: "latest"
-        pullPolicy: "Always"
-    auth:
-        existingSecret: "flame-hub-auth"
+  publicHttps: false # global.flameHub.publicHttps also enables this
+  image:
+    repository: "authup/authup"
+    tag: "latest"
+    pullPolicy: "Always"
+  auth:
+    existingSecret: "flame-hub-auth"
 
-        # Default Password for the FLAME Hub Admin User
-        adminPassword: "" # Leave empty for auto-generation
+    # Default Password for the FLAME Hub Admin User
+    adminPassword: "" # Leave empty for auto-generation
 
-        # Default secret for the FLAME Hub System Client
-        clientSecret: "" # Leave empty for auto-generation
-    ingress:
-        enabled: false
-        hostname: ""
-        className: ""
-        annotations:
-            nginx.ingress.kubernetes.io/proxy-buffer-size: "256k"
-            nginx.ingress.kubernetes.io/proxy-buffers-number: "8"
-            nginx.ingress.kubernetes.io/proxy-busy-buffers-size: "512k"
-    gatewayApi:
-        enabled: false # global.flameHub.gatewayApi.enabled also enables this
-        hostname: "" # empty = global.flameHub.gatewayApi.hostname
-        path: "/auth"
+    # Default secret for the FLAME Hub System Client
+    clientSecret: "" # Leave empty for auto-generation
+  ingress:
+    enabled: false
+    hostname: ""
+    className: ""
+    annotations:
+      nginx.ingress.kubernetes.io/proxy-buffer-size: "256k"
+      nginx.ingress.kubernetes.io/proxy-buffers-number: "8"
+      nginx.ingress.kubernetes.io/proxy-busy-buffers-size: "512k"
+  gatewayApi:
+    enabled: false # global.flameHub.gatewayApi.enabled also enables this
+    hostname: "" # empty = global.flameHub.gatewayApi.hostname
+    path: "/auth"
 
 rabbitmq:
-    nameOverride: "rabbitmq"
-    auth:
-        username: "root"
-        password: "" # Leave empty for auto-generation
-        existingPasswordSecret: "flame-hub-auth"
-        existingSecretPasswordKey: "rabbitmq-password"
-    image:
-        #repository: "tada5hi/rabbitmq"
-        repository: "bitnamilegacy/rabbitmq"
-        tag: "4.1.3-debian-12-r1"
-    # See /charts/third-party/openebs for details
-    # persistence:
-    #     storageClass: "mayastor-replicated"
+  nameOverride: "rabbitmq"
+  auth:
+    username: "root"
+    password: "" # Leave empty for auto-generation
+    existingPasswordSecret: "flame-hub-auth"
+    existingSecretPasswordKey: "rabbitmq-password"
+  image:
+    #repository: "tada5hi/rabbitmq"
+    repository: "bitnamilegacy/rabbitmq"
+    tag: "4.1.3-debian-12-r1"
+  # See /charts/third-party/openebs for details
+  # persistence:
+  #     storageClass: "mayastor-replicated"
 redis:
-    nameOverride: "redis"
-    startupProbe:
-        failureThreshold: 15
-    readinessProbe:
-        failureThreshold: 10
-    auth:
-        enabled: true
-        password: "" # Leave empty for auto-generation
-        existingSecret: "flame-hub-auth"
-        existingSecretPasswordKey: "redis-password"
-    image:
-        #repository: "tada5hi/redis"
-        repository: "bitnamilegacy/redis"
-        tag: "8.2.1-debian-12-r0"
-    # See /charts/third-party/openebs for details
-    # master:
-    #     persistence:
-    #         storageClass: "mayastor-replicated"
+  nameOverride: "redis"
+  startupProbe:
+    failureThreshold: 15
+  readinessProbe:
+    failureThreshold: 10
+  auth:
+    enabled: true
+    password: "" # Leave empty for auto-generation
+    existingSecret: "flame-hub-auth"
+    existingSecretPasswordKey: "redis-password"
+  image:
+    #repository: "tada5hi/redis"
+    repository: "bitnamilegacy/redis"
+    tag: "8.2.1-debian-12-r0"
+  # See /charts/third-party/openebs for details
+  # master:
+  #     persistence:
+  #         storageClass: "mayastor-replicated"
 
 minio:
-    nameOverride: "minio"
-    image:
-        #repository: "tada5hi/minio"
-        repository: "bitnamilegacy/minio"
-        tag: "2025.7.23-debian-12-r3"
-    auth:
-        rootUser: "admin"
-        rootPassword: "" # Leave empty for auto-generation
-        existingSecret: "flame-hub-auth"
-        rootPasswordSecretKey: "minio-root-password"
-        rootUserSecretKey: "minio-root-user"
+  nameOverride: "minio"
+  image:
+    #repository: "tada5hi/minio"
+    repository: "bitnamilegacy/minio"
+    tag: "2025.7.23-debian-12-r3"
+  auth:
+    rootUser: "admin"
+    rootPassword: "" # Leave empty for auto-generation
+    existingSecret: "flame-hub-auth"
+    rootPasswordSecretKey: "minio-root-password"
+    rootUserSecretKey: "minio-root-user"
 
-    console:
-        image:
-            #repository: "tada5hi/minio-object-browser"
-            repository: "bitnamilegacy/minio-object-browser"
-            tag: "2.0.2-debian-12-r3"
-    # See /charts/third-party/openebs for details
-    # persistence:
-    #     storageClass: "mayastor-replicated"
+  console:
+    image:
+      #repository: "tada5hi/minio-object-browser"
+      repository: "bitnamilegacy/minio-object-browser"
+      tag: "2.0.2-debian-12-r3"
+  # See /charts/third-party/openebs for details
+  # persistence:
+  #     storageClass: "mayastor-replicated"
 
 postgresql:
-    nameOverride: "postgresql"
-    image:
-        repository: "bitnamilegacy/postgresql"
-        tag: "17.6.0-debian-12-r4"
-    auth:
-        postgresPassword: "" # Leave empty for auto-generation
-        replicationPassword: "" # Leave empty for auto-generation
-        existingSecret: "flame-hub-auth"
-        secretKeys:
-            adminPasswordKey: "postgresql-password"
-            replicationPasswordKey: "postgresql-replication-password"
-    primary:
-        startupProbe:
-            failureThreshold: 30
-        readinessProbe:
-            failureThreshold: 20
-        persistence:
-            enabled: true
-            size: 16Gi
-            # See /charts/third-party/openebs for details
-            # storageClass: "mayastor-replicated"
-        extendedConfiguration: |
-            max_connections = 1024
-        # https://github.com/bitnami/charts/blob/main/bitnami/harbor/values.yaml
-        initdb:
-            scripts:
-                initial-registry.sql: |
-                    CREATE DATABASE registry ENCODING 'UTF8';
-                    \c registry;
-                    CREATE TABLE schema_migrations(version bigint not null primary key, dirty boolean not null);
-    readReplicas:
-        replicaCount: 0
-        persistence:
-            enabled: true
-            size: 16Gi
-        startupProbe:
-            failureThreshold: 30
-        readinessProbe:
-            failureThreshold: 20
-    architecture: "replication"
+  nameOverride: "postgresql"
+  image:
+    repository: "bitnamilegacy/postgresql"
+    tag: "17.6.0-debian-12-r4"
+  auth:
+    postgresPassword: "" # Leave empty for auto-generation
+    replicationPassword: "" # Leave empty for auto-generation
+    existingSecret: "flame-hub-auth"
+    secretKeys:
+      adminPasswordKey: "postgresql-password"
+      replicationPasswordKey: "postgresql-replication-password"
+  primary:
+    startupProbe:
+      failureThreshold: 30
+    readinessProbe:
+      failureThreshold: 20
+    persistence:
+      enabled: true
+      size: 16Gi
+      # See /charts/third-party/openebs for details
+      # storageClass: "mayastor-replicated"
+    extendedConfiguration: |
+      max_connections = 1024
+    # https://github.com/bitnami/charts/blob/main/bitnami/harbor/values.yaml
+    initdb:
+      scripts:
+        initial-registry.sql: |
+          CREATE DATABASE registry ENCODING 'UTF8';
+          \c registry;
+          CREATE TABLE schema_migrations(version bigint not null primary key, dirty boolean not null);
+  readReplicas:
+    replicaCount: 0
+    persistence:
+      enabled: true
+      size: 16Gi
+    startupProbe:
+      failureThreshold: 30
+    readinessProbe:
+      failureThreshold: 20
+  architecture: "replication"
 
 grafana:
-    nameOverride: "grafana"
-    image:
-        #repository: "tada5hi/grafana"
-        repository: "bitnamilegacy/grafana"
-        tag: "12.1.1-debian-12-r1"
-    admin:
-        password: "" # Leave empty for auto-generation
-        existingSecret: "flame-hub-auth"
-        existingSecretPasswordKey: "grafana-admin-password"
-    dashboardsProvider:
-        enabled: true
-    datasources:
-        secretName: grafana-datasources
-    config:
-        useGrafanaIniFile: true
-        grafanaIniConfigMap: grafana
-    grafana:
-        updateStrategy:
-            type: Recreate
-        extraEnvVars:
-            - name: GF_PLUGINS_PREINSTALL_SYNC
-              value: "victoriametrics-logs-datasource@0.27.1@https://github.com/VictoriaMetrics/victorialogs-datasource/releases/download/v0.27.1/victoriametrics-logs-datasource-v0.27.1.zip"
-    # See /charts/third-party/openebs for details
-    # persistence:
-    #     storageClass: "mayastor-replicated"
+  nameOverride: "grafana"
+  image:
+    #repository: "tada5hi/grafana"
+    repository: "bitnamilegacy/grafana"
+    tag: "12.1.1-debian-12-r1"
+  admin:
+    password: "" # Leave empty for auto-generation
+    existingSecret: "flame-hub-auth"
+    existingSecretPasswordKey: "grafana-admin-password"
+  dashboardsProvider:
+    enabled: true
+  datasources:
+    secretName: grafana-datasources
+  config:
+    useGrafanaIniFile: true
+    grafanaIniConfigMap: grafana
+  grafana:
+    updateStrategy:
+      type: Recreate
+    extraEnvVars:
+      - name: GF_PLUGINS_PREINSTALL_SYNC
+        value: "victoriametrics-logs-datasource@0.27.1@https://github.com/VictoriaMetrics/victorialogs-datasource/releases/download/v0.27.1/victoriametrics-logs-datasource-v0.27.1.zip"
+  # See /charts/third-party/openebs for details
+  # persistence:
+  #     storageClass: "mayastor-replicated"
 
 victoria-logs-cluster:
-    nameOverride: "victoria-logs"
-    vlstorage:
-        retentionPeriod: "100y"
-        retentionDiskSpaceUsage: "50GiB"
+  nameOverride: "victoria-logs"
+  vlstorage:
+    retentionPeriod: "100y"
+    retentionDiskSpaceUsage: "50GiB"
 
 grafana-loki:
-    nameOverride: "loki"
-    loki:
-        image:
-            #repository: "tada5hi/grafana-loki"
-            repository: "bitnamilegacy/grafana-loki"
-            tag: "3.5.3-debian-12-r2"
-        overrideConfiguration:
-            limits_config:
-                deletion_mode: "filter-and-delete"
-    gateway:
-        image:
-            #repository: "tada5hi/nginx"
-            repository: "bitnamilegacy/nginx"
-            tag: "1.29.1-debian-12-r0"
-    memcachedfrontend:
-        image:
-            repository: "bitnamilegacy/memcached"
-            tag: "1.6.39-debian-12-r0"
-    memcachedchunks:
-        image:
-            repository: "bitnamilegacy/memcached"
-            tag: "1.6.39-debian-12-r0"
-    grafanaalloy:
-        alloy:
-            image:
-                repository: "bitnamilegacy/grafana-alloy"
-                tag: "1.10.1-debian-12-r1"
-        configReloader:
-            image:
-                repository: "bitnamilegacy/configmap-reload"
-                tag: "0.15.0-debian-12-r12"
+  nameOverride: "loki"
+  loki:
+    image:
+      #repository: "tada5hi/grafana-loki"
+      repository: "bitnamilegacy/grafana-loki"
+      tag: "3.5.3-debian-12-r2"
+    overrideConfiguration:
+      limits_config:
+        deletion_mode: "filter-and-delete"
+  gateway:
+    image:
+      #repository: "tada5hi/nginx"
+      repository: "bitnamilegacy/nginx"
+      tag: "1.29.1-debian-12-r0"
+  memcachedfrontend:
+    image:
+      repository: "bitnamilegacy/memcached"
+      tag: "1.6.39-debian-12-r0"
+  memcachedchunks:
+    image:
+      repository: "bitnamilegacy/memcached"
+      tag: "1.6.39-debian-12-r0"
+  grafanaalloy:
+    alloy:
+      image:
+        repository: "bitnamilegacy/grafana-alloy"
+        tag: "1.10.1-debian-12-r1"
+    configReloader:
+      image:
+        repository: "bitnamilegacy/configmap-reload"
+        tag: "0.15.0-debian-12-r12"
 
 prometheus:
-    nameOverride: "prometheus"
-    alertmanager:
-        image:
-            #repository: "tada5hi/alertmanager"
-            repository: "bitnamilegacy/alertmanager"
-            tag: "0.28.1-debian-12-r15"
-        service:
-            type: ClusterIP
-    server:
-        replicaCount: 2
-        service:
-            type: ClusterIP
-            ports:
-                http: 9090
-        image:
-            #repository: "tada5hi/prometheus"
-            repository: "bitnamilegacy/prometheus"
-            tag: "3.5.0-debian-12-r3"
-        configuration: |
-            scrape_configs:
-              - job_name: flame-hub-server-core
-                static_configs:
-                  - targets: ["{{ .Release.Name }}-flame-hub-server-core:3000"]
-              - job_name: flame-hub-server-messenger
-                static_configs:
-                  - targets: ["{{ .Release.Name }}-flame-hub-server-messenger:3000"]
-              - job_name: flame-hub-server-storage
-                static_configs:
-                  - targets: ["{{ .Release.Name }}-flame-hub-server-storage:3000"]
-              - job_name: flame-hub-server-telemetry
-                static_configs:
-                  - targets: ["{{ .Release.Name }}-flame-hub-server-telemetry:3000"]
-              - job_name: authup-server-core
-                static_configs:
-                  - targets: ["{{ .Release.Name }}-authup-server-core:3000"]
+  nameOverride: "prometheus"
+  alertmanager:
+    image:
+      #repository: "tada5hi/alertmanager"
+      repository: "bitnamilegacy/alertmanager"
+      tag: "0.28.1-debian-12-r15"
+    service:
+      type: ClusterIP
+  server:
+    replicaCount: 2
+    service:
+      type: ClusterIP
+      ports:
+        http: 9090
+    image:
+      #repository: "tada5hi/prometheus"
+      repository: "bitnamilegacy/prometheus"
+      tag: "3.5.0-debian-12-r3"
+    configuration: |
+      scrape_configs:
+        - job_name: flame-hub-server-core
+          static_configs:
+            - targets: ["{{ .Release.Name }}-flame-hub-server-core:3000"]
+        - job_name: flame-hub-server-messenger
+          static_configs:
+            - targets: ["{{ .Release.Name }}-flame-hub-server-messenger:3000"]
+        - job_name: flame-hub-server-storage
+          static_configs:
+            - targets: ["{{ .Release.Name }}-flame-hub-server-storage:3000"]
+        - job_name: flame-hub-server-telemetry
+          static_configs:
+            - targets: ["{{ .Release.Name }}-flame-hub-server-telemetry:3000"]
+        - job_name: authup-server-core
+          static_configs:
+            - targets: ["{{ .Release.Name }}-authup-server-core:3000"]
 
 harbor:
+  enabled: true
+  nameOverride: "harbor"
+  adminUsername: "admin"
+  adminPassword: "" # Leave empty for auto-generation
+  existingSecret: "flame-hub-auth"
+  existingSecretAdminPasswordKey: "harbor-admin-password"
+  externalURL: "" # Required by Harbor, e.g. https://harbor.hub.local
+  ingress:
+    enabled: true # Harbor always needs its own hostname/domain, even when global path-based ingress is enabled
+    className: ""
+    # Default annotations for ingress nginx
+    # Replace or remove if you use a different ingress controller
+    annotations:
+      nginx.ingress.kubernetes.io/proxy-body-size: "0"
+      nginx.ingress.kubernetes.io/proxy-read-timeout: "900"
+      nginx.ingress.kubernetes.io/proxy-send-timeout: "900"
+      nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+      nginx.ingress.kubernetes.io/upstream-vhost: '{{ include "harbor.host" . }}'
+  gatewayApi:
+    # hostname is taken from externalURL
+    # no option to set path, as harbor does not support it
+    enabled: false # global.flameHub.gatewayApi.enabled also enables this
+    tls:
+      enabled: false
+      mode: "Terminate"
+      certificateRef: ""
+      certificateRefNamespace: "" # optional override; defaults to global.flameHub.gatewayApi.tls.certificateRefNamespace
+  migration:
     enabled: true
-    nameOverride: "harbor"
-    adminUsername: "admin"
-    adminPassword: "" # Leave empty for auto-generation
-    existingSecret: "flame-hub-auth"
-    existingSecretAdminPasswordKey: "harbor-admin-password"
-    externalURL: "" # Required by Harbor, e.g. https://harbor.hub.local
-    ingress:
-        enabled: true # Harbor always needs its own hostname/domain, even when global path-based ingress is enabled
-        className: ""
-        # Default annotations for ingress nginx
-        # Replace or remove if you use a different ingress controller
-        annotations:
-            nginx.ingress.kubernetes.io/proxy-body-size: "0"
-            nginx.ingress.kubernetes.io/proxy-read-timeout: "900"
-            nginx.ingress.kubernetes.io/proxy-send-timeout: "900"
-            nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
-            nginx.ingress.kubernetes.io/upstream-vhost: '{{ include "harbor.host" . }}'
-    gatewayApi:
-        # hostname is taken from externalURL
-        # no option to set path, as harbor does not support it
-        enabled: false # global.flameHub.gatewayApi.enabled also enables this
-        tls:
-            enabled: false
-            mode: "Terminate"
-            certificateRef: ""
-            certificateRefNamespace: "" # optional override; defaults to global.flameHub.gatewayApi.tls.certificateRefNamespace
-    migration:
-        enabled: true
-    # persistence:
-    #     persistentVolumeClaim:
-    #         registry:
-    #             storageClass: "mayastor-replicated"
-    # exposureType controls the way the harbor subchart is exposed. The harbor subchart provides
-    # its own ingress, but we need to use exposureType proxy (nginx) to allow access internally.
-    # Ingress is handled by the ingress section above.
-    exposureType: "proxy"
-    nginx:
-        behindReverseProxy: true
-        tls:
-            enabled: true
-        image:
-            repository: "bitnamilegacy/nginx"
-            tag: "1.29.1-debian-12-r0"
-    portal:
-        image:
-            #repository: "tada5hi/harbor-portal"
-            repository: "bitnamilegacy/harbor-portal"
-            tag: "2.13.2-debian-12-r1"
-        initContainers:
-            - name: wait-for-db
-              image: busybox
-              command:
-                  [
-                      "sh",
-                      "-c",
-                      'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done',
-                  ]
-    core:
-        image:
-            #repository: "tada5hi/harbor-core"
-            repository: "bitnamilegacy/harbor-core"
-            tag: "2.13.2-debian-12-r3"
-        initContainers:
-            - name: wait-for-db
-              image: busybox
-              command:
-                  [
-                      "sh",
-                      "-c",
-                      'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done',
-                  ]
-    jobservice:
-        updateStrategy:
-            type: Recreate
-            rollingUpdate: null
-        image:
-            #repository: "tada5hi/harbor-jobservice"
-            repository: "bitnamilegacy/harbor-jobservice"
-            tag: "2.13.2-debian-12-r3"
-        initContainers:
-            - name: wait-for-db
-              image: busybox
-              command:
-                  [
-                      "sh",
-                      "-c",
-                      'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done',
-                  ]
+  # persistence:
+  #     persistentVolumeClaim:
+  #         registry:
+  #             storageClass: "mayastor-replicated"
+  # exposureType controls the way the harbor subchart is exposed. The harbor subchart provides
+  # its own ingress, but we need to use exposureType proxy (nginx) to allow access internally.
+  # Ingress is handled by the ingress section above.
+  exposureType: "proxy"
+  nginx:
+    behindReverseProxy: true
+    tls:
+      enabled: true
+    image:
+      repository: "bitnamilegacy/nginx"
+      tag: "1.29.1-debian-12-r0"
+  portal:
+    image:
+      #repository: "tada5hi/harbor-portal"
+      repository: "bitnamilegacy/harbor-portal"
+      tag: "2.13.2-debian-12-r1"
+    initContainers:
+      - name: wait-for-db
+        image: busybox
+        command:
+          [
+            "sh",
+            "-c",
+            'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done',
+          ]
+  core:
+    image:
+      #repository: "tada5hi/harbor-core"
+      repository: "bitnamilegacy/harbor-core"
+      tag: "2.13.2-debian-12-r3"
+    initContainers:
+      - name: wait-for-db
+        image: busybox
+        command:
+          [
+            "sh",
+            "-c",
+            'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done',
+          ]
+  jobservice:
+    updateStrategy:
+      type: Recreate
+      rollingUpdate: null
+    image:
+      #repository: "tada5hi/harbor-jobservice"
+      repository: "bitnamilegacy/harbor-jobservice"
+      tag: "2.13.2-debian-12-r3"
+    initContainers:
+      - name: wait-for-db
+        image: busybox
+        command:
+          [
+            "sh",
+            "-c",
+            'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done',
+          ]
 
-    registry:
-        updateStrategy:
-            type: Recreate
-            rollingUpdate: null
-        relativeurls: true # Needed for server-core-worker because of TCP forwarding (see https://github.com/distribution/distribution/issues/970#issuecomment-284227065)
-        server:
-            image:
-                #repository: "tada5hi/harbor-registry"
-                repository: "bitnamilegacy/harbor-registry"
-                tag: "2.13.2-debian-12-r2"
-        controller:
-            image:
-                #repository: "tada5hi/harbor-registryctl"
-                repository: "bitnamilegacy/harbor-registryctl"
-                tag: "2.13.2-debian-12-r3"
-        initContainers:
-            - name: wait-for-db
-              image: busybox
-              command:
-                  [
-                      "sh",
-                      "-c",
-                      'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done',
-                  ]
-    trivy:
-        updateStrategy:
-            type: OnDelete
-        image:
-            #repository: "tada5hi/harbor-adapter-trivy"
-            repository: "bitnamilegacy/harbor-adapter-trivy"
-            tag: "2.13.2-debian-12-r2"
-        initContainers:
-            - name: wait-for-db
-              image: busybox
-              command:
-                  [
-                      "sh",
-                      "-c",
-                      'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done',
-                  ]
-    postgresql:
-        enabled: false
-    externalDatabase:
-        host: "{{ .Release.Name }}-postgresql-primary"
-        port: 5432
-        user: "postgres"
-        password: ""
-        coreDatabase: "registry"
-        existingSecret: "flame-hub-auth"
-        existingSecretPasswordKey: "postgresql-password"
-        sslmode: "disable"
-    redis:
-        enabled: true
-        nameOverride: "harbor-redis"
-        image:
-            repository: "bitnamilegacy/redis"
-            tag: "8.2.1-debian-12-r0"
+  registry:
+    updateStrategy:
+      type: Recreate
+      rollingUpdate: null
+    relativeurls: true # Needed for server-core-worker because of TCP forwarding (see https://github.com/distribution/distribution/issues/970#issuecomment-284227065)
+    server:
+      image:
+        #repository: "tada5hi/harbor-registry"
+        repository: "bitnamilegacy/harbor-registry"
+        tag: "2.13.2-debian-12-r2"
+    controller:
+      image:
+        #repository: "tada5hi/harbor-registryctl"
+        repository: "bitnamilegacy/harbor-registryctl"
+        tag: "2.13.2-debian-12-r3"
+    initContainers:
+      - name: wait-for-db
+        image: busybox
+        command:
+          [
+            "sh",
+            "-c",
+            'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done',
+          ]
+  trivy:
+    updateStrategy:
+      type: OnDelete
+    image:
+      #repository: "tada5hi/harbor-adapter-trivy"
+      repository: "bitnamilegacy/harbor-adapter-trivy"
+      tag: "2.13.2-debian-12-r2"
+    initContainers:
+      - name: wait-for-db
+        image: busybox
+        command:
+          [
+            "sh",
+            "-c",
+            'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done',
+          ]
+  postgresql:
+    enabled: false
+  externalDatabase:
+    host: "{{ .Release.Name }}-postgresql-primary"
+    port: 5432
+    user: "postgres"
+    password: ""
+    coreDatabase: "registry"
+    existingSecret: "flame-hub-auth"
+    existingSecretPasswordKey: "postgresql-password"
+    sslmode: "disable"
+  redis:
+    enabled: true
+    nameOverride: "harbor-redis"
+    image:
+      repository: "bitnamilegacy/redis"
+      tag: "8.2.1-debian-12-r0"
 
 externalHarbor:
-    enabled: false
-    URL: ""
+  enabled: false
+  URL: ""
