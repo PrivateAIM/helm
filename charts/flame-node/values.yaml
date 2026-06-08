@@ -83,13 +83,6 @@ autostart:
   ## @param autostart.interval How often (in seconds) the Hub Adapter will probe the Hub for new analyses
   interval: 60
 
-keycloak:
-  secretSync:
-    ## @param keycloak.secretSync.skip Set to true to disable the post-install/post-upgrade Job that syncs
-    ## client secrets from Keycloak's database with the K8s Secret via the keycloak Admin API.
-    ## Only disable this if you are managing Keycloak client secrets out-of-band.
-    skip: false
-
 ## Add Custom CA certificate(s)
 ## @param certificateConfigMap Name of an existing ConfigMap that contains additional CA certificates
 ## The ConfigMap should contain a value called "certs.pem" which is a single PEM file with all the certificates concatenated
@@ -289,6 +282,12 @@ storageService:
 
 # keycloakx values
 keycloakx:
+  secretSync:
+    ## @param keycloakx.secretSync.skip Set to true to disable the post-install/post-upgrade Job that syncs
+    ## client secrets from Keycloak's database with the K8s Secret via the keycloak Admin API.
+    ## Only disable this if you are managing Keycloak client secrets out-of-band.
+    skip: false
+
   ## @param keycloakx.defaultUserEnabled Enable the creation of the default "flameuser" in keycloak
   defaultUserEnabled: false
 
