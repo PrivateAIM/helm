@@ -9,6 +9,14 @@ spec:
       initContainers:
         - name: {{ include "blaze.fullname" . }}-node-fhir-test-data-populator-init-wait
           image: busybox
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
+            privileged: false
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
           command:
             - /bin/sh
             - -c
