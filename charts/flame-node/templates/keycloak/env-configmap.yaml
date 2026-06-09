@@ -1,4 +1,3 @@
-{{- if ne .Values.expose.type "none" }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -19,4 +18,3 @@ data:
   {{- if hasPrefix "https" (include "node.hostname" .) }}
   KC_PROXY_HEADERS: "xforwarded"
   {{- end }}
-{{- end }}
