@@ -1183,6 +1183,7 @@ victorialogs:
     persistentVolume:
       enabled: true
       size: 20Gi
+      storageClassName: ""
 
   vector:
     enabled: true
