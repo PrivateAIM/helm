@@ -10,6 +10,14 @@ spec:
   containers:
     - name: wget
       image: busybox
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        privileged: false
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop: [ALL]
       command: ['wget']
       args: ['{{ include "blaze.fullname" . }}:{{ .Values.service.port }}']
   restartPolicy: Never

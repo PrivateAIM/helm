@@ -83,13 +83,6 @@ autostart:
   ## @param autostart.interval How often (in seconds) the Hub Adapter will probe the Hub for new analyses
   interval: 60
 
-keycloak:
-  secretSync:
-    ## @param keycloak.secretSync.skip Set to true to disable the post-install/post-upgrade Job that syncs
-    ## client secrets from Keycloak's database with the K8s Secret via the keycloak Admin API.
-    ## Only disable this if you are managing Keycloak client secrets out-of-band.
-    skip: false
-
 ## Add Custom CA certificate(s)
 ## @param certificateConfigMap Name of an existing ConfigMap that contains additional CA certificates
 ## The ConfigMap should contain a value called "certs.pem" which is a single PEM file with all the certificates concatenated
@@ -289,6 +282,12 @@ storageService:
 
 # keycloakx values
 keycloakx:
+  secretSync:
+    ## @param keycloakx.secretSync.skip Set to true to disable the post-install/post-upgrade Job that syncs
+    ## client secrets from Keycloak's database with the K8s Secret via the keycloak Admin API.
+    ## Only disable this if you are managing Keycloak client secrets out-of-band.
+    skip: false
+
   ## @param keycloakx.defaultUserEnabled Enable the creation of the default "flameuser" in keycloak
   defaultUserEnabled: false
 
@@ -864,7 +863,7 @@ postgresql:
     ## @param postgresql.auth.superPassword Superuser password. Auto-generated on first install if blank.
     superPassword: ""
     ## @param postgresql.auth.user Application database username. Changing after initial install requires manual database migration.
-    user: "flame_user"
+    user: ""
     ## @param postgresql.auth.password Application database password. Auto-generated on first install if blank.
     password: ""
     ## @param postgresql.auth.database Application database name.
@@ -874,6 +873,11 @@ postgresql:
   settings:
     ## Optional existing secret for the Postgres superuser
     existingSecret: postgres-credentials-secret
+
+    ## @param postgresql.settings.keepCredentialSecret Retain the generated credential secret on `helm uninstall`
+    ## so the auto-generated password stays in sync with the retained PostgreSQL data PVC on reinstall.
+    ## Set to false to let Helm delete the secret with the release (e.g. when you also wipe the data PVC).
+    keepCredentialSecret: true
 
     ## The default postgres superuser (default when nothing is set: "postgres")
     superuser:
@@ -943,6 +947,10 @@ kong-postgresql:
   settings:
     ## Optional existing secret for the Postgres superuser
     existingSecret: postgres-kong-credentials-secret
+    ## @param kong-postgresql.settings.keepCredentialSecret Retain the generated credential secret on `helm uninstall`
+    ## so the auto-generated password stays in sync with the retained PostgreSQL data PVC on reinstall.
+    ## Set to false to let Helm delete the secret with the release (e.g. when you also wipe the data PVC).
+    keepCredentialSecret: true
     superuser:
     superuserPassword:
       secretKey: superPassword
@@ -988,6 +996,10 @@ keycloak-postgresql:
   settings:
     ## Optional existing secret for the Postgres superuser
     existingSecret: postgres-keycloak-credentials-secret
+    ## @param keycloak-postgresql.settings.keepCredentialSecret Retain the generated credential secret on `helm uninstall`
+    ## so the auto-generated password stays in sync with the retained PostgreSQL data PVC on reinstall.
+    ## Set to false to let Helm delete the secret with the release (e.g. when you also wipe the data PVC).
+    keepCredentialSecret: true
     superuser:
     superuserPassword:
       secretKey: superPassword
@@ -1183,6 +1195,7 @@ victorialogs:
     persistentVolume:
       enabled: true
       size: 20Gi
+      storageClassName: ""
 
   vector:
     enabled: true
