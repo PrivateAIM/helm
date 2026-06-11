@@ -1,8 +1,6 @@
 openebs:
   engines:
     local:
-      hostpath:
-        enabled: false
       lvm:
         enabled: false
       zfs:
