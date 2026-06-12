@@ -25,5 +25,6 @@ cookieDomain: ""
 publicURL: ""
 # Additional domains for which authorization is permitted.
 # Accepts a comma-separated string or a list of domains.
-# When deployed as part of the flame-hub chart, this defaults to the public domain of the Hub UI.
+# The value is rendered as a Helm template (tpl), so a parent chart may inject
+# its own helpers, e.g. '{{ include "flameHub.uiDomain" . }}'.
 additionalDomains: ""

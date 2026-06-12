@@ -173,8 +173,10 @@ auth:
 authup:
     publicHttps: false # global.flameHub.publicHttps also enables this
     # Additional domains for which authorization is permitted (comma-separated string or list).
+    # The value is rendered as a Helm template inside the authup subchart context.
     # Defaults to the public domain of the Hub UI (derived from the global ingress/gatewayApi hostname).
-    additionalDomains: ""
+    # If the client UI uses its own hostname (per-service routing), set this explicitly.
+    additionalDomains: '{{- if or .Values.global.flameHub.ingress.enabled .Values.global.flameHub.gatewayApi.enabled }}{{ include "flameHub.uiDomain" . }}{{- end }}'
     image:
         repository: "authup/authup"
         tag: "latest"

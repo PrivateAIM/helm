@@ -51,15 +51,9 @@ spec:
             {{- if kindIs "slice" $additionalDomains }}
               {{- $additionalDomains = join "," $additionalDomains }}
             {{- end }}
-            {{- if not $additionalDomains }}
-              {{- $flameHub := dig "flameHub" dict (.Values.global | default dict) }}
-              {{- if or (dig "ingress" "enabled" false $flameHub) (dig "gatewayApi" "enabled" false $flameHub) }}
-                {{- $additionalDomains = include "flameHub.uiDomain" . }}
-              {{- end }}
-            {{- end }}
-            {{- with $additionalDomains }}
+            {{- with tpl (toString ($additionalDomains | default "")) $ | trim }}
               -   name: ADDITIONAL_DOMAINS
-                  value: "{{- toString . | trim }}"
+                  value: {{ . | quote }}
             {{- end }}
             {{- if .Values.auth.existingSecret }}
               -   name: REDIS
