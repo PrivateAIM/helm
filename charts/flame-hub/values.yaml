@@ -172,6 +172,9 @@ auth:
 # Authentication Provider
 authup:
     publicHttps: false # global.flameHub.publicHttps also enables this
+    # Additional domains for which authorization is permitted (comma-separated string or list).
+    # Defaults to the public domain of the Hub UI (derived from the global ingress/gatewayApi hostname).
+    additionalDomains: ""
     image:
         repository: "authup/authup"
         tag: "latest"

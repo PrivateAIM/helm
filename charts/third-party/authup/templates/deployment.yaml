@@ -47,6 +47,20 @@ spec:
               -   name: PUBLIC_URL
                   value: "{{- toString . | trim }}"
             {{- end }}
+            {{- $additionalDomains := .Values.additionalDomains }}
+            {{- if kindIs "slice" $additionalDomains }}
+              {{- $additionalDomains = join "," $additionalDomains }}
+            {{- end }}
+            {{- if not $additionalDomains }}
+              {{- $flameHub := dig "flameHub" dict (.Values.global | default dict) }}
+              {{- if or (dig "ingress" "enabled" false $flameHub) (dig "gatewayApi" "enabled" false $flameHub) }}
+                {{- $additionalDomains = include "flameHub.uiDomain" . }}
+              {{- end }}
+            {{- end }}
+            {{- with $additionalDomains }}
+              -   name: ADDITIONAL_DOMAINS
+                  value: "{{- toString . | trim }}"
+            {{- end }}
             {{- if .Values.auth.existingSecret }}
               -   name: REDIS
                   valueFrom:

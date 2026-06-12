@@ -23,3 +23,7 @@ auth:
 
 cookieDomain: ""
 publicURL: ""
+# Additional domains for which authorization is permitted.
+# Accepts a comma-separated string or a list of domains.
+# When deployed as part of the flame-hub chart, this defaults to the public domain of the Hub UI.
+additionalDomains: ""
