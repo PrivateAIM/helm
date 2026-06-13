@@ -47,12 +47,12 @@ spec:
               -   name: PUBLIC_URL
                   value: "{{- toString . | trim }}"
             {{- end }}
-            {{- $additionalDomains := .Values.additionalDomains }}
-            {{- if kindIs "slice" $additionalDomains }}
-              {{- $additionalDomains = join "," $additionalDomains }}
+            {{- $trustedOrigins := .Values.trustedOrigins }}
+            {{- if kindIs "slice" $trustedOrigins }}
+              {{- $trustedOrigins = join "," $trustedOrigins }}
             {{- end }}
-            {{- with tpl (toString ($additionalDomains | default "")) $ | trim }}
-              -   name: ADDITIONAL_DOMAINS
+            {{- with tpl (toString ($trustedOrigins | default "")) $ | trim }}
+              -   name: TRUSTED_ORIGINS
                   value: {{ . | quote }}
             {{- end }}
             {{- if .Values.auth.existingSecret }}

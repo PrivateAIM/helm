@@ -23,8 +23,10 @@ auth:
 
 cookieDomain: ""
 publicURL: ""
-# Additional domains for which authorization is permitted.
-# Accepts a comma-separated string or a list of domains.
+# Trusted first-party application origins (redirect allowlist for the web client; not CORS).
+# Accepts a comma-separated string or a list. Each entry is either a bare host[:port]
+# (e.g. "hub.local", which expands to both its http and https origin) or an explicit-scheme
+# origin (e.g. "https://hub.local", which contributes exactly that origin). Only http/https.
 # The value is rendered as a Helm template (tpl), so a parent chart may inject
 # its own helpers, e.g. '{{ include "flameHub.uiDomain" . }}'.
-additionalDomains: ""
+trustedOrigins: ""
