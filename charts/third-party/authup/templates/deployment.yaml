@@ -111,8 +111,8 @@ spec:
               httpGet:
                   path: "/"
                   port: 3000
-              failureThreshold: 90
-              periodSeconds: 10 # Allows up to 15 minutes (90 * 10s) for initial startup/migration
+              failureThreshold: 60
+              periodSeconds: 5 # Allows up to 5 minutes (60 * 5s) for initial startup/migration
           readinessProbe:
               httpGet:
                   path: "/"
