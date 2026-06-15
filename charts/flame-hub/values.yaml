@@ -172,6 +172,12 @@ auth:
 # Authentication Provider
 authup:
     publicHttps: false # global.flameHub.publicHttps also enables this
+    # Trusted first-party application origins (redirect allowlist for the web client; not CORS).
+    # Accepts a comma-separated string or list; bare hosts expand to both http and https origins.
+    # The value is rendered as a Helm template inside the authup subchart context.
+    # Defaults to the public domain of the Hub UI (derived from the global ingress/gatewayApi hostname).
+    # If the client UI uses its own hostname (per-service routing), set this explicitly.
+    trustedOrigins: '{{- if or .Values.global.flameHub.ingress.enabled .Values.global.flameHub.gatewayApi.enabled }}{{ include "flameHub.uiDomain" . }}{{- end }}'
     image:
         repository: "authup/authup"
         tag: "latest"

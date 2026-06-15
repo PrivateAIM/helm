@@ -47,6 +47,14 @@ spec:
               -   name: PUBLIC_URL
                   value: "{{- toString . | trim }}"
             {{- end }}
+            {{- $trustedOrigins := .Values.trustedOrigins }}
+            {{- if kindIs "slice" $trustedOrigins }}
+              {{- $trustedOrigins = join "," $trustedOrigins }}
+            {{- end }}
+            {{- with tpl (toString ($trustedOrigins | default "")) $ | trim }}
+              -   name: TRUSTED_ORIGINS
+                  value: {{ . | quote }}
+            {{- end }}
             {{- if .Values.auth.existingSecret }}
               -   name: REDIS
                   valueFrom:
