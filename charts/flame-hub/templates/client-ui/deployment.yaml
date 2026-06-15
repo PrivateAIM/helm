@@ -49,11 +49,16 @@ spec:
                   memory: "512Mi"
               limits:
                   memory: "2048Mi"
+          startupProbe:
+              httpGet:
+                  path: "/"
+                  port: 3000
+              periodSeconds: 5
+              failureThreshold: 60
           readinessProbe:
               httpGet:
                   path: "/"
                   port: 3000
-              initialDelaySeconds: 60
               periodSeconds: 5
               timeoutSeconds: 10
           livenessProbe:
