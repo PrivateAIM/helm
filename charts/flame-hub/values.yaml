@@ -56,7 +56,7 @@ global:
 image:
     registry: ghcr.io
     repository: privateaim/hub
-    tag: 0.11.3
+    tag: 0.11.4
     pullPolicy: Always
 
 # internal services
