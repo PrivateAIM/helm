@@ -1,0 +1,42 @@
+{{- $clusterName := include "flameHub.postgresql.clusterName" . -}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "flameHub.postgresql.primaryServiceName" . }}
+  labels:
+    {{- include "flame-hub.labels" . | nindent 4 }}
+    app.kubernetes.io/component: postgresql-primary
+    cnpg.io/cluster: {{ $clusterName }}
+  annotations:
+    flame-hub.dev/bitnami-compat: "true"
+spec:
+  type: ClusterIP
+  ports:
+    - name: tcp-postgresql
+      port: 5432
+      targetPort: 5432
+      protocol: TCP
+  selector:
+    cnpg.io/cluster: {{ $clusterName }}
+    cnpg.io/instanceRole: primary
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "flameHub.postgresql.readServiceName" . }}
+  labels:
+    {{- include "flame-hub.labels" . | nindent 4 }}
+    app.kubernetes.io/component: postgresql-read
+    cnpg.io/cluster: {{ $clusterName }}
+  annotations:
+    flame-hub.dev/bitnami-compat: "true"
+spec:
+  type: ClusterIP
+  ports:
+    - name: tcp-postgresql
+      port: 5432
+      targetPort: 5432
+      protocol: TCP
+  selector:
+    cnpg.io/cluster: {{ $clusterName }}

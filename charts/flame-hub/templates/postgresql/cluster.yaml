@@ -1,0 +1,46 @@
+{{- $clusterName := include "flameHub.postgresql.clusterName" . -}}
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: {{ $clusterName }}
+  labels:
+    {{- include "flame-hub.labels" . | nindent 4 }}
+spec:
+  instances: {{ .Values.postgresql.cluster.instances }}
+  imageName: {{ .Values.postgresql.cluster.imageName | quote }}
+  enableSuperuserAccess: true
+  superuserSecret:
+    name: {{ include "flameHub.postgresql.bootstrapSecretName" . }}
+  primaryUpdateStrategy: unsupervised
+  storage:
+    size: {{ .Values.postgresql.cluster.storage.size | quote }}
+    {{- with .Values.postgresql.cluster.storage.storageClass }}
+    storageClass: {{ . | quote }}
+    {{- end }}
+  postgresql:
+    parameters:
+      {{- toYaml .Values.postgresql.cluster.postgresql.parameters | nindent 6 }}
+  {{- if .Values.postgresql.migration.enabled }}
+  externalClusters:
+    - name: migration-source
+      connectionParameters:
+        host: {{ required "postgresql.migration.source.host is required when postgresql.migration.enabled=true" .Values.postgresql.migration.source.host | quote }}
+        port: {{ .Values.postgresql.migration.source.port | quote }}
+        user: {{ .Values.postgresql.migration.source.username | quote }}
+        dbname: {{ .Values.postgresql.migration.source.database | quote }}
+      password:
+        name: {{ .Values.postgresql.migration.source.existingSecret | quote }}
+        key: {{ .Values.postgresql.migration.source.passwordKey | quote }}
+  bootstrap:
+    pg_basebackup:
+      source: migration-source
+  {{- else }}
+  bootstrap:
+    initdb:
+      database: postgres
+      owner: postgres
+      secret:
+        name: {{ include "flameHub.postgresql.bootstrapSecretName" . }}
+      postInitApplicationSQL:
+        {{- toYaml .Values.postgresql.cluster.bootstrap.postInitApplicationSQL | nindent 8 }}
+  {{- end }}

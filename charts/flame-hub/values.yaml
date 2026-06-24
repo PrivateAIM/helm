@@ -261,45 +261,43 @@ minio:
 
 postgresql:
     nameOverride: "postgresql"
-    image:
-        repository: "bitnamilegacy/postgresql"
-        tag: "17.6.0-debian-12-r4"
     auth:
-        postgresPassword: "" # Leave empty for auto-generation
-        replicationPassword: "" # Leave empty for auto-generation
         existingSecret: "flame-hub-auth"
-        secretKeys:
-            adminPasswordKey: "postgresql-password"
-            replicationPasswordKey: "postgresql-replication-password"
-    primary:
-        startupProbe:
-            failureThreshold: 30
-        readinessProbe:
-            failureThreshold: 20
-        persistence:
-            enabled: true
+        adminPasswordKey: "postgresql-password"
+    compatibility:
+        primaryServiceName: ""
+        readServiceName: ""
+    cluster:
+        instances: 1
+        imageName: ghcr.io/cloudnative-pg/postgresql:17.6
+        storage:
             size: 16Gi
             # See /charts/third-party/openebs for details
             # storageClass: "mayastor-replicated"
-        extendedConfiguration: |
-            max_connections = 1024
-        # https://github.com/bitnami/charts/blob/main/bitnami/harbor/values.yaml
-        initdb:
-            scripts:
-                initial-registry.sql: |
-                    CREATE DATABASE registry ENCODING 'UTF8';
-                    \c registry;
-                    CREATE TABLE schema_migrations(version bigint not null primary key, dirty boolean not null);
-    readReplicas:
-        replicaCount: 0
-        persistence:
-            enabled: true
-            size: 16Gi
-        startupProbe:
-            failureThreshold: 30
-        readinessProbe:
-            failureThreshold: 20
-    architecture: "replication"
+        postgresql:
+            parameters:
+                max_connections: "1024"
+        bootstrap:
+            postInitApplicationSQL:
+                - |
+                  \c registry
+                  CREATE TABLE IF NOT EXISTS schema_migrations(version bigint not null primary key, dirty boolean not null);
+    databases:
+        - auth
+        - core
+        - registry
+        - storage
+        - telemetry
+    migration:
+        enabled: false
+        source:
+            host: ""
+            port: 5432
+            username: postgres
+            database: postgres
+            sslMode: disable
+            existingSecret: "flame-hub-auth"
+            passwordKey: "postgresql-password"
 
 grafana:
     nameOverride: "grafana"
@@ -406,17 +404,28 @@ prometheus:
 
 harbor:
     enabled: true
-    nameOverride: "harbor"
-    adminUsername: "admin"
-    adminPassword: "" # Leave empty for auto-generation
-    existingSecret: "flame-hub-auth"
+    harborAdminPassword: "" # Leave empty for auto-generation
+    existingSecretAdminPassword: "flame-hub-auth"
     existingSecretAdminPasswordKey: "harbor-admin-password"
     externalURL: "" # Required by Harbor, e.g. https://harbor.hub.local
+    expose:
+        type: clusterIP
+        tls:
+            enabled: true
+            certSource: auto
+            auto:
+                commonName: harbor.local
+        clusterIP:
+            ports:
+                httpsPort: 443
+        ingress:
+            hosts:
+                core: harbor.local
+            enabled: false
+    # Used by flame-hub templates/harbor/* (not the upstream harbor chart ingress)
     ingress:
-        enabled: true # Harbor always needs its own hostname/domain, even when global path-based ingress is enabled
+        enabled: true
         className: ""
-        # Default annotations for ingress nginx
-        # Replace or remove if you use a different ingress controller
         annotations:
             nginx.ingress.kubernetes.io/proxy-body-size: "0"
             nginx.ingress.kubernetes.io/proxy-read-timeout: "900"
@@ -424,134 +433,42 @@ harbor:
             nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
             nginx.ingress.kubernetes.io/upstream-vhost: '{{ include "harbor.host" . }}'
     gatewayApi:
-        # hostname is taken from externalURL
-        # no option to set path, as harbor does not support it
         enabled: false # global.flameHub.gatewayApi.enabled also enables this
         tls:
             enabled: false
             mode: "Terminate"
             certificateRef: ""
-            certificateRefNamespace: "" # optional override; defaults to global.flameHub.gatewayApi.tls.certificateRefNamespace
-    migration:
+            certificateRefNamespace: ""
+    updateStrategy:
+        type: Recreate
+    persistence:
         enabled: true
-    # persistence:
-    #     persistentVolumeClaim:
-    #         registry:
-    #             storageClass: "mayastor-replicated"
-    # exposureType controls the way the harbor subchart is exposed. The harbor subchart provides
-    # its own ingress, but we need to use exposureType proxy (nginx) to allow access internally.
-    # Ingress is handled by the ingress section above.
-    exposureType: "proxy"
-    nginx:
-        behindReverseProxy: true
-        tls:
-            enabled: true
-        image:
-            repository: "bitnamilegacy/nginx"
-            tag: "1.29.1-debian-12-r0"
-    portal:
-        image:
-            #repository: "tada5hi/harbor-portal"
-            repository: "bitnamilegacy/harbor-portal"
-            tag: "2.13.2-debian-12-r1"
-        initContainers:
-            - name: wait-for-db
-              image: busybox
-              command:
-                  [
-                      "sh",
-                      "-c",
-                      'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done',
-                  ]
-    core:
-        image:
-            #repository: "tada5hi/harbor-core"
-            repository: "bitnamilegacy/harbor-core"
-            tag: "2.13.2-debian-12-r3"
-        initContainers:
-            - name: wait-for-db
-              image: busybox
-              command:
-                  [
-                      "sh",
-                      "-c",
-                      'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done',
-                  ]
-    jobservice:
-        updateStrategy:
-            type: Recreate
-            rollingUpdate: null
-        image:
-            #repository: "tada5hi/harbor-jobservice"
-            repository: "bitnamilegacy/harbor-jobservice"
-            tag: "2.13.2-debian-12-r3"
-        initContainers:
-            - name: wait-for-db
-              image: busybox
-              command:
-                  [
-                      "sh",
-                      "-c",
-                      'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done',
-                  ]
-
+        resourcePolicy: keep
+        persistentVolumeClaim:
+            registry:
+                existingClaim: ""
+                size: 5Gi
+            jobservice:
+                jobLog:
+                    existingClaim: ""
+                    size: 1Gi
+            trivy:
+                existingClaim: ""
+                size: 5Gi
     registry:
-        updateStrategy:
-            type: Recreate
-            rollingUpdate: null
         relativeurls: true # Needed for server-core-worker because of TCP forwarding (see https://github.com/distribution/distribution/issues/970#issuecomment-284227065)
-        server:
-            image:
-                #repository: "tada5hi/harbor-registry"
-                repository: "bitnamilegacy/harbor-registry"
-                tag: "2.13.2-debian-12-r2"
-        controller:
-            image:
-                #repository: "tada5hi/harbor-registryctl"
-                repository: "bitnamilegacy/harbor-registryctl"
-                tag: "2.13.2-debian-12-r3"
-        initContainers:
-            - name: wait-for-db
-              image: busybox
-              command:
-                  [
-                      "sh",
-                      "-c",
-                      'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done',
-                  ]
-    trivy:
-        updateStrategy:
-            type: OnDelete
-        image:
-            #repository: "tada5hi/harbor-adapter-trivy"
-            repository: "bitnamilegacy/harbor-adapter-trivy"
-            tag: "2.13.2-debian-12-r2"
-        initContainers:
-            - name: wait-for-db
-              image: busybox
-              command:
-                  [
-                      "sh",
-                      "-c",
-                      'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done',
-                  ]
-    postgresql:
-        enabled: false
-    externalDatabase:
-        host: "{{ .Release.Name }}-postgresql-primary"
-        port: 5432
-        user: "postgres"
-        password: ""
-        coreDatabase: "registry"
-        existingSecret: "flame-hub-auth"
-        existingSecretPasswordKey: "postgresql-password"
-        sslmode: "disable"
+    database:
+        type: external
+        external:
+            host: "{{ .Release.Name }}-postgresql-primary"
+            port: "5432"
+            username: postgres
+            password: ""
+            coreDatabase: registry
+            existingSecret: "flame-hub-auth"
+            sslmode: disable
     redis:
-        enabled: true
-        nameOverride: "harbor-redis"
-        image:
-            repository: "bitnamilegacy/redis"
-            tag: "8.2.1-debian-12-r0"
+        type: internal
 
 externalHarbor:
     enabled: false

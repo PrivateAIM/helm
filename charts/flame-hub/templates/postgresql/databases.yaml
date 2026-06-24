@@ -1,0 +1,17 @@
+{{- if not .Values.postgresql.migration.enabled }}
+{{- $clusterName := include "flameHub.postgresql.clusterName" . -}}
+{{- range .Values.postgresql.databases }}
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: {{ $clusterName }}-{{ . | replace "_" "-" }}
+  labels:
+    {{- include "flame-hub.labels" $ | nindent 4 }}
+spec:
+  name: {{ . | quote }}
+  owner: postgres
+  cluster:
+    name: {{ $clusterName }}
+{{- end }}
+{{- end }}

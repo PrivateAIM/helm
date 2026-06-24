@@ -8,9 +8,6 @@ dependencies:
   - name: common
     version: 2.31.4
     repository: oci://registry-1.docker.io/bitnamicharts
-  - name: postgresql
-    version: 18.5.1
-    repository: oci://registry-1.docker.io/bitnamicharts
   - name: redis
     version: 22.0.6
     repository: oci://registry-1.docker.io/bitnamicharts
@@ -31,8 +28,8 @@ dependencies:
     repository: oci://registry-1.docker.io/bitnamicharts
   - condition: harbor.enabled
     name: harbor
-    version: 27.0.3
-    repository: oci://registry-1.docker.io/bitnamicharts
+    version: 1.19.1
+    repository: https://helm.goharbor.io
   - name: authup
     repository: file://../third-party/authup
     version: 0.1.0
