@@ -1,3 +1,9 @@
+# Stable PostgreSQL Service DNS names ({chart-name}-postgresql-* by default).
+# Override the anchor and keep postgresql.compatibility, harbor.database.external.host,
+# and authup.database.host in sync when running multiple hub releases in one namespace.
+x-flameHubPostgresqlPrimary: &flameHubPostgresqlPrimary "flame-hub-postgresql-primary"
+x-flameHubPostgresqlRead: &flameHubPostgresqlRead "flame-hub-postgresql-read"
+
 global:
     imagePullPolicy: "IfNotPresent"
 
@@ -172,6 +178,8 @@ auth:
 # Authentication Provider
 authup:
     publicHttps: false # global.flameHub.publicHttps also enables this
+    database:
+        host: *flameHubPostgresqlPrimary
     # Trusted first-party application origins (redirect allowlist for the web client; not CORS).
     # Accepts a comma-separated string or list; bare hosts expand to both http and https origins.
     # The value is rendered as a Helm template inside the authup subchart context.
@@ -265,8 +273,9 @@ postgresql:
         existingSecret: "flame-hub-auth"
         adminPasswordKey: "postgresql-password"
     compatibility:
-        primaryServiceName: ""
-        readServiceName: ""
+        # Override for multiple hub releases per namespace (keep in sync with harbor.database.external.host and authup.database.host).
+        primaryServiceName: *flameHubPostgresqlPrimary
+        readServiceName: *flameHubPostgresqlRead
     cluster:
         instances: 1
         imageName: ghcr.io/cloudnative-pg/postgresql:17.6
@@ -460,7 +469,7 @@ harbor:
     database:
         type: external
         external:
-            host: "{{ .Release.Name }}-postgresql-primary"
+            host: *flameHubPostgresqlPrimary
             port: "5432"
             username: postgres
             password: ""

@@ -62,9 +62,6 @@ postgresql:
   migration:
     enabled: false
 harbor:
-  database:
-    external:
-      host: ${PG_HOST}
   expose:
     clusterIP:
       name: ${RELEASE}-harbor

@@ -161,7 +161,7 @@ CloudNativePG PostgreSQL helpers
 {{- if .Values.postgresql.compatibility.primaryServiceName -}}
 {{- .Values.postgresql.compatibility.primaryServiceName -}}
 {{- else -}}
-{{- printf "%s-postgresql-primary" .Release.Name -}}
+{{- printf "%s-postgresql-primary" .Chart.Name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 {{- end -}}
 
@@ -169,7 +169,7 @@ CloudNativePG PostgreSQL helpers
 {{- if .Values.postgresql.compatibility.readServiceName -}}
 {{- .Values.postgresql.compatibility.readServiceName -}}
 {{- else -}}
-{{- printf "%s-postgresql-read" .Release.Name -}}
+{{- printf "%s-postgresql-read" .Chart.Name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 {{- end -}}
 
