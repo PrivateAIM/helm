@@ -153,10 +153,6 @@ CloudNativePG PostgreSQL helpers
 {{- printf "%s-%s" .Release.Name (default "postgresql" .Values.postgresql.nameOverride) | trunc 63 | trimSuffix "-" }}
 {{- end -}}
 
-{{- define "flameHub.postgresql.bootstrapSecretName" -}}
-{{- printf "%s-postgresql-bootstrap" .Release.Name | trunc 63 | trimSuffix "-" }}
-{{- end -}}
-
 {{- define "flameHub.postgresql.primaryServiceName" -}}
 {{- if .Values.postgresql.compatibility.primaryServiceName -}}
 {{- .Values.postgresql.compatibility.primaryServiceName -}}
@@ -173,13 +169,3 @@ CloudNativePG PostgreSQL helpers
 {{- end -}}
 {{- end -}}
 
-{{- define "flameHub.postgresql.postgresPassword" -}}
-{{- $secretName := .Values.postgresql.auth.existingSecret | default (include "flameHub.effectiveSecretName" .) -}}
-{{- $key := .Values.postgresql.auth.adminPasswordKey -}}
-{{- $existing := lookup "v1" "Secret" .Release.Namespace $secretName -}}
-{{- if and $existing $existing.data (hasKey $existing.data $key) -}}
-{{- index $existing.data $key | b64dec -}}
-{{- else -}}
-changeme
-{{- end -}}
-{{- end -}}

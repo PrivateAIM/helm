@@ -25,6 +25,7 @@ RELEASE="${2:-flame-hub}"
 NAMESPACE="${3:-default}"
 OUTPUT_DIR="${4:-/tmp/flame-hub-migration-monitor}"
 AUTH_SECRET="${AUTH_SECRET:-flame-hub-auth}"
+PG_CREDENTIALS_SECRET="${PG_CREDENTIALS_SECRET:-flame-hub-postgres-auth}"
 EXPECTED_DBS=(auth core registry storage telemetry)
 LOG_FILE="${OUTPUT_DIR}/migration-log.tsv"
 
@@ -34,6 +35,10 @@ SNAPSHOT="${OUTPUT_DIR}/${PHASE}-pg-snapshot.txt"
 log() { printf '[monitor:%s] %s\n' "$PHASE" "$*"; }
 
 get_pg_pass() {
+  if kubectl get secret -n "$NAMESPACE" "$PG_CREDENTIALS_SECRET" >/dev/null 2>&1; then
+    kubectl get secret -n "$NAMESPACE" "$PG_CREDENTIALS_SECRET" -o jsonpath='{.data.password}' | base64 -d
+    return
+  fi
   kubectl get secret -n "$NAMESPACE" "$AUTH_SECRET" -o jsonpath='{.data.postgresql-password}' | base64 -d
 }
 

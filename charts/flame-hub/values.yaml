@@ -1,8 +1,10 @@
-# Stable PostgreSQL Service DNS names ({chart-name}-postgresql-* by default).
-# Override the anchor and keep postgresql.compatibility, harbor.database.external.host,
-# and authup.database.host in sync when running multiple hub releases in one namespace.
+# Stable PostgreSQL Service and secret names.
+# Used throughout the chart to reference the PostgreSQL service and secret.
+# Only change if you have multiple hub releases in one namespace (to avoid service name conflicts).
+# (this workaround is required because the harbor chart does not template the pg host value.)
 x-flameHubPostgresqlPrimary: &flameHubPostgresqlPrimary "flame-hub-postgresql-primary"
 x-flameHubPostgresqlRead: &flameHubPostgresqlRead "flame-hub-postgresql-read"
+x-flameHubPostgresAuth: &flameHubPostgresAuth "flame-hub-postgres-auth"
 
 global:
     imagePullPolicy: "IfNotPresent"
@@ -180,6 +182,9 @@ authup:
     publicHttps: false # global.flameHub.publicHttps also enables this
     database:
         host: *flameHubPostgresqlPrimary
+        existingSecret: *flameHubPostgresAuth
+        passwordKey: password
+        username: hub
     # Trusted first-party application origins (redirect allowlist for the web client; not CORS).
     # Accepts a comma-separated string or list; bare hosts expand to both http and https origins.
     # The value is rendered as a Helm template inside the authup subchart context.
@@ -270,8 +275,9 @@ minio:
 postgresql:
     nameOverride: "postgresql"
     auth:
-        existingSecret: "flame-hub-auth"
-        adminPasswordKey: "postgresql-password"
+        appAuthSecretName: *flameHubPostgresAuth
+        appUsername: hub
+        postgresPassword: ""
     compatibility:
         # Override for multiple hub releases per namespace (keep in sync with harbor.database.external.host and authup.database.host).
         primaryServiceName: *flameHubPostgresqlPrimary
@@ -299,6 +305,8 @@ postgresql:
         - telemetry
     migration:
         enabled: false
+        # pg_basebackup from legacy Bitnami: source credentials stay in flame-hub-auth (postgres user).
+        # After migration, create the hub role or point services back at postgres until cutover is complete.
         source:
             host: ""
             port: 5432
@@ -471,10 +479,10 @@ harbor:
         external:
             host: *flameHubPostgresqlPrimary
             port: "5432"
-            username: postgres
+            username: hub
             password: ""
             coreDatabase: registry
-            existingSecret: "flame-hub-auth"
+            existingSecret: *flameHubPostgresAuth
             sslmode: disable
     redis:
         type: internal

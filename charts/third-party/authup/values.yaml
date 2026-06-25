@@ -26,6 +26,9 @@ publicURL: ""
 # PostgreSQL primary Service DNS name (must match the CNPG compat Service in the parent chart).
 database:
     host: ""
+    existingSecret: ""
+    passwordKey: password
+    username: hub
 # Trusted first-party application origins (redirect allowlist for the web client; not CORS).
 # Accepts a comma-separated string or a list. Each entry is either a bare host[:port]
 # (e.g. "hub.local", which expands to both its http and https origin) or an explicit-scheme

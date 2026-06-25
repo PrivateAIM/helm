@@ -1,4 +1,5 @@
 {{- $clusterName := include "flameHub.postgresql.clusterName" . -}}
+{{- $appUsername := .Values.postgresql.auth.appUsername -}}
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
@@ -9,8 +10,6 @@ spec:
   instances: {{ .Values.postgresql.cluster.instances }}
   imageName: {{ .Values.postgresql.cluster.imageName | quote }}
   enableSuperuserAccess: true
-  superuserSecret:
-    name: {{ include "flameHub.postgresql.bootstrapSecretName" . }}
   primaryUpdateStrategy: unsupervised
   storage:
     size: {{ .Values.postgresql.cluster.storage.size | quote }}
@@ -20,6 +19,15 @@ spec:
   postgresql:
     parameters:
       {{- toYaml .Values.postgresql.cluster.postgresql.parameters | nindent 6 }}
+  {{- if not .Values.postgresql.migration.enabled }}
+  managed:
+    roles:
+      - name: {{ $appUsername }}
+        ensure: present
+        login: true
+        passwordSecret:
+          name: {{ .Values.postgresql.auth.appAuthSecretName | quote }}
+  {{- end }}
   {{- if .Values.postgresql.migration.enabled }}
   externalClusters:
     - name: migration-source
@@ -39,8 +47,6 @@ spec:
     initdb:
       database: postgres
       owner: postgres
-      secret:
-        name: {{ include "flameHub.postgresql.bootstrapSecretName" . }}
       postInitApplicationSQL:
         {{- toYaml .Values.postgresql.cluster.bootstrap.postInitApplicationSQL | nindent 8 }}
   {{- end }}

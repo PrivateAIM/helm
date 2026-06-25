@@ -64,8 +64,8 @@ spec:
               -   name: DB_PASSWORD
                   valueFrom:
                     secretKeyRef:
-                      name: {{ .Values.auth.existingSecret }}
-                      key: postgresql-password
+                      name: {{ .Values.database.existingSecret | default .Values.auth.existingSecret }}
+                      key: {{ .Values.database.passwordKey | default "postgresql-password" }}
               -   name: USER_ADMIN_PASSWORD
                   valueFrom:
                     secretKeyRef:
@@ -99,7 +99,7 @@ spec:
               -   name: DB_HOST
                   value: {{ required "database.host is required (set authup.database.host in the parent chart)" .Values.database.host | quote }}
               -   name: DB_USERNAME
-                  value: "postgres"
+                  value: {{ .Values.database.username | default "postgres" | quote }}
               -   name: DB_DATABASE
                   value: "auth"
           resources:

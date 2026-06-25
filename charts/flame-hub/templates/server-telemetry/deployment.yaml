@@ -83,12 +83,12 @@ spec:
                         -   name: DB_HOST
                             value: {{ include "flameHub.postgresql.primaryServiceName" . | quote }}
                         -   name: DB_USERNAME
-                            value: "postgres"
+                            value: {{ .Values.postgresql.auth.appUsername | quote }}
                         -   name: DB_PASSWORD
                             valueFrom:
                                 secretKeyRef:
-                                    name: {{ include "flameHub.effectiveSecretName" .  }}
-                                    key: postgresql-password
+                                    name: {{ .Values.postgresql.auth.appAuthSecretName | quote }}
+                                    key: password
                         -   name: DB_DATABASE
                             value: "telemetry"
                         -   name: CLIENT_ID
