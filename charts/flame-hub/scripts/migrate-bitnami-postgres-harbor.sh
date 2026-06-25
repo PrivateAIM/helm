@@ -19,12 +19,23 @@ AUTH_SECRET="${AUTH_SECRET:-flame-hub-auth}"
 log() { printf '[migrate] %s\n' "$*"; }
 die() { printf '[migrate] ERROR: %s\n' "$*" >&2; exit 1; }
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MONITOR_SCRIPT="${SCRIPT_DIR}/monitor-pg-migration.sh"
+monitor_pg() {
+  local phase="$1"
+  if [[ -x "$MONITOR_SCRIPT" ]]; then
+    "$MONITOR_SCRIPT" "$phase" "$RELEASE" "$NAMESPACE" "$BACKUP_DIR" || log "WARN: monitor phase $phase failed (continuing)"
+  fi
+}
+
 command -v kubectl >/dev/null || die "kubectl required"
 command -v helm >/dev/null || die "helm required"
 [[ -f "$VALUES_FILE" ]] || die "values file not found: $VALUES_FILE"
 
 mkdir -p "$BACKUP_DIR"
 log "Backups will be written to $BACKUP_DIR"
+
+monitor_pg baseline
 
 log "Step 1/7: pg_dumpall backup from Bitnami PostgreSQL"
 if kubectl get pod -n "$NAMESPACE" "${RELEASE}-postgresql-primary-0" >/dev/null 2>&1; then
@@ -102,15 +113,22 @@ log "Removing legacy Bitnami PostgreSQL before CNPG takes over ${PG_HOST}"
 kubectl delete statefulset -n "$NAMESPACE" "${RELEASE}-postgresql-primary" --ignore-not-found --wait=true
 
 log "Step 6/7: helm upgrade (CNPG initdb + goharbor)"
+# Do not --wait on the full release: Grafana and other Bitnami sidecars can block for unrelated reasons.
 helm upgrade "$RELEASE" "$CHART_DIR" \
   -n "$NAMESPACE" \
   -f "$VALUES_FILE" \
   -f "$STEADY_VALUES" \
-  --wait \
   --timeout 30m
 
 log "Waiting for CNPG cluster to become ready"
 kubectl wait --for=condition=Ready "cluster/${RELEASE}-postgresql" -n "$NAMESPACE" --timeout=20m
+
+if kubectl get deployment -n "$NAMESPACE" "${RELEASE}-harbor-core" >/dev/null 2>&1; then
+  log "Waiting for Harbor core rollout"
+  kubectl rollout status deployment/"${RELEASE}-harbor-core" -n "$NAMESPACE" --timeout=15m || true
+fi
+
+monitor_pg post-upgrade
 
 if [[ -f "${BACKUP_DIR}/pg_dumpall.sql" ]]; then
   log "Step 7/7: Restore pg_dumpall into CNPG"
@@ -120,9 +138,12 @@ if [[ -f "${BACKUP_DIR}/pg_dumpall.sql" ]]; then
     env PGPASSWORD="$PG_PASS" psql -U postgres -h localhost -v ON_ERROR_STOP=0 -f - \
     < "${BACKUP_DIR}/pg_dumpall.sql"
   log "Restore complete"
+  monitor_pg post-restore
 else
   log "Step 7/7: skipped (no backup file)"
 fi
+
+monitor_pg verify
 
 log "Migration complete."
 log "Backup: ${BACKUP_DIR}/pg_dumpall.sql"
