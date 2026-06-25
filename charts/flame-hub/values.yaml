@@ -334,39 +334,6 @@ victoria-logs-cluster:
         retentionPeriod: "100y"
         retentionDiskSpaceUsage: "50GiB"
 
-grafana-loki:
-    nameOverride: "loki"
-    loki:
-        image:
-            #repository: "tada5hi/grafana-loki"
-            repository: "bitnamilegacy/grafana-loki"
-            tag: "3.5.3-debian-12-r2"
-        overrideConfiguration:
-            limits_config:
-                deletion_mode: "filter-and-delete"
-    gateway:
-        image:
-            #repository: "tada5hi/nginx"
-            repository: "bitnamilegacy/nginx"
-            tag: "1.29.1-debian-12-r0"
-    memcachedfrontend:
-        image:
-            repository: "bitnamilegacy/memcached"
-            tag: "1.6.39-debian-12-r0"
-    memcachedchunks:
-        image:
-            repository: "bitnamilegacy/memcached"
-            tag: "1.6.39-debian-12-r0"
-    grafanaalloy:
-        alloy:
-            image:
-                repository: "bitnamilegacy/grafana-alloy"
-                tag: "1.10.1-debian-12-r1"
-        configReloader:
-            image:
-                repository: "bitnamilegacy/configmap-reload"
-                tag: "0.15.0-debian-12-r12"
-
 prometheus:
     nameOverride: "prometheus"
     alertmanager:
