@@ -1,12 +1,31 @@
-# Anchors for names that cannot be templated in subcharts.
-# Used by harbor, postgres and flame hub deployments.
-# Only change if you have multiple hub releases in one namespace (to avoid service name conflicts).
-# Postgres
-x-flameHubPostgresqlPrimary: &flameHubPostgresqlPrimary "flame-hub-postgresql-primary"
-x-flameHubPostgresqlRead: &flameHubPostgresqlRead "flame-hub-postgresql-read"
-x-flameHubPostgresAuth: &flameHubPostgresAuth "flame-hub-postgres-auth"
-# Harbor
-x-flameHubHarborClusterIP: &flameHubHarborClusterIP "flame-hub-harbor"
+# ============================================================================
+# Multi-instance deployment in the same namespace (skip if you don't need this)
+# ============================================================================
+# If you deploy multiple hub releases into the same namespace, you MUST change
+# the following values to avoid service-name and secret-name conflicts.
+# Replace "flame-hub" with a unique prefix for each release.
+#
+# PostgreSQL:
+#   - postgresql.auth.appAuthSecretName          (default: "flame-hub-postgres-auth")
+#   - postgresql.compatibility.primaryServiceName (default: "flame-hub-postgresql-primary")
+#   - postgresql.compatibility.readServiceName    (default: "flame-hub-postgresql-read")
+#   - authup.database.host                        (must match postgresql.compatibility.primaryServiceName)
+#   - authup.database.existingSecret              (must match postgresql.auth.appAuthSecretName)
+#   - harbor.database.external.host               (must match postgresql.compatibility.primaryServiceName)
+#   - harbor.database.external.existingSecret      (must match postgresql.auth.appAuthSecretName)
+#
+# Harbor:
+#   - harbor.expose.clusterIP.name                (default: "flame-hub-harbor")
+#
+# Credentials:
+#   - auth.secretName                             (default: "flame-hub-auth")
+#   - authup.auth.existingSecret                  (must match auth.secretName)
+#   - rabbitmq.auth.existingPasswordSecret        (must match auth.secretName)
+#   - redis.auth.existingSecret                   (must match auth.secretName)
+#   - minio.auth.existingSecret                   (must match auth.secretName)
+#   - grafana.admin.existingSecret                (must match auth.secretName)
+#   - harbor.existingSecretAdminPassword           (must match auth.secretName)
+# ============================================================================
 
 global:
     imagePullPolicy: "IfNotPresent"
@@ -183,8 +202,8 @@ auth:
 authup:
     publicHttps: false # global.flameHub.publicHttps also enables this
     database:
-        host: *flameHubPostgresqlPrimary
-        existingSecret: *flameHubPostgresAuth
+        host: "flame-hub-postgresql-primary"
+        existingSecret: "flame-hub-postgres-auth"
         passwordKey: password
         username: hub
     # Trusted first-party application origins (redirect allowlist for the web client; not CORS).
@@ -277,13 +296,13 @@ minio:
 postgresql:
     nameOverride: "postgresql"
     auth:
-        appAuthSecretName: *flameHubPostgresAuth
+        appAuthSecretName: "flame-hub-postgres-auth"
         appUsername: hub
         postgresPassword: ""
     compatibility:
         # Override for multiple hub releases per namespace (keep in sync with harbor.database.external.host and authup.database.host).
-        primaryServiceName: *flameHubPostgresqlPrimary
-        readServiceName: *flameHubPostgresqlRead
+        primaryServiceName: "flame-hub-postgresql-primary"
+        readServiceName: "flame-hub-postgresql-read"
     cluster:
         instances: 3 # 1 primary + 2 hot-standby replicas (set to 1 for single-node dev)
         imageName: ghcr.io/cloudnative-pg/postgresql:17.6
@@ -424,7 +443,7 @@ harbor:
             auto:
                 commonName: harbor.local
         clusterIP:
-            name: *flameHubHarborClusterIP
+            name: "flame-hub-harbor"
             ports:
                 httpsPort: 443
     # Used by flame-hub templates/harbor/* (not the upstream harbor chart ingress)
@@ -465,12 +484,12 @@ harbor:
     database:
         type: external
         external:
-            host: *flameHubPostgresqlPrimary
+            host: "flame-hub-postgresql-primary"
             port: "5432"
             username: hub
             password: ""
             coreDatabase: registry
-            existingSecret: *flameHubPostgresAuth
+            existingSecret: "flame-hub-postgres-auth"
             sslmode: disable
     redis:
         type: internal
