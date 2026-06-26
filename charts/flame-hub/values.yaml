@@ -305,18 +305,7 @@ postgresql:
         - registry
         - storage
         - telemetry
-    migration:
-        enabled: false
-        # pg_basebackup from legacy Bitnami: source credentials stay in flame-hub-auth (postgres user).
-        # After migration, create the hub role or point services back at postgres until cutover is complete.
-        source:
-            host: ""
-            port: 5432
-            username: postgres
-            database: postgres
-            sslMode: disable
-            existingSecret: "flame-hub-auth"
-            passwordKey: "postgresql-password"
+
 
 grafana:
     nameOverride: "grafana"

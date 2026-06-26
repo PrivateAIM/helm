@@ -154,17 +154,10 @@ CloudNativePG PostgreSQL helpers
 {{- end -}}
 
 {{- define "flameHub.postgresql.primaryServiceName" -}}
-{{- if .Values.postgresql.compatibility.primaryServiceName -}}
 {{- .Values.postgresql.compatibility.primaryServiceName -}}
-{{- else -}}
-{{- printf "%s-postgresql-primary" .Chart.Name | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
 {{- end -}}
 
 {{- define "flameHub.postgresql.readServiceName" -}}
-{{- if .Values.postgresql.compatibility.readServiceName -}}
 {{- .Values.postgresql.compatibility.readServiceName -}}
-{{- else -}}
-{{- printf "%s-postgresql-read" .Chart.Name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
-{{- end -}}
+

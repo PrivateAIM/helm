@@ -130,7 +130,7 @@ monitor_pg post-upgrade
 if [[ -f "${BACKUP_DIR}/pg_dumpall.sql" ]]; then
   log "Step 7/7: Restore pg_dumpall into CNPG"
   CNPG_POD="$(kubectl get pods -n "$NAMESPACE" -l "cnpg.io/cluster=${RELEASE}-postgresql,role=primary" -o jsonpath='{.items[0].metadata.name}')"
-  PG_PASS="$(kubectl get secret -n "$NAMESPACE" "$AUTH_SECRET" -o jsonpath='{.data.postgresql-password}' | base64 -d)"
+  PG_PASS="$(kubectl get secret -n "$NAMESPACE" "${RELEASE}-postgresql-superuser" -o jsonpath='{.data.password}' | base64 -d)"
   kubectl exec -i -n "$NAMESPACE" "$CNPG_POD" -- \
     env PGPASSWORD="$PG_PASS" psql -U postgres -h localhost -v ON_ERROR_STOP=0 -f - \
     < "${BACKUP_DIR}/pg_dumpall.sql"

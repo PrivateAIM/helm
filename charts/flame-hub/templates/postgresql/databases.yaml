@@ -1,4 +1,3 @@
-{{- if not .Values.postgresql.migration.enabled }}
 {{- $clusterName := include "flameHub.postgresql.clusterName" . -}}
 {{- $owner := .Values.postgresql.auth.appUsername -}}
 {{- range .Values.postgresql.databases }}
@@ -15,4 +14,4 @@ spec:
   cluster:
     name: {{ $clusterName }}
 {{- end }}
-{{- end }}
+
