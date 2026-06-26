@@ -27,9 +27,6 @@ metadata:
   name: {{ include "flameHub.postgresql.readServiceName" . }}
   labels:
     {{- include "flame-hub.labels" . | nindent 4 }}
-    app.kubernetes.io/component: postgresql-read
-    cnpg.io/cluster: {{ $clusterName }}
-  annotations:
     flame-hub.dev/bitnami-compat: "true"
 spec:
   type: ClusterIP
@@ -40,3 +37,4 @@ spec:
       protocol: TCP
   selector:
     cnpg.io/cluster: {{ $clusterName }}
+    cnpg.io/instanceRole: replica

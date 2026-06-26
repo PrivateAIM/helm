@@ -168,4 +168,3 @@ CloudNativePG PostgreSQL helpers
 {{- printf "%s-postgresql-read" .Chart.Name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 {{- end -}}
-

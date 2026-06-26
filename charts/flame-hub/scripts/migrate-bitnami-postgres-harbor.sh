@@ -73,9 +73,6 @@ postgresql:
   migration:
     enabled: false
 harbor:
-  expose:
-    clusterIP:
-      name: ${RELEASE}-harbor
   persistence:
     persistentVolumeClaim:
       registry:

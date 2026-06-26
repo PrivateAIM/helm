@@ -1,10 +1,12 @@
-# Stable PostgreSQL Service and secret names.
-# Used throughout the chart to reference the PostgreSQL service and secret.
+# Anchors for names that cannot be templated in subcharts.
+# Used by harbor, postgres and flame hub deployments.
 # Only change if you have multiple hub releases in one namespace (to avoid service name conflicts).
-# (this workaround is required because the harbor chart does not template the pg host value.)
+# Postgres
 x-flameHubPostgresqlPrimary: &flameHubPostgresqlPrimary "flame-hub-postgresql-primary"
 x-flameHubPostgresqlRead: &flameHubPostgresqlRead "flame-hub-postgresql-read"
 x-flameHubPostgresAuth: &flameHubPostgresAuth "flame-hub-postgres-auth"
+# Harbor
+x-flameHubHarborClusterIP: &flameHubHarborClusterIP "flame-hub-harbor"
 
 global:
     imagePullPolicy: "IfNotPresent"
@@ -433,12 +435,9 @@ harbor:
             auto:
                 commonName: harbor.local
         clusterIP:
+            name: *flameHubHarborClusterIP
             ports:
                 httpsPort: 443
-        ingress:
-            hosts:
-                core: harbor.local
-            enabled: false
     # Used by flame-hub templates/harbor/* (not the upstream harbor chart ingress)
     ingress:
         enabled: true

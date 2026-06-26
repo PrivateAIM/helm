@@ -172,7 +172,7 @@ This is used by pods to access harbor. If ExternalHarbor is used, this will be t
 {{ include "harbor.host" . }}
 {{- else -}}
 {{- if .Values.harbor.enabled -}}
-{{ .Release.Name }}-harbor
+{{- .Values.harbor.expose.clusterIP.name | default "harbor" -}}
 {{- end }}
 {{- end }}
 {{- end }}
