@@ -285,7 +285,7 @@ postgresql:
         primaryServiceName: *flameHubPostgresqlPrimary
         readServiceName: *flameHubPostgresqlRead
     cluster:
-        instances: 1
+        instances: 3 # 1 primary + 2 hot-standby replicas (set to 1 for single-node dev)
         imageName: ghcr.io/cloudnative-pg/postgresql:17.6
         storage:
             size: 16Gi
