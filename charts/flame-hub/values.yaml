@@ -313,11 +313,6 @@ postgresql:
         postgresql:
             parameters:
                 max_connections: "1024"
-        bootstrap:
-            postInitApplicationSQL:
-                - |
-                  \c registry
-                  CREATE TABLE IF NOT EXISTS schema_migrations(version bigint not null primary key, dirty boolean not null);
     databases:
         - auth
         - core
