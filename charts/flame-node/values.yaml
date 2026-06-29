@@ -809,7 +809,7 @@ ui:
   tolerations: []
   affinity: {}
 
-## node-data-store deploys dummy blaze (FHIR) and minio (S3) data stores for testing the Flame Node
+## node-data-store deploys dummy blaze (FHIR) and seaweedfs (S3) data stores for testing the Flame Node
 dataStore:
   enabled: false
 
@@ -836,26 +836,53 @@ dataStore:
         SYNTHEA_CLINICIAN_SEED: 3726451
         TIMEOUT: 2
 
-  # minio values
-  minio:
-    rootUser: ""
-    rootPassword: ""
+  seaweedfs:
+    ## Admin S3 credentials for the data store
+    ## Provide plaintext username/password below to have them converted into a Kubernetes Secret
+    ## Both are auto-generated and preserved across upgrades if left blank
+    auth:
+      ## @param dataStore.seaweedfs.auth.username S3 access key (admin). Auto-generated if blank.
+      username: ""
+      ## @param dataStore.seaweedfs.auth.password S3 secret key (admin). Auto-generated if blank.
+      password: ""
 
-    ## @param dataStore.minio.existingSecret Name of an existing Secret with keys rootUser and rootPassword.
-    ## When set, rootUser and rootPassword above are ignored.
-    existingSecret: ""
+    ## Run everything (master, volume, filer, S3) in a single pod.
+    master: { enabled: false }
+    volume: { enabled: false }
+    filer: { enabled: false }
 
-    mode: standalone
-    replicas: 1
-    resources:
-      requests:
-        memory: 1Gi
+    s3:
+      enabled: false
+      ## @param dataStore.seaweedfs.s3.existingConfigSecret Name of the Secret holding the S3 config.
+      ## Defaults to the data-store-managed secret generated from auth.username/password above.
+      ## Set this to your own existing Secret (must contain a seaweedfs_s3_config key) to bring your own credentials, in which case the chart will not generate one.
+      existingConfigSecret: node-datastore-seaweedfs-s3-secret
 
-    persistence:
+    allInOne:
       enabled: true
-      size: 5Gi
-      annotations:
-        helm.sh/resource-policy: keep
+      s3:
+        enabled: true
+        enableAuth: true
+      ## Built-in filer web UI is served on port 8888 of the
+      ## node-datastore-seaweedfs-all-in-one Service (port-forward to access).
+      data:
+        type: persistentVolumeClaim
+        size: 5Gi
+
+    ## Admin UI: dashboard for creating buckets and minting per-bucket S3 access/secret keys.
+    ## Enabled by default with the data store; reach it via the node-datastore-seaweedfs-admin
+    ## Service on port 23646 (port-forward, or set admin.ingress.enabled). The S3 admin identity
+    ## above bootstraps the store; create the additional restricted users in this UI.
+    admin:
+      enabled: true
+      ## Admin UI login. Plaintext password is converted into a Kubernetes Secret on install, or
+      ## auto-generated and preserved if left blank. See dataStore.seaweedfs.admin.secret to use an
+      ## existing Secret instead.
+      ## @param dataStore.seaweedfs.admin.auth.username Admin UI username.
+      ## @param dataStore.seaweedfs.admin.auth.password Admin UI password. Auto-generated if blank.
+      auth:
+        username: "admin"
+        password: ""
 
 ## Used by the node components for storing information on the analysis pods and logging events
 postgresql:
@@ -1030,124 +1057,37 @@ keycloak-postgresql:
     volumeName: "postgres-data-keycloak"
     requestedSize: 8Gi
 
-minio:
-  # All possible values can be found at https://github.com/minio/minio/blob/master/helm/minio/values.yaml
+## seaweedfs is the S3 object store used by the storage service.
+## All possible values can be found at https://github.com/seaweedfs/seaweedfs/blob/master/k8s/charts/seaweedfs/values.yaml
+## It runs in all-in-one mode (master, volume, filer and S3 gateway in a single pod) and autogenerates its S3 admin credentials
+seaweedfs:
+  ## Run everything in a single pod and disable the standalone components.
+  master: { enabled: false }
+  volume: { enabled: false }
+  filer: { enabled: false }
 
-  ## Provide a name in place of minio for `app:` labels
-  nameOverride:
+  s3:
+    ## Use the all-in-one S3 gateway rather than a standalone S3 deployment.
+    enabled: false
+    ## Required so the chart generates the "<release>-seaweedfs-s3-secret" credential Secret.
+    enableAuth: true
 
-  ## Provide a name to substitute for the full names of resources
-  fullnameOverride:
-
-  ## set kubernetes cluster domain where minio is running
-  clusterDomain: cluster.local
-
-  ## Set default rootUser, rootPassword
-  ## rootUser and rootPassword is generated when not set
-  ## Distributed MinIO ref: https://min.io/docs/minio/linux/operations/install-deploy-manage/deploy-minio-multi-node-multi-drive.html
-  ##
-  rootUser: "admin"
-  rootPassword: "s3cr3t_p4ssw0rd"
-
-  ## Use existing Secret that store following variables:
-  ##
-  ## | Chart var             | .data.<key> in Secret    |
-  ## |:----------------------|:-------------------------|
-  ## | rootUser              | rootUser                 |
-  ## | rootPassword          | rootPassword             |
-  ##
-  ## All mentioned variables will be ignored in values file.
-  ## .data.rootUser and .data.rootPassword are mandatory,
-  ## others depend on enabled status of corresponding sections.
-  existingSecret:
-
-  ## Path where PV would be mounted on the MinIO Pod
-  mountPath: "/mnt/data"
-
-  ## List of buckets to be created after minio install
-  ##
-  buckets:
-    [
-      {
-        name: flame,
-        policy: none,
-        purge: false,
-        versioning: false,
-        objectlocking: false,
-      },
-    ]
-    #   # Name of the bucket
-    # - name: bucket1
-    #   # Policy to be set on the
-    #   # bucket [none|download|upload|public]
-    #   policy: none
-    #   # Purge if bucket exists already
-    #   purge: false
-    #   # set versioning for
-    #   # bucket [true|false]
-    #   versioning: false # remove this key if you do not want versioning feature
-    #   # set objectlocking for
-    #   # bucket [true|false] NOTE: versioning is enabled by default if you use locking
-    #   objectlocking: false
-    # - name: bucket2
-    #   policy: none
-    #   purge: false
-    #   versioning: true
-    #   # set objectlocking for
-    #   # bucket [true|false] NOTE: versioning is enabled by default if you use locking
-    #   objectlocking: false
-
-  ## Set default image, imageTag, and imagePullPolicy. mode is used to indicate the
-  image:
-    repository: quay.io/minio/minio
-    tag: RELEASE.2024-03-03T17-50-39Z
-    pullPolicy: IfNotPresent
-
-  imagePullSecrets: []
-  ## Update strategy for Deployments
-  deploymentUpdate:
-    type: RollingUpdate
-    maxUnavailable: 0
-    maxSurge: 100%
-
-  mode: standalone
-  # Number of drives attached to a node
-  drivesPerNode: 1
-  # Number of MinIO containers running
-  replicas: 1
-  # Number of expanded MinIO clusters
-  pools: 1
-
-  resources:
-    requests:
-      memory: 1Gi
-
-  ## Update strategy for StatefulSets
-  statefulSetUpdate:
-    updateStrategy: RollingUpdate
-
-  persistence:
+  allInOne:
     enabled: true
-    annotations: {}
-
-    ## A manually managed Persistent Volume and Claim
-    ## Requires persistence.enabled: true
-    ## If defined, PVC must be created manually before volume will be bound
-    existingClaim:
-
-    ## minio data Persistent Volume Storage Class
-    ## If defined, storageClassName: <storageClass>
-    ## If set to "-", storageClassName: "", which disables dynamic provisioning
-    ## If undefined (the default) or set to null, no storageClassName spec is
-    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
-    ##   GKE, AWS & OpenStack)
-    ##
-    ## Storage class of PV to bind. By default it looks for standard storage class.
-    ## If the PV uses a different storage class, specify that here.
-    storageClass:
-    volumeName:
-    accessMode: ReadWriteOnce
-    size: 10Gi
+    ## Disable the chart's default hard pod anti-affinity (requiredDuringScheduling, keyed on
+    ## hostname). It blocks scheduling on single-node clusters and prevents this instance from
+    ## co-locating with the data-store SeaweedFS pod. Set to a podAntiAffinity block if you run a
+    ## multi-node cluster and want the pods spread across nodes.
+    affinity: ""
+    s3:
+      enabled: true
+      enableAuth: true
+      ## Default bucket the storage service reads from / writes to.
+      createBuckets:
+        - name: flame
+    data:
+      type: persistentVolumeClaim
+      size: 10Gi
 
 mongodb:
   ## Pull secrets and name override options

@@ -286,6 +286,20 @@ Return the name of the Secret containing the nuxtAuthSecret
 
 {{/*Storage Service helpers*/}}
 {{/*
+Return the endpoint (host:port) of the SeaweedFS S3 gateway.
+*/}}
+{{- define "seaweedfs.s3.endpoint" -}}
+{{- printf "%s-seaweedfs-all-in-one:8333" .Release.Name -}}
+{{- end -}}
+
+{{/*
+Return the name of the Secret that holds the SeaweedFS S3 admin credentials.
+*/}}
+{{- define "seaweedfs.s3.secretName" -}}
+{{- printf "%s-seaweedfs-s3-secret" .Release.Name -}}
+{{- end -}}
+
+{{/*
 Return the secret containing private key
 */}}
 {{- define "hub.crypto.privateKeySecretName" -}}

@@ -2,33 +2,83 @@ blaze:
   nameOverride: node-datastore-blaze
   fullnameOverride: node-datastore-blaze
 
-minio:
-  nameOverride: node-datastore-minio
-  fullnameOverride: node-datastore-minio
+## Globals declared here propagate to this subchart and its seaweedfs grandchild only
+## (Helm does not leak subchart globals to sibling charts), so this scopes the security
+## config to the data-store SeaweedFS and leaves the node-local backend untouched.
+global:
+  seaweedfs:
+    securityConfig:
+      jwtSigning:
+        ## Mounts security.toml on the filer + admin so the Admin UI "Object Store > Users"
+        ## tab can manage S3 identities. Required for creating users / access keys in the UI.
+        filerWrite: true
 
-  serviceAccount:
-    create: true
-    name: node-datastore-minio-sa
-  
-  rootUser: ""
-  rootPassword: ""
+seaweedfs:
+  ## Distinct name so this instance does not collide with the node-local seaweedfs in the parent chart.
+  fullnameOverride: node-datastore-seaweedfs
 
-  ## Use existing Secret that store following variables:
-  ##
-  ## | Chart var    | .data.<key> in Secret |
-  ## |:-------------|:----------------------|
-  ## | rootUser     | rootUser              |
-  ## | rootPassword | rootPassword          |
-  ##
-  ## When set, rootUser and rootPassword above are ignored.
-  existingSecret: ""
+  ## Admin S3 credentials. Provide plaintext username/password to have them converted into a Kubernetes Secret
+  auth:
+    username: ""
+    password: ""
 
-  mode: standalone
-  replicas: 1
-  resources:
-    requests:
-      memory: 1Gi
+  ## Run master, volume, filer and the S3 gateway in a single all-in-one pod.
+  master: { enabled: false }
+  volume: { enabled: false }
+  filer: { enabled: false }
 
-  persistence:
+  s3:
+    enabled: false
+    ## Defaults to the data-store-managed Secret generated from auth.username/password above.
+    ## Set to your own existing Secret (must contain a seaweedfs_s3_config key) to bring your own
+    ## credentials; the chart then skips generating one.
+    existingConfigSecret: node-datastore-seaweedfs-s3-secret
+
+  allInOne:
     enabled: true
-    size: 5Gi
+    ## Disable the chart's default hard pod anti-affinity so this instance can schedule on a
+    ## single-node cluster and co-locate with the node-local SeaweedFS pod.
+    affinity: ""
+    s3:
+      enabled: true
+      enableAuth: true
+    ## The built-in filer web UI is served on port 8888 of the
+    ## node-datastore-seaweedfs-all-in-one Service (port-forward to access).
+    data:
+      type: persistentVolumeClaim
+      size: 5Gi
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: "1"
+        memory: 1Gi
+
+  ## Admin UI (port 23646): a dashboard for "Object Store" management - create buckets, create
+  ## S3 users, generate per-bucket access/secret keys, and scope their actions (Read/Write/List/...).
+  ## Reach it by port-forwarding the node-datastore-seaweedfs-admin Service (or enable admin.ingress).
+  admin:
+    enabled: true
+    ## Single-node: drop the chart's default hard pod anti-affinity (same reason as allInOne above).
+    affinity: ""
+    ## Required: the admin must be told the master address because the standalone master is disabled
+    ## in all-in-one mode. The all-in-one pod serves the master API on port 9333.
+    masters: "node-datastore-seaweedfs-all-in-one:9333"
+
+    ## Admin UI login. These are consumed by the data-store chart's seaweedfs-admin-secret.yaml
+    ## template (NOT by the subchart directly) to build the Secret referenced via secret.* below.
+    ## Provide a plaintext password to pin it, or leave blank to auto-generate (kept across upgrades).
+    ## Retrieve a generated password with:
+    ##   kubectl get secret node-datastore-seaweedfs-admin-secret -o jsonpath='{.data.admin_password}' | base64 -d
+    auth:
+      username: "admin"
+      password: ""
+
+    ## Points the subchart at the Secret the template above manages. To bring your own admin
+    ## credentials Secret, set existingSecret to its name (with the matching userKey/pwKey) -
+    ## the chart then skips generating one.
+    secret:
+      existingSecret: node-datastore-seaweedfs-admin-secret
+      userKey: admin_username
+      pwKey: admin_password
