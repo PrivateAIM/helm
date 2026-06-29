@@ -7,8 +7,8 @@
 #
 # PostgreSQL:
 #   - postgresql.auth.appAuthSecretName          (default: "flame-hub-postgres-auth")
-#   - postgresql.compatibility.primaryServiceName (default: "flame-hub-postgresql-primary")
-#   - postgresql.compatibility.readServiceName    (default: "flame-hub-postgresql-read")
+#   - postgresql.compatibility.primaryServiceName (default: "flame-hub-postgresql-primary"; CNPG cluster.yaml)
+#   - postgresql.compatibility.readServiceName    (default: "flame-hub-postgresql-read"; CNPG cluster.yaml)
 #   - authup.database.host                        (must match postgresql.compatibility.primaryServiceName)
 #   - authup.database.existingSecret              (must match postgresql.auth.appAuthSecretName)
 #   - harbor.database.external.host               (must match postgresql.compatibility.primaryServiceName)
@@ -300,9 +300,14 @@ postgresql:
         appUsername: hub
         postgresPassword: ""
     compatibility:
-        # Override for multiple hub releases per namespace (keep in sync with harbor.database.external.host and authup.database.host).
+        # Stable service names for Harbor (literal subchart values) and Bitnami migration.
+        # CNPG creates these via managed.services.additional; defaults -rw/-ro/-r are disabled below.
         primaryServiceName: "flame-hub-postgresql-primary"
         readServiceName: "flame-hub-postgresql-read"
+        # CNPG always keeps {clusterName}-rw; disable redundant read-any/read-only defaults.
+        disabledDefaultServices:
+            - r
+            - ro
     cluster:
         instances: 3 # 1 primary + 2 hot-standby replicas (set to 1 for single-node dev)
         imageName: ghcr.io/cloudnative-pg/postgresql:17.6

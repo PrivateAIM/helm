@@ -28,6 +28,31 @@ spec:
         inherit: true
         passwordSecret:
           name: {{ .Values.postgresql.auth.appAuthSecretName | quote }}
+    services:
+      disabledDefaultServices:
+        {{- toYaml .Values.postgresql.compatibility.disabledDefaultServices | nindent 8 }}
+      additional:
+        - selectorType: rw
+          serviceTemplate:
+            metadata:
+              name: {{ include "flameHub.postgresql.primaryServiceName" . | quote }}
+              labels:
+                {{- include "flame-hub.labels" . | nindent 16 }}
+                app.kubernetes.io/component: postgresql-primary
+              annotations:
+                flame-hub.dev/bitnami-compat: "true"
+            spec:
+              type: ClusterIP
+        - selectorType: ro
+          serviceTemplate:
+            metadata:
+              name: {{ include "flameHub.postgresql.readServiceName" . | quote }}
+              labels:
+                {{- include "flame-hub.labels" . | nindent 16 }}
+              annotations:
+                flame-hub.dev/bitnami-compat: "true"
+            spec:
+              type: ClusterIP
   bootstrap:
     initdb:
       database: postgres
