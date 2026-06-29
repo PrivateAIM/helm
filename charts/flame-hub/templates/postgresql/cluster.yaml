@@ -32,6 +32,4 @@ spec:
     initdb:
       database: postgres
       owner: postgres
-      postInitApplicationSQL:
-        {{- toYaml .Values.postgresql.cluster.bootstrap.postInitApplicationSQL | nindent 8 }}
 

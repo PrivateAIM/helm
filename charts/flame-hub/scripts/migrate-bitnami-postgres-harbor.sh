@@ -5,12 +5,12 @@
 #   ./migrate-bitnami-postgres-harbor.sh [release] [namespace] [values-file]
 #
 # Example:
-#   ./migrate-bitnami-postgres-harbor.sh hub default charts/flame-hub/values_local.yaml
+#   ./migrate-bitnami-postgres-harbor.sh flame-hub default charts/flame-hub/values_local_migrated.yaml
 set -euo pipefail
 
 RELEASE="${1:-hub}"
 NAMESPACE="${2:-default}"
-VALUES_FILE="${3:-charts/flame-hub/values_local.yaml}"
+VALUES_FILE="${3:-charts/flame-hub/values_local_migrated.yaml}"
 CHART_DIR="charts/flame-hub"
 BACKUP_DIR="${BACKUP_DIR:-/tmp/flame-hub-migration-$(date +%Y%m%d-%H%M%S)}"
 PG_HOST="${RELEASE}-postgresql-primary"
@@ -130,9 +130,9 @@ monitor_pg post-upgrade
 if [[ -f "${BACKUP_DIR}/pg_dumpall.sql" ]]; then
   log "Step 7/7: Restore pg_dumpall into CNPG"
   CNPG_POD="$(kubectl get pods -n "$NAMESPACE" -l "cnpg.io/cluster=${RELEASE}-postgresql,role=primary" -o jsonpath='{.items[0].metadata.name}')"
-  PG_PASS="$(kubectl get secret -n "$NAMESPACE" "${RELEASE}-postgresql-superuser" -o jsonpath='{.data.password}' | base64 -d)"
+  # CNPG accepts peer auth for the postgres OS user inside the pod; TCP password auth often fails here.
   kubectl exec -i -n "$NAMESPACE" "$CNPG_POD" -- \
-    env PGPASSWORD="$PG_PASS" psql -U postgres -h localhost -v ON_ERROR_STOP=0 -f - \
+    psql -U postgres -v ON_ERROR_STOP=0 -f - \
     < "${BACKUP_DIR}/pg_dumpall.sql"
   log "Restore complete"
   monitor_pg post-restore

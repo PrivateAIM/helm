@@ -59,6 +59,10 @@ find_pg_pod() {
 run_psql() {
   local pod="$1"
   shift
+  if kubectl get pod -n "$NAMESPACE" "$pod" -o jsonpath='{.metadata.labels.cnpg\.io/cluster}' 2>/dev/null | grep -q .; then
+    kubectl exec -n "$NAMESPACE" "$pod" -- psql -U postgres "$@"
+    return
+  fi
   local pass
   pass="$(get_pg_pass)"
   kubectl exec -n "$NAMESPACE" "$pod" -- env PGPASSWORD="$pass" psql -U postgres -h localhost "$@"
