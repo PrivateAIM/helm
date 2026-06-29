@@ -1,14 +1,14 @@
 apiVersion: v2
 name: flame-node-data-store
-description: A Helm chart for deploying blaze (FHIR) and minio (S3) data stores for testing the Flame Node
+description: A Helm chart for deploying blaze (FHIR) and seaweedfs (S3) data stores for testing the Flame Node
 type: application
-version: 0.1.0
+version: 0.2.0
 appVersion: 0.9.0
 
 dependencies:
   - name: blaze
     repository: file://blaze
     version: 0.1.0
-  - name: minio
-    repository: https://charts.min.io/
-    version: 5.4.0
+  - name: seaweedfs
+    repository: https://seaweedfs.github.io/seaweedfs/helm
+    version: 4.37.0
