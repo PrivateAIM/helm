@@ -320,6 +320,13 @@ Strip scheme from expose.hostname for Gateway API hostnames (HTTPRoute.spec.host
 {{- end -}}
 
 {{/*
+Strip scheme from the data-store SeaweedFS admin panel hostname for Gateway API.
+*/}}
+{{- define "flame-node.dataStore.seaweedfs.admin.routeHostname" -}}
+{{- regexReplaceAll "^https?://(.*)" .Values.dataStore.seaweedfs.admin.gateway.hostname "${1}" -}}
+{{- end -}}
+
+{{/*
 Return the parentRefs list item for HTTPRoutes targeting the node Gateway.
 When expose.gateway.external is true, references the user-supplied external Gateway;
 otherwise references the chart-managed Gateway.
