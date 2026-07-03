@@ -26,6 +26,13 @@ expose:
       namespace: ""
       ## @param expose.gateway.parentRef.sectionName Listener name on the external Gateway to attach to (optional)
       sectionName: ""
+    nginxGatewayFabric:
+      ## @param expose.gateway.nginxGatewayFabric.enabled Set to true when the node Gateway's GatewayClass is NGINX Gateway Fabric, to attach a ClientSettingsPolicy 
+      ## to the node Gateway. NGINX Gateway Fabric defaults to nginx's client_max_body_size of 1m, which is too small for data store uploads. The policy raises it 
+      ## for every HTTPRoute attached to the Gateway. No effect on other GatewayClasses.
+      enabled: false
+      ## @param expose.gateway.nginxGatewayFabric.maxBodySize Value for the ClientSettingsPolicy's body.maxSize
+      maxBodySize: 500m
 
 ## @param offline Forces the UI and hub adapter to use the internal service endpoint for authentication
 ## this is useful for when you are using a locally resolveable domain i.e. localhost or similar as defined in /etc/hosts
