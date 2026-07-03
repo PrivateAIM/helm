@@ -7,6 +7,8 @@ blaze:
 ## config to the data-store SeaweedFS and leaves the node-local backend untouched.
 global:
   seaweedfs:
+    # To avoid collision with the parent SeaweedFS instance
+    serviceAccountName: node-datastore-seaweedfs
     securityConfig:
       jwtSigning:
         ## Mounts security.toml on the filer + admin so the Admin UI "Object Store > Users"
