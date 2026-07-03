@@ -26,6 +26,13 @@ expose:
       namespace: ""
       ## @param expose.gateway.parentRef.sectionName Listener name on the external Gateway to attach to (optional)
       sectionName: ""
+    nginxGatewayFabric:
+      ## @param expose.gateway.nginxGatewayFabric.enabled Set to true when the node Gateway's GatewayClass is NGINX Gateway Fabric, to attach a ClientSettingsPolicy 
+      ## to the node Gateway. NGINX Gateway Fabric defaults to nginx's client_max_body_size of 1m, which is too small for data store uploads. The policy raises it 
+      ## for every HTTPRoute attached to the Gateway. No effect on other GatewayClasses.
+      enabled: false
+      ## @param expose.gateway.nginxGatewayFabric.maxBodySize Value for the ClientSettingsPolicy's body.maxSize
+      maxBodySize: 500m
 
 ## Secrets for the Keycloak realm clients (hub-adapter, node-ui, service1/pod-orchestrator).
 ## Under Argo CD, `helm template` cannot look up the previously generated value, so for GitOps/production set explicit values here (ideally via sealed-secrets / external-secrets).

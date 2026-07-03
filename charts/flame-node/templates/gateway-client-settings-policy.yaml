@@ -1,0 +1,16 @@
+{{- if and (eq .Values.expose.type "gateway") (not .Values.expose.gateway.external) .Values.expose.gateway.nginxGatewayFabric.enabled -}}
+apiVersion: gateway.nginx.org/v1alpha1
+kind: ClientSettingsPolicy
+metadata:
+  name: {{ .Release.Name }}-node-gateway-client-settings
+  labels:
+    app.kubernetes.io/part-of: flame-node
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: {{ .Release.Name }}-node-gateway
+  body:
+    maxSize: {{ .Values.expose.gateway.nginxGatewayFabric.maxBodySize | quote }}
+{{- end }}
