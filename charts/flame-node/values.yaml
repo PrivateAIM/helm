@@ -27,6 +27,22 @@ expose:
       ## @param expose.gateway.parentRef.sectionName Listener name on the external Gateway to attach to (optional)
       sectionName: ""
 
+## Secrets for the Keycloak realm clients (hub-adapter, node-ui, service1/pod-orchestrator).
+## Under Argo CD, `helm template` cannot look up the previously generated value, so for GitOps/production set explicit values here (ideally via sealed-secrets / external-secrets).
+keycloakClientSecrets:
+  ## @param keycloakClientSecrets.create Whether the chart generates/manages the "<release>-keycloak-client-secrets" Secret.
+  ## Set to false to supply your own Secret with that exact name (e.g. via sealed-secrets / external-secrets) instead of
+  ## putting values in this file. It must contain the keys: hubAdapterClientSecret, nodeUiClientSecret, podOrcClientSecret.
+  ## When false, the hubAdapter/nodeUi/podOrc values below are ignored.
+  create: true
+  ## @param keycloakClientSecrets.hubAdapter Secret for the "hub-adapter" Keycloak client. Generated if empty.
+  hubAdapter: ""
+  ## @param keycloakClientSecrets.nodeUi Secret for the "node-ui" Keycloak client. Generated if empty.
+  ## Ignored when ui.idp.clientSecret is set (that value is used for both the UI and Keycloak).
+  nodeUi: ""
+  ## @param keycloakClientSecrets.podOrc Secret for the "service1"/pod-orchestrator Keycloak client. Generated if empty.
+  podOrc: ""
+
 ## @param offline Forces the UI and hub adapter to use the internal service endpoint for authentication
 ## this is useful for when you are using a locally resolveable domain i.e. localhost or similar as defined in /etc/hosts
 ## Overrides hubAdapter.idp.jwks and enables NUXT_PUBLIC_INTERNAL_KEYCLOAK_URL for the UI
@@ -282,12 +298,6 @@ storageService:
 
 # keycloakx values
 keycloakx:
-  secretSync:
-    ## @param keycloakx.secretSync.skip Set to true to disable the post-install/post-upgrade Job that syncs
-    ## client secrets from Keycloak's database with the K8s Secret via the keycloak Admin API.
-    ## Only disable this if you are managing Keycloak client secrets out-of-band.
-    skip: false
-
   ## @param keycloakx.defaultUserEnabled Enable the creation of the default "flameuser" in keycloak
   defaultUserEnabled: false
 
@@ -327,6 +337,7 @@ keycloakx:
     - name: JAVA_OPTS_APPEND
       value: >-
         -Djgroups.dns.query={{ include "keycloak.fullname" . }}-headless
+        -Dkeycloak.migration.replacePlaceholders=true
     - name: KC_DB_URL_DATABASE
       valueFrom:
         secretKeyRef:
@@ -358,6 +369,8 @@ keycloakx:
         name: {{ if .Values.auth.existingSecret }}{{ .Values.auth.existingSecret }}{{ else }}flame-keycloak-credentials-secret{{ end }}
     - configMapRef:
         name: {{ .Release.Name }}-keycloak-env
+    - secretRef:
+        name: {{ .Release.Name }}-keycloak-client-secrets
 
   ingress:
     enabled: false
