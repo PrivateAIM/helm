@@ -17,22 +17,16 @@ seaweedfs:
   ## Distinct name so this instance does not collide with the node-local seaweedfs in the parent chart.
   fullnameOverride: node-datastore-seaweedfs
 
-  ## Admin S3 credentials. Provide plaintext username/password to have them converted into a Kubernetes Secret
-  auth:
-    adminAccessKey: ""
-    adminSecretKey: ""
-
   ## Run master, volume, filer and the S3 gateway in a single all-in-one pod.
   master: { enabled: false }
   volume: { enabled: false }
   filer: { enabled: false }
 
   s3:
+    ## Standalone S3 deployment stays off; the S3 gateway runs inside the all-in-one pod below.
+    ## No default credentials or buckets are created for this instance - every bucket, user and
+    ## access key is created through the Admin UI (see allInOne.s3.enableAuth and the admin block).
     enabled: false
-    ## Defaults to the data-store-managed Secret generated from auth.username/password above.
-    ## Set to your own existing Secret (must contain a seaweedfs_s3_config key) to bring your own
-    ## credentials; the chart then skips generating one.
-    existingConfigSecret: node-datastore-seaweedfs-s3-secret
 
   allInOne:
     enabled: true
@@ -41,7 +35,12 @@ seaweedfs:
     affinity: ""
     s3:
       enabled: true
-      enableAuth: true
+      ## Filer-backed identity mode: keep false so the S3 gateway does NOT run with a static
+      ## -s3.config file. SeaweedFS then stores/reads all S3 identities in the filer - the only
+      ## store the Admin UI can manage - so every bucket, user and access key is created in the
+      ## UI. (A static file would become the sole identity source and silently ignore UI/filer
+      ## changes, which produced the transient "access key not found" errors.)
+      enableAuth: false
     ## The built-in filer web UI is served on port 8888 of the
     ## node-datastore-seaweedfs-all-in-one Service (port-forward to access).
     data:

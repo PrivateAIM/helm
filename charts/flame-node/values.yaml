@@ -844,32 +844,28 @@ dataStore:
         TIMEOUT: 2
 
   seaweedfs:
-    ## Admin S3 credentials for the data store
-    ## Provide plaintext username/password below to have them converted into a Kubernetes Secret
-    ## Both are auto-generated and preserved across upgrades if left blank (recommended)
-    auth:
-      ## @param dataStore.seaweedfs.auth.adminAccessKey S3 access key (admin). Auto-generated if blank.
-      adminAccessKey: ""
-      ## @param dataStore.seaweedfs.auth.adminSecretKey S3 secret key (admin). Auto-generated if blank.
-      adminSecretKey: ""
-
     ## Run everything (master, volume, filer, S3) in a single pod.
     master: { enabled: false }
     volume: { enabled: false }
     filer: { enabled: false }
 
     s3:
+      ## No default credentials or buckets for this instance - every bucket, user and access key
+      ## is created through the Admin UI. The standalone S3 deployment stays off; the S3 gateway
+      ## runs inside the all-in-one pod below.
       enabled: false
-      ## @param dataStore.seaweedfs.s3.existingConfigSecret Name of the Secret holding the S3 config.
-      ## Defaults to the data-store-managed secret generated from auth.username/password above.
-      ## Set this to your own existing Secret (must contain a seaweedfs_s3_config key) to bring your own credentials
-      existingConfigSecret: node-datastore-seaweedfs-s3-secret
 
     allInOne:
       enabled: true
       s3:
         enabled: true
-        enableAuth: true
+        ## @param dataStore.seaweedfs.allInOne.s3.enableAuth Keep false to run the S3 gateway in
+        ## filer-backed identity mode. SeaweedFS then stores/reads all S3 identities in the filer -
+        ## the only store the Admin UI can manage - so every bucket, user and key is created in the
+        ## UI. When true, SeaweedFS mounts a static `-s3.config` file that becomes the sole identity
+        ## source and silently ignores UI/filer changes, which produced the transient
+        ## "access key not found" errors.
+        enableAuth: false
       ## Built-in filer web UI is served on port 8888 of the
       ## node-datastore-seaweedfs-all-in-one Service (port-forward to access).
       data:
@@ -878,8 +874,8 @@ dataStore:
 
     ## Admin UI: dashboard for creating buckets and minting per-bucket S3 access/secret keys.
     ## Enabled by default with the data store; reach it via the node-datastore-seaweedfs-admin
-    ## Service on port 23646 (port-forward, or set admin.ingress.enabled). The S3 admin identity
-    ## above bootstraps the store; create the additional restricted users in this UI.
+    ## Service on port 23646 (port-forward, or set admin.ingress.enabled). This instance ships no
+    ## default S3 credentials or buckets - create every bucket, user and access key in this UI.
     admin:
       enabled: true
 
