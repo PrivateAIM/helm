@@ -848,10 +848,10 @@ dataStore:
     ## Provide plaintext username/password below to have them converted into a Kubernetes Secret
     ## Both are auto-generated and preserved across upgrades if left blank (recommended)
     auth:
-      ## @param dataStore.seaweedfs.auth.username S3 access key (admin). Auto-generated if blank.
-      username: ""
-      ## @param dataStore.seaweedfs.auth.password S3 secret key (admin). Auto-generated if blank.
-      password: ""
+      ## @param dataStore.seaweedfs.auth.adminAccessKey S3 access key (admin). Auto-generated if blank.
+      adminAccessKey: ""
+      ## @param dataStore.seaweedfs.auth.adminSecretKey S3 secret key (admin). Auto-generated if blank.
+      adminSecretKey: ""
 
     ## Run everything (master, volume, filer, S3) in a single pod.
     master: { enabled: false }
@@ -913,19 +913,20 @@ dataStore:
       ## when reaching the admin only by port-forward / admin.ingress.
       urlPrefix: ""
 
-      ## Admin UI login. Plaintext password is converted into a Kubernetes Secret on install, or
-      ## auto-generated and preserved if left blank. See dataStore.seaweedfs.admin.secret below to use an
-      ## existing Secret instead.
-      ## @param dataStore.seaweedfs.admin.auth.username Admin UI username.
-      ## @param dataStore.seaweedfs.admin.auth.password Admin UI password. Auto-generated if blank.
-      auth:
-        username: "admin"
-        password: ""
-
-        secret:
-          existingSecret: node-datastore-seaweedfs-admin-secret
-          userKey: admin_username
-          pwKey: admin_password
+      ## Admin UI login. Provide an explicit password: the seaweedfs subchart renders the admin
+      ## Secret directly from these values. Leaving adminPassword blank disables admin auth.
+      ## To bring your own Secret instead, set secret.existingSecret (plus userKey/pwKey).
+      ## @param dataStore.seaweedfs.admin.secret.adminUser Admin UI username.
+      ## @param dataStore.seaweedfs.admin.secret.adminPassword Admin UI password (required for auth).
+      secret:
+        adminUser: "admin"
+        adminPassword: ""
+        # Name of an existing secret containing admin credentials. If set, adminUser and adminPassword below are ignored.
+        existingSecret: ""
+        # Key in the existing secret for the admin username. Required if existingSecret is set.
+        userKey: ""
+        # Key in the existing secret for the admin password. Required if existingSecret is set.
+        pwKey: ""
 
 ## Used by the node components for storing information on the analysis pods and logging events
 postgresql:
