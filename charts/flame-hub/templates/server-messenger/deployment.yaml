@@ -18,6 +18,13 @@ spec:
         spec:
             restartPolicy: Always
             initContainers:
+                - name: wait-for-db
+                  image: busybox
+                  command: [
+                      'sh',
+                      '-c',
+                      'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done'
+                    ]
                 -   name: wait-for-redis
                     image: busybox
                     command: [
@@ -60,6 +67,19 @@ spec:
                                     key: rabbitmq-connection-string
                         -   name: AUTHUP_URL
                             value: "http://{{ .Release.Name }}-authup-server-core:3000/"
+                        -   name: DB_TYPE
+                            value: "postgres"
+                        -   name: DB_HOST
+                            value: "{{ .Release.Name }}-postgresql-primary"
+                        -   name: DB_USERNAME
+                            value: "postgres"
+                        -   name: DB_PASSWORD
+                            valueFrom:
+                              secretKeyRef:
+                                name: {{ include "flameHub.effectiveSecretName" .  }}
+                                key: postgresql-password
+                        -   name: DB_DATABASE
+                            value: "messenger"
                         -   name: CLIENT_ID
                             value: "system"
                         -   name: CLIENT_SECRET
