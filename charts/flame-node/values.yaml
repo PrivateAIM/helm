@@ -411,7 +411,7 @@ hubAdapter:
   image:
     repository: ghcr.io/privateaim/node-hub-api-adapter
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.6.5
+    tag: 0.7.0
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -735,7 +735,7 @@ ui:
   image:
     repository: ghcr.io/privateaim/node-ui
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.6.5
+    tag: 0.7.1
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -850,21 +850,13 @@ dataStore:
     filer: { enabled: false }
 
     s3:
-      ## No default credentials or buckets for this instance - every bucket, user and access key
-      ## is created through the Admin UI. The standalone S3 deployment stays off; the S3 gateway
-      ## runs inside the all-in-one pod below.
+      ## The standalone S3 deployment stays off; the S3 gateway runs inside the all-in-one pod below.
       enabled: false
 
     allInOne:
       enabled: true
       s3:
         enabled: true
-        ## @param dataStore.seaweedfs.allInOne.s3.enableAuth Keep false to run the S3 gateway in
-        ## filer-backed identity mode. SeaweedFS then stores/reads all S3 identities in the filer -
-        ## the only store the Admin UI can manage - so every bucket, user and key is created in the
-        ## UI. When true, SeaweedFS mounts a static `-s3.config` file that becomes the sole identity
-        ## source and silently ignores UI/filer changes, which produced the transient
-        ## "access key not found" errors.
         enableAuth: false
       ## Built-in filer web UI is served on port 8888 of the
       ## node-datastore-seaweedfs-all-in-one Service (port-forward to access).
@@ -872,10 +864,7 @@ dataStore:
         type: persistentVolumeClaim
         size: 5Gi
 
-    ## Admin UI: dashboard for creating buckets and minting per-bucket S3 access/secret keys.
-    ## Enabled by default with the data store; reach it via the node-datastore-seaweedfs-admin
-    ## Service on port 23646 (port-forward, or set admin.ingress.enabled). This instance ships no
-    ## default S3 credentials or buckets - create every bucket, user and access key in this UI.
+    ## Admin UI dashboard for browsing/creating buckets and cluster management
     admin:
       enabled: true
 
