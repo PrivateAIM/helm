@@ -48,11 +48,11 @@ proxy:
 dataStore:
   enabled: false
   seaweedfs:
-    auth:
-      username: ""
-      password: ""
-    # s3:
-    #   existingConfigSecret: my-seaweedfs-s3-secret
+    admin:
+      secret:
+        adminUser: "admin"
+        adminPassword: ""
+        # existingSecret: ""
 
 ## @param rbac Role Based Access Control settings for authenticated users. Controls feature access in the node UI
 rbac:
