@@ -81,7 +81,8 @@ data:
 
     roles:
       - attributes:
-          name: analyst
+          name: researcher
+          display_name: Researcher
         relations:
           globalPermissionsRealmScope: own
           globalPermissions:
@@ -101,7 +102,8 @@ data:
             - project_update
             - user_self_manage
       - attributes:
-          name: diz
+          name: steward
+          display_name: Steward
         relations:
           globalPermissionsRealmScope: own
           globalPermissions:
