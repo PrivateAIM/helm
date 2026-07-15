@@ -182,6 +182,12 @@ authup:
         repository: "authup/authup"
         tag: "latest"
         pullPolicy: "Always"
+    # Declaratively provision the FLAME permission taxonomy and the analyst/diz global
+    # roles into authup at boot. The content is rendered by
+    # templates/authup/provisioning-configmap.yaml and mounted by the authup subchart.
+    provisioning:
+        enabled: true
+        existingConfigMap: '{{ .Release.Name }}-authup-provisioning'
     auth:
         existingSecret: "flame-hub-auth"
 
