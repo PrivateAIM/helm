@@ -6,122 +6,224 @@ metadata:
   labels:
     app: "{{ .Release.Name }}-authup-server-core"
 data:
-  flame.yaml: |
-    # Authup provisioning — FLAME Hub bootstrap: permission taxonomy, global roles
-    # (analyst, diz) and the master-realm `registry` service client.
-    #
-    # Replaces the runtime REST bootstrap previously done by PrivateAIM/hub's
-    # server-core AuthupModule. Permissions mirror PermissionName in @privateaim/kit
-    # (event_read is omitted — already an authup built-in). Role bindings extracted
-    # from https://auth.staging.privateaim.net (master realm) on 2026-07-15.
-    #
-    # Loaded by authup server-core FileProvisioningSource from
-    # <WRITABLE_DIRECTORY_PATH>/provisioning/. Default strategy createOnly
-    # (non-destructive); role permission bindings re-ensured on every boot; reach = own.
+  flame.mjs: |
+    // Authup provisioning — FLAME Hub bootstrap: permission taxonomy, global roles
+    // (researcher, steward) and the master-realm registry service client.
+    //
+    // Shipped as an ESM module (export default) NOT yaml/json: authup's
+    // FileProvisioningSource reads the module's default export, and locter only
+    // exposes .default for js/ts/mjs files (yaml/json parse to a bare object and
+    // are silently ignored). Loaded from <WRITABLE_DIRECTORY_PATH>/provisioning/.
+    // createOnly strategy (non-destructive); reach = own.
 
-    permissions:
-      - attributes:
-          name: event_create
-      - attributes:
-          name: event_delete
-      - attributes:
-          name: bucket_create
-      - attributes:
-          name: bucket_update
-      - attributes:
-          name: bucket_delete
-      - attributes:
-          name: log_create
-      - attributes:
-          name: log_delete
-      - attributes:
-          name: log_read
-      - attributes:
-          name: project_create
-      - attributes:
-          name: project_delete
-      - attributes:
-          name: project_update
-      - attributes:
-          name: project_approve
-      - attributes:
-          name: registry_manage
-      - attributes:
-          name: registry_project_manage
-      - attributes:
-          name: node_create
-      - attributes:
-          name: node_delete
-      - attributes:
-          name: node_update
-      - attributes:
-          name: analysis_approve
-      - attributes:
-          name: analysis_update
-      - attributes:
-          name: analysis_create
-      - attributes:
-          name: analysis_execution_start
-      - attributes:
-          name: analysis_execution_stop
-      - attributes:
-          name: analysis_delete
-      - attributes:
-          name: analysis_result_read
-      - attributes:
-          name: analysis_self_message_broker_use
-      - attributes:
-          name: analysis_self_storage_use
-      - attributes:
-          name: master_image_manage
-      - attributes:
-          name: master_image_group_manage
-      - attributes:
-          name: service_manage
-
-    roles:
-      - attributes:
-          name: researcher
-          display_name: Researcher
-        relations:
-          globalPermissionsRealmScope: own
-          globalPermissions:
-            - analysis_approve
-            - analysis_create
-            - analysis_delete
-            - analysis_execution_start
-            - analysis_execution_stop
-            - analysis_result_read
-            - analysis_self_message_broker_use
-            - analysis_self_storage_use
-            - analysis_update
-            - bucket_update
-            - project_approve
-            - project_create
-            - project_delete
-            - project_update
-            - user_self_manage
-      - attributes:
-          name: steward
-          display_name: Steward
-        relations:
-          globalPermissionsRealmScope: own
-          globalPermissions:
-            - client_read
-            - client_update
-            - node_create
-            - node_delete
-            - node_update
-
-    # Public OAuth2 client used by the Harbor <-> hub registry integration.
-    # Mirrors the previous AuthupModule create: public (is_confidential: false,
-    # therefore secret-less) in the master realm.
-    realms:
-      - attributes:
-          name: master
-        relations:
-          clients:
-            - attributes:
-                name: registry
-                is_confidential: false
+    export default {
+      "permissions": [
+        {
+          "attributes": {
+            "name": "event_create"
+          }
+        },
+        {
+          "attributes": {
+            "name": "event_delete"
+          }
+        },
+        {
+          "attributes": {
+            "name": "bucket_create"
+          }
+        },
+        {
+          "attributes": {
+            "name": "bucket_update"
+          }
+        },
+        {
+          "attributes": {
+            "name": "bucket_delete"
+          }
+        },
+        {
+          "attributes": {
+            "name": "log_create"
+          }
+        },
+        {
+          "attributes": {
+            "name": "log_delete"
+          }
+        },
+        {
+          "attributes": {
+            "name": "log_read"
+          }
+        },
+        {
+          "attributes": {
+            "name": "project_create"
+          }
+        },
+        {
+          "attributes": {
+            "name": "project_delete"
+          }
+        },
+        {
+          "attributes": {
+            "name": "project_update"
+          }
+        },
+        {
+          "attributes": {
+            "name": "project_approve"
+          }
+        },
+        {
+          "attributes": {
+            "name": "registry_manage"
+          }
+        },
+        {
+          "attributes": {
+            "name": "registry_project_manage"
+          }
+        },
+        {
+          "attributes": {
+            "name": "node_create"
+          }
+        },
+        {
+          "attributes": {
+            "name": "node_delete"
+          }
+        },
+        {
+          "attributes": {
+            "name": "node_update"
+          }
+        },
+        {
+          "attributes": {
+            "name": "analysis_approve"
+          }
+        },
+        {
+          "attributes": {
+            "name": "analysis_update"
+          }
+        },
+        {
+          "attributes": {
+            "name": "analysis_create"
+          }
+        },
+        {
+          "attributes": {
+            "name": "analysis_execution_start"
+          }
+        },
+        {
+          "attributes": {
+            "name": "analysis_execution_stop"
+          }
+        },
+        {
+          "attributes": {
+            "name": "analysis_delete"
+          }
+        },
+        {
+          "attributes": {
+            "name": "analysis_result_read"
+          }
+        },
+        {
+          "attributes": {
+            "name": "analysis_self_message_broker_use"
+          }
+        },
+        {
+          "attributes": {
+            "name": "analysis_self_storage_use"
+          }
+        },
+        {
+          "attributes": {
+            "name": "master_image_manage"
+          }
+        },
+        {
+          "attributes": {
+            "name": "master_image_group_manage"
+          }
+        },
+        {
+          "attributes": {
+            "name": "service_manage"
+          }
+        }
+      ],
+      "roles": [
+        {
+          "attributes": {
+            "name": "researcher",
+            "display_name": "Researcher"
+          },
+          "relations": {
+            "globalPermissionsRealmScope": "own",
+            "globalPermissions": [
+              "analysis_approve",
+              "analysis_create",
+              "analysis_delete",
+              "analysis_execution_start",
+              "analysis_execution_stop",
+              "analysis_result_read",
+              "analysis_self_message_broker_use",
+              "analysis_self_storage_use",
+              "analysis_update",
+              "bucket_update",
+              "project_approve",
+              "project_create",
+              "project_delete",
+              "project_update",
+              "user_self_manage"
+            ]
+          }
+        },
+        {
+          "attributes": {
+            "name": "steward",
+            "display_name": "Steward"
+          },
+          "relations": {
+            "globalPermissionsRealmScope": "own",
+            "globalPermissions": [
+              "client_read",
+              "client_update",
+              "node_create",
+              "node_delete",
+              "node_update"
+            ]
+          }
+        }
+      ],
+      "realms": [
+        {
+          "attributes": {
+            "name": "master"
+          },
+          "relations": {
+            "clients": [
+              {
+                "attributes": {
+                  "name": "registry",
+                  "is_confidential": false
+                }
+              }
+            ]
+          }
+        }
+      ]
+    };
 {{- end }}
