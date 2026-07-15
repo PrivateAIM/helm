@@ -6,19 +6,18 @@ metadata:
   labels:
     app: "{{ .Release.Name }}-authup-server-core"
 data:
-  flame-roles.yaml: |
-    # Authup provisioning — FLAME Hub permission taxonomy + global roles (analyst, diz).
+  flame.yaml: |
+    # Authup provisioning — FLAME Hub bootstrap: permission taxonomy, global roles
+    # (analyst, diz) and the master-realm `registry` service client.
     #
-    # Permission taxonomy mirrors PermissionName in @privateaim/kit (30 values), which
-    # PrivateAIM/hub currently creates at runtime via REST (apps/server-core AuthupModule).
-    # Provisioning them here lets authup own them declaratively at boot; the one value
-    # that is already an authup built-in (event_read) is intentionally NOT redeclared.
-    # Role -> permission bindings extracted from https://auth.staging.privateaim.net
-    # (master realm) on 2026-07-15. All entities are global (realm_id: null).
+    # Replaces the runtime REST bootstrap previously done by PrivateAIM/hub's
+    # server-core AuthupModule. Permissions mirror PermissionName in @privateaim/kit
+    # (event_read is omitted — already an authup built-in). Role bindings extracted
+    # from https://auth.staging.privateaim.net (master realm) on 2026-07-15.
     #
-    # Loaded by authup server-core FileProvisioningSource from <WRITABLE_DIRECTORY_PATH>/provisioning/.
-    # Default strategy is createOnly (non-destructive): entities are created if absent,
-    # and role permission bindings are re-ensured on every boot. Realm reach = own.
+    # Loaded by authup server-core FileProvisioningSource from
+    # <WRITABLE_DIRECTORY_PATH>/provisioning/. Default strategy createOnly
+    # (non-destructive); role permission bindings re-ensured on every boot; reach = own.
 
     permissions:
       - attributes:
@@ -111,4 +110,16 @@ data:
             - node_create
             - node_delete
             - node_update
+
+    # Public OAuth2 client used by the Harbor <-> hub registry integration.
+    # Mirrors the previous AuthupModule create: public (is_confidential: false,
+    # therefore secret-less) in the master realm.
+    realms:
+      - attributes:
+          name: master
+        relations:
+          clients:
+            - attributes:
+                name: registry
+                is_confidential: false
 {{- end }}
