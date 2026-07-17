@@ -21,6 +21,7 @@ spec:
   template:
     metadata:
       annotations:
+        checksum/idp-client-secret: {{ include "ui.keycloak.clientSecret.checksum" . | quote }}
         {{- with .Values.ui.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}

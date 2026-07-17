@@ -326,3 +326,37 @@ otherwise references the chart-managed Gateway.
 - name: {{ .Release.Name }}-node-gateway
 {{- end -}}
 {{- end -}}
+
+{{/*
+Checksum of the private key Secret's data, for a pod-template annotation that forces a rollout
+when an externally-managed hub.crypto.existingSecret is rotated (Helm can't detect this from
+values alone since it doesn't own the Secret's content). Empty if the Secret doesn't exist yet.
+*/}}
+{{- define "hub.crypto.privateKey.checksum" -}}
+{{- $secret := lookup "v1" "Secret" .Release.Namespace (include "hub.crypto.privateKeySecretName" .) -}}
+{{- if $secret -}}
+{{- $secret.data | toYaml | sha256sum -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Checksum of the Hub robot-account client secret's data (hub.auth.existingSecret), for a
+pod-template annotation that forces a rollout when the secret is rotated out-of-band.
+*/}}
+{{- define "hub.auth.clientSecret.checksum" -}}
+{{- $secret := lookup "v1" "Secret" .Release.Namespace (include "hub.secretName" .) -}}
+{{- if $secret -}}
+{{- $secret.data | toYaml | sha256sum -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Checksum of the UI's IDP/Keycloak client secret's data (ui.idp.existingSecret), for a
+pod-template annotation that forces a rollout when the secret is rotated out-of-band.
+*/}}
+{{- define "ui.keycloak.clientSecret.checksum" -}}
+{{- $secret := lookup "v1" "Secret" .Release.Namespace (include "ui.keycloak.secretName" .) -}}
+{{- if $secret -}}
+{{- $secret.data | toYaml | sha256sum -}}
+{{- end -}}
+{{- end -}}

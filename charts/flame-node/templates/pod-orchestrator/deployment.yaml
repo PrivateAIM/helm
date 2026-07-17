@@ -22,6 +22,7 @@ spec:
   template:
     metadata:
       annotations:
+        checksum/hub-client-secret: {{ include "hub.auth.clientSecret.checksum" . | quote }}
         {{- with .Values.podOrchestrator.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
