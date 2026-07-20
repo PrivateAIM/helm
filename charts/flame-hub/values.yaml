@@ -237,27 +237,46 @@ redis:
     #     persistence:
     #         storageClass: "mayastor-replicated"
 
-minio:
-    nameOverride: "minio"
-    image:
-        #repository: "tada5hi/minio"
-        repository: "bitnamilegacy/minio"
-        tag: "2025.7.23-debian-12-r3"
-    auth:
-        rootUser: "admin"
-        rootPassword: "" # Leave empty for auto-generation
-        existingSecret: "flame-hub-auth"
-        rootPasswordSecretKey: "minio-root-password"
-        rootUserSecretKey: "minio-root-user"
-
-    console:
-        image:
-            #repository: "tada5hi/minio-object-browser"
-            repository: "bitnamilegacy/minio-object-browser"
-            tag: "2.0.2-debian-12-r3"
-    # See /charts/third-party/openebs for details
-    # persistence:
-    #     storageClass: "mayastor-replicated"
+# seaweedfs is the S3 object store used by server-storage.
+# S3 admin credentials are auto-generated into the "<release>-seaweedfs-s3-secret" Secret
+# and preserved across upgrades.
+seaweedfs:
+    global:
+        seaweedfs:
+            # The ServiceAccount is the subchart's only resource whose name is not derived
+            # from the release name. When running multiple flame-hub instances in the same
+            # namespace, set a unique name per instance.
+            serviceAccountName: "seaweedfs"
+            createClusterRole: false
+    # Run everything in a single pod and disable the standalone components.
+    master: 
+        enabled: false
+    volume: 
+        enabled: false
+    filer: 
+        enabled: false
+    s3:
+        # The all-in-one pod serves S3 itself; keep the standalone S3 gateway disabled.
+        enabled: false
+        # Required so the subchart generates the S3 credentials Secret.
+        enableAuth: true
+        # Name of an existing Secret with the S3 credentials to use instead of the generated one.
+        # It must contain the keys admin_access_key_id and admin_secret_access_key (URL-safe
+        # values, they are embedded in a connection string) and seaweedfs_s3_config.
+        existingConfigSecret: ""
+    allInOne:
+        enabled: true
+        # The subchart defaults to hard pod anti-affinity (at most one all-in-one pod per
+        # node). With a single replica the rule has no effect.
+        affinity: ""
+        s3:
+            enabled: true
+            enableAuth: true
+        data:
+            type: persistentVolumeClaim
+            size: 10Gi
+            # See /charts/third-party/openebs for details
+            # storageClass: "mayastor-replicated"
 
 postgresql:
     nameOverride: "postgresql"
