@@ -44,13 +44,15 @@ proxy:
   noProxy:
   # existingSecret:
 
-## If enabled, this will deploy a FHIR and MinIO server that can be used for testing
+## If enabled, this will deploy a FHIR and SeaweedFS (S3) server that can be used for testing
 dataStore:
   enabled: false
-  minio:
-    rootUser: ""
-    rootPassword: ""
-    # existingSecret: ""
+  seaweedfs:
+    admin:
+      secret:
+        adminUser: "admin"
+        adminPassword: ""
+        # existingSecret: ""
 
 ## @param rbac Role Based Access Control settings for authenticated users. Controls feature access in the node UI
 rbac:

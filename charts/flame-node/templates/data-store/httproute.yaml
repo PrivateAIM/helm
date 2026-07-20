@@ -1,0 +1,34 @@
+{{- if and (eq .Values.expose.type "gateway") .Values.dataStore.enabled .Values.dataStore.seaweedfs.admin.enabled .Values.dataStore.seaweedfs.admin.gateway.enabled -}}
+{{- $sharedHost := include "flame-node.gateway.routeHostname" . -}}
+{{- $adminHost := include "flame-node.dataStore.seaweedfs.admin.routeHostname" . -}}
+{{- $dedicated := false -}}
+{{- if and $adminHost (ne $adminHost $sharedHost) -}}{{- $dedicated = true -}}{{- end -}}
+{{- $prefix := .Values.dataStore.seaweedfs.admin.urlPrefix | trimSuffix "/" -}}
+{{- if and (not $dedicated) (not $prefix) -}}
+{{- fail "dataStore.seaweedfs.admin.urlPrefix must be set (e.g. /seaweedfs) when exposing the admin panel on the shared node hostname: the seaweedfs admin serves its UI and post-login redirects from this prefix, and the HTTPRoute matches the same path. Otherwise set dataStore.seaweedfs.admin.gateway.hostname to a dedicated hostname (served at root)." -}}
+{{- end -}}
+{{- $path := ternary (default "/" $prefix) $prefix $dedicated -}}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ .Release.Name }}-seaweedfs-admin-route
+  labels:
+    component: seaweedfs-admin
+    app.kubernetes.io/name: seaweedfs-admin
+    app.kubernetes.io/component: data-store
+    app.kubernetes.io/part-of: flame-node
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  parentRefs:
+  {{- include "flame-node.gateway.parentRefs" . | nindent 2 }}
+  hostnames:
+  - {{ if $dedicated }}{{ $adminHost | quote }}{{ else }}{{ $sharedHost | quote }}{{ end }}
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: {{ $path | quote }}
+    backendRefs:
+    - name: node-datastore-seaweedfs-admin
+      port: 23646
+{{- end }}

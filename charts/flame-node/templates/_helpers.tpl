@@ -286,6 +286,20 @@ Return the name of the Secret containing the nuxtAuthSecret
 
 {{/*Storage Service helpers*/}}
 {{/*
+Return the endpoint (host:port) of the SeaweedFS S3 gateway.
+*/}}
+{{- define "seaweedfs.s3.endpoint" -}}
+{{- printf "%s-seaweedfs-all-in-one:8333" .Release.Name -}}
+{{- end -}}
+
+{{/*
+Return the name of the Secret that holds the SeaweedFS S3 admin credentials.
+*/}}
+{{- define "seaweedfs.s3.secretName" -}}
+{{- printf "%s-seaweedfs-s3-secret" .Release.Name -}}
+{{- end -}}
+
+{{/*
 Return the secret containing private key
 */}}
 {{- define "hub.crypto.privateKeySecretName" -}}
@@ -303,6 +317,13 @@ Strip scheme from expose.hostname for Gateway API hostnames (HTTPRoute.spec.host
 */}}
 {{- define "flame-node.gateway.routeHostname" -}}
 {{- regexReplaceAll "^https?://(.*)" .Values.expose.hostname "${1}" -}}
+{{- end -}}
+
+{{/*
+Strip scheme from the data-store SeaweedFS admin panel hostname for Gateway API.
+*/}}
+{{- define "flame-node.dataStore.seaweedfs.admin.routeHostname" -}}
+{{- regexReplaceAll "^https?://(.*)" .Values.dataStore.seaweedfs.admin.gateway.hostname "${1}" -}}
 {{- end -}}
 
 {{/*

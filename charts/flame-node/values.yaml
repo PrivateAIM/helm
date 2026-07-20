@@ -26,6 +26,13 @@ expose:
       namespace: ""
       ## @param expose.gateway.parentRef.sectionName Listener name on the external Gateway to attach to (optional)
       sectionName: ""
+    nginxGatewayFabric:
+      ## @param expose.gateway.nginxGatewayFabric.enabled Set to true when the node Gateway's GatewayClass is NGINX Gateway Fabric, to attach a ClientSettingsPolicy 
+      ## to the node Gateway. NGINX Gateway Fabric defaults to nginx's client_max_body_size of 1m, which is too small for data store uploads. The policy raises it 
+      ## for every HTTPRoute attached to the Gateway. No effect on other GatewayClasses.
+      enabled: false
+      ## @param expose.gateway.nginxGatewayFabric.maxBodySize Value for the ClientSettingsPolicy's body.maxSize
+      maxBodySize: 500m
 
 ## Secrets for the Keycloak realm clients (hub-adapter, node-ui, service1/pod-orchestrator).
 ## Under Argo CD, `helm template` cannot look up the previously generated value, so for GitOps/production set explicit values here (ideally via sealed-secrets / external-secrets).
@@ -404,7 +411,7 @@ hubAdapter:
   image:
     repository: ghcr.io/privateaim/node-hub-api-adapter
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.6.5
+    tag: 0.7.0
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -511,7 +518,7 @@ podOrchestrator:
     repository: ghcr.io/privateaim/node-pod-orchestration
     # Overrides the image tag whose default is the chart appVersion.
     # TODO: update to new version once available after testing
-    tag: 0.5.5
+    tag: 0.6.0
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -728,7 +735,7 @@ ui:
   image:
     repository: ghcr.io/privateaim/node-ui
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.6.5
+    tag: 0.7.1
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -809,7 +816,7 @@ ui:
   tolerations: []
   affinity: {}
 
-## node-data-store deploys dummy blaze (FHIR) and minio (S3) data stores for testing the Flame Node
+## node-data-store deploys dummy blaze (FHIR) and seaweedfs (S3) data stores for testing the Flame Node
 dataStore:
   enabled: false
 
@@ -836,26 +843,75 @@ dataStore:
         SYNTHEA_CLINICIAN_SEED: 3726451
         TIMEOUT: 2
 
-  # minio values
-  minio:
-    rootUser: ""
-    rootPassword: ""
+  seaweedfs:
+    ## Run everything (master, volume, filer, S3) in a single pod.
+    master: { enabled: false }
+    volume: { enabled: false }
+    filer: { enabled: false }
 
-    ## @param dataStore.minio.existingSecret Name of an existing Secret with keys rootUser and rootPassword.
-    ## When set, rootUser and rootPassword above are ignored.
-    existingSecret: ""
+    s3:
+      ## The standalone S3 deployment stays off; the S3 gateway runs inside the all-in-one pod below.
+      enabled: false
 
-    mode: standalone
-    replicas: 1
-    resources:
-      requests:
-        memory: 1Gi
-
-    persistence:
+    allInOne:
       enabled: true
-      size: 5Gi
-      annotations:
-        helm.sh/resource-policy: keep
+      s3:
+        enabled: true
+        enableAuth: false
+      ## Built-in filer web UI is served on port 8888 of the
+      ## node-datastore-seaweedfs-all-in-one Service (port-forward to access).
+      data:
+        type: persistentVolumeClaim
+        size: 5Gi
+
+    ## Admin UI dashboard for browsing/creating buckets and cluster management
+    admin:
+      enabled: true
+
+      ## Expose the admin panel in the browser via the node Ingress API
+      ingress:
+       enabled: false
+       ## @param dataStore.seaweedfs.admin.ingress.hostname Hostname for the admin panel. Must be set even if the same
+       ## as .expose.hostname
+       host:
+       ## @param dataStore.seaweedfs.admin.ingress.path Base path the admin process serves from.
+       path: "/seaweedfs"
+       annotations:
+         nginx.ingress.kubernetes.io/proxy-body-size: 500m
+
+      ## Expose the admin panel in the browser via the node Gateway (only applies when expose.type=gateway).
+      ## seaweedfs itself only ships an Ingress, so this chart creates a Gateway API HTTPRoute attached to
+      ## the node Gateway instead. Under expose.type=ingress use admin.ingress.
+      gateway:
+        ## @param dataStore.seaweedfs.admin.gateway.enabled Opt-in: create an HTTPRoute for the admin panel on the node Gateway.
+        enabled: false
+        ## @param dataStore.seaweedfs.admin.gateway.hostname Optional dedicated hostname for the admin panel.
+        ## Leave blank (or equal to expose.hostname) to serve the panel at the admin.urlPrefix path on the shared
+        ## node hostname (urlPrefix is then required). Set a different hostname to serve it at that host's root
+        ## instead; when the node Gateway is chart-managed an extra HTTP listener for this hostname is added
+        ## to the Gateway automatically.
+        hostname: ""
+
+      ## @param dataStore.seaweedfs.admin.urlPrefix Base path the admin process serves from (seaweedfs `-urlPrefix`).
+      ## REQUIRED when exposing the admin panel on the shared node hostname (gateway.hostname blank): set it to the
+      ## sub-path you want, e.g. "/seaweedfs". Leave blank when using a dedicated gateway.hostname (served at root) or
+      ## when reaching the admin only by port-forward / admin.ingress.
+      urlPrefix: ""
+
+      ## Admin UI login. Provide an explicit password: the seaweedfs subchart renders the admin
+      ## Secret directly from these values. Leaving adminPassword blank disables admin auth.
+      ## To bring your own Secret instead, set secret.existingSecret (plus userKey/pwKey).
+      ## @param dataStore.seaweedfs.admin.secret.adminUser Admin UI username.
+      ## @param dataStore.seaweedfs.admin.secret.adminPassword Admin UI password (required for auth).
+      secret:
+        adminUser: "admin"
+        adminPassword: ""
+        # Name of an existing secret containing admin credentials. If set, adminUser and adminPassword below are ignored.
+        existingSecret: ""
+        # Key in the existing secret for the admin username. Required if existingSecret is set.
+        userKey: ""
+        # Key in the existing secret for the admin password. Required if existingSecret is set.
+        pwKey: ""
 
 ## Used by the node components for storing information on the analysis pods and logging events
 postgresql:
@@ -1030,124 +1086,37 @@ keycloak-postgresql:
     volumeName: "postgres-data-keycloak"
     requestedSize: 8Gi
 
-minio:
-  # All possible values can be found at https://github.com/minio/minio/blob/master/helm/minio/values.yaml
+## seaweedfs is the S3 object store used by the storage service.
+## All possible values can be found at https://github.com/seaweedfs/seaweedfs/blob/master/k8s/charts/seaweedfs/values.yaml
+## It runs in all-in-one mode (master, volume, filer and S3 gateway in a single pod) and autogenerates its S3 admin credentials
+seaweedfs:
+  ## Run everything in a single pod and disable the standalone components.
+  master: { enabled: false }
+  volume: { enabled: false }
+  filer: { enabled: false }
 
-  ## Provide a name in place of minio for `app:` labels
-  nameOverride:
+  s3:
+    ## Use the all-in-one S3 gateway rather than a standalone S3 deployment.
+    enabled: false
+    ## Required so the chart generates the "<release>-seaweedfs-s3-secret" credential Secret.
+    enableAuth: true
 
-  ## Provide a name to substitute for the full names of resources
-  fullnameOverride:
-
-  ## set kubernetes cluster domain where minio is running
-  clusterDomain: cluster.local
-
-  ## Set default rootUser, rootPassword
-  ## rootUser and rootPassword is generated when not set
-  ## Distributed MinIO ref: https://min.io/docs/minio/linux/operations/install-deploy-manage/deploy-minio-multi-node-multi-drive.html
-  ##
-  rootUser: "admin"
-  rootPassword: "s3cr3t_p4ssw0rd"
-
-  ## Use existing Secret that store following variables:
-  ##
-  ## | Chart var             | .data.<key> in Secret    |
-  ## |:----------------------|:-------------------------|
-  ## | rootUser              | rootUser                 |
-  ## | rootPassword          | rootPassword             |
-  ##
-  ## All mentioned variables will be ignored in values file.
-  ## .data.rootUser and .data.rootPassword are mandatory,
-  ## others depend on enabled status of corresponding sections.
-  existingSecret:
-
-  ## Path where PV would be mounted on the MinIO Pod
-  mountPath: "/mnt/data"
-
-  ## List of buckets to be created after minio install
-  ##
-  buckets:
-    [
-      {
-        name: flame,
-        policy: none,
-        purge: false,
-        versioning: false,
-        objectlocking: false,
-      },
-    ]
-    #   # Name of the bucket
-    # - name: bucket1
-    #   # Policy to be set on the
-    #   # bucket [none|download|upload|public]
-    #   policy: none
-    #   # Purge if bucket exists already
-    #   purge: false
-    #   # set versioning for
-    #   # bucket [true|false]
-    #   versioning: false # remove this key if you do not want versioning feature
-    #   # set objectlocking for
-    #   # bucket [true|false] NOTE: versioning is enabled by default if you use locking
-    #   objectlocking: false
-    # - name: bucket2
-    #   policy: none
-    #   purge: false
-    #   versioning: true
-    #   # set objectlocking for
-    #   # bucket [true|false] NOTE: versioning is enabled by default if you use locking
-    #   objectlocking: false
-
-  ## Set default image, imageTag, and imagePullPolicy. mode is used to indicate the
-  image:
-    repository: quay.io/minio/minio
-    tag: RELEASE.2024-03-03T17-50-39Z
-    pullPolicy: IfNotPresent
-
-  imagePullSecrets: []
-  ## Update strategy for Deployments
-  deploymentUpdate:
-    type: RollingUpdate
-    maxUnavailable: 0
-    maxSurge: 100%
-
-  mode: standalone
-  # Number of drives attached to a node
-  drivesPerNode: 1
-  # Number of MinIO containers running
-  replicas: 1
-  # Number of expanded MinIO clusters
-  pools: 1
-
-  resources:
-    requests:
-      memory: 1Gi
-
-  ## Update strategy for StatefulSets
-  statefulSetUpdate:
-    updateStrategy: RollingUpdate
-
-  persistence:
+  allInOne:
     enabled: true
-    annotations: {}
-
-    ## A manually managed Persistent Volume and Claim
-    ## Requires persistence.enabled: true
-    ## If defined, PVC must be created manually before volume will be bound
-    existingClaim:
-
-    ## minio data Persistent Volume Storage Class
-    ## If defined, storageClassName: <storageClass>
-    ## If set to "-", storageClassName: "", which disables dynamic provisioning
-    ## If undefined (the default) or set to null, no storageClassName spec is
-    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
-    ##   GKE, AWS & OpenStack)
-    ##
-    ## Storage class of PV to bind. By default it looks for standard storage class.
-    ## If the PV uses a different storage class, specify that here.
-    storageClass:
-    volumeName:
-    accessMode: ReadWriteOnce
-    size: 10Gi
+    ## Disable the chart's default hard pod anti-affinity (requiredDuringScheduling, keyed on
+    ## hostname). It blocks scheduling on single-node clusters and prevents this instance from
+    ## co-locating with the data-store SeaweedFS pod. Set to a podAntiAffinity block if you run a
+    ## multi-node cluster and want the pods spread across nodes.
+    affinity: ""
+    s3:
+      enabled: true
+      enableAuth: true
+      ## Default bucket the storage service reads from / writes to.
+      createBuckets:
+        - name: flame
+    data:
+      type: persistentVolumeClaim
+      size: 10Gi
 
 mongodb:
   ## Pull secrets and name override options

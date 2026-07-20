@@ -29,7 +29,7 @@ dependencies:
     version: 7.1.9
   - name: flame-node-data-store
     repository: file://./flame-node-data-store
-    version: 0.1.0
+    version: 0.2.0
     alias: dataStore
     condition: dataStore.enabled
   - name: kong
@@ -47,9 +47,9 @@ dependencies:
     repository: https://groundhog2k.github.io/helm-charts
     version: 1.5.8
     alias: keycloak-postgresql
-  - name: minio
-    version: 5.4.0
-    repository: https://charts.min.io/
+  - name: seaweedfs
+    version: 4.37.0
+    repository: https://seaweedfs.github.io/seaweedfs/helm
   - name: mongodb
     version: 0.7.1
     repository: https://groundhog2k.github.io/helm-charts
