@@ -249,11 +249,20 @@ seaweedfs:
             serviceAccountName: "seaweedfs"
             createClusterRole: false
     # Run everything in a single pod and disable the standalone components.
-    master: 
+    master:
         enabled: false
-    volume: 
+        volumeSizeLimitMB: 2000
+    volume:
         enabled: false
-    filer: 
+        # allInOne sources its -volume.max flag from the FIRST dataDir's maxVolumes. Each S3
+        # bucket becomes its own SeaweedFS collection needing >=1 volume
+        # Only maxVolumes is consumed here (the allInOne data PVC lives under allInOne.data)
+        # The default SeaweedFS Chart values have a similar default "data1"-item
+        dataDirs:
+            - name: data1
+              type: "custom"      # allInOne only reads maxVolumes below; this provisions no storage
+              maxVolumes: 5000
+    filer:
         enabled: false
     s3:
         # The all-in-one pod serves S3 itself; keep the standalone S3 gateway disabled.
