@@ -70,15 +70,12 @@ postgresql-password:
 postgresql-replication-password:
 rabbitmq-password:
 redis-password:
-minio-root-password:
-minio-root-user:
 harbor-admin-password:
 grafana-admin-password:
 authup-admin-password:
 postgresql-connection-string:
 redis-connection-string:
 rabbitmq-connection-string:
-minio-connection-string:
 harbor-connection-string:
 client-secret:
 ```

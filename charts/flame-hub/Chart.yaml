@@ -17,9 +17,9 @@ dependencies:
   - name: rabbitmq
     version: 16.0.14
     repository: oci://registry-1.docker.io/bitnamicharts
-  - name: minio
-    version: 17.0.21
-    repository: oci://registry-1.docker.io/bitnamicharts
+  - name: seaweedfs
+    version: 4.39.0
+    repository: https://seaweedfs.github.io/seaweedfs/helm
   - name: grafana
     version: 12.1.8
     repository: oci://registry-1.docker.io/bitnamicharts
