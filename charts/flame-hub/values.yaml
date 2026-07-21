@@ -248,6 +248,10 @@ seaweedfs:
             # namespace, set a unique name per instance.
             serviceAccountName: "seaweedfs"
             createClusterRole: false
+            # when writing to a new bucket, create only 1 volume instead of 7
+            extraEnvironmentVars:
+                WEED_MASTER_VOLUME_GROWTH_COPY_1: "1"
+                WEED_MASTER_VOLUME_GROWTH_COPY_OTHER: "1"
     # Run everything in a single pod and disable the standalone components.
     master:
         enabled: false
