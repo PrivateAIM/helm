@@ -886,6 +886,51 @@ entries:
   flame-node:
   - apiVersion: v2
     appVersion: 0.2.2
+    created: "2026-07-21T12:09:54.325603632+02:00"
+    dependencies:
+    - name: keycloakx
+      repository: oci://ghcr.io/codecentric/helm-charts
+      version: 7.1.9
+    - alias: dataStore
+      condition: dataStore.enabled
+      name: flame-node-data-store
+      repository: file://./flame-node-data-store
+      version: 0.2.0
+    - name: kong
+      repository: https://charts.konghq.com
+      version: 2.52.0
+    - alias: postgresql
+      name: postgres
+      repository: https://groundhog2k.github.io/helm-charts
+      version: 1.5.8
+    - alias: kong-postgresql
+      name: postgres
+      repository: https://groundhog2k.github.io/helm-charts
+      version: 1.5.8
+    - alias: keycloak-postgresql
+      name: postgres
+      repository: https://groundhog2k.github.io/helm-charts
+      version: 1.5.8
+    - name: seaweedfs
+      repository: https://seaweedfs.github.io/seaweedfs/helm
+      version: 4.37.0
+    - name: mongodb
+      repository: https://groundhog2k.github.io/helm-charts
+      version: 0.7.1
+    - alias: victorialogs
+      condition: victorialogs.enabled
+      name: victoria-logs-single
+      repository: https://victoriametrics.github.io/helm-charts
+      version: 0.12.1
+    description: A Helm chart for deploying the Flame Node
+    digest: e5333211cd971a942fb090423dcbb7be26e265b90adce741d1f2a0325275dbe7
+    name: flame-node
+    type: application
+    urls:
+    - https://github.com/PrivateAIM/helm/releases/download/flame-node-0.2.0-beta.1/flame-node-0.2.0-beta.1.tgz
+    version: 0.2.0-beta.1
+  - apiVersion: v2
+    appVersion: 0.2.2
     created: "2026-06-01T12:56:41.180072653Z"
     dependencies:
     - name: keycloakx
@@ -1706,4 +1751,4 @@ entries:
     urls:
     - https://github.com/PrivateAIM/helm/releases/download/openebs-wrapper-0.0.11/openebs-wrapper-0.0.11.tgz
     version: 0.0.11
-generated: "2026-06-01T12:56:41.812612345Z"
+generated: "2026-07-21T12:09:54.307610841+02:00"
