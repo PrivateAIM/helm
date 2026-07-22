@@ -48,7 +48,7 @@ seaweedfs:
       limits:
         cpu: "1"
         memory: 1Gi
-   podSecurityContext:
+    podSecurityContext:
       enabled: true
       runAsUser: 1000
       runAsGroup: 1000
