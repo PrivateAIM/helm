@@ -24,6 +24,30 @@ true
 {{- end -}}
 
 {{/*
+Return the URL scheme for components: "https" when a TLS secret is configured via expose.tls.secretName, otherwise "http".
+*/}}
+{{- define "hostname.protocol" -}}
+{{- if .Values.expose.tls.secretName -}}
+https
+{{- else -}}
+http
+{{- end -}}
+{{- end -}}
+
+{{/*
+Prefix a hostname with a scheme, defaulting via node.scheme when the hostname doesn't already include one.
+*/}}
+{{- define "hostname.withProtocol" -}}
+{{- $hostname := index . 0 -}}
+{{- $ctx := index . 1 -}}
+{{- if hasPrefix "http" $hostname -}}
+    {{- $hostname -}}
+{{- else -}}
+    {{- printf "%s://%s" (include "hostname.protocol" $ctx) $hostname -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Return the normalized hostname for all node components. Source of truth: expose.hostname.
 */}}
 {{- define "node.hostname" -}}
@@ -31,11 +55,7 @@ Return the normalized hostname for all node components. Source of truth: expose.
     {{- fail "expose.hostname must be set when expose.type is 'ingress' or 'gateway'" -}}
 {{- end -}}
 {{- if .Values.expose.hostname -}}
-    {{- if hasPrefix "http" .Values.expose.hostname -}}
-        {{- .Values.expose.hostname -}}
-    {{- else -}}
-        {{- printf "http://%s" .Values.expose.hostname -}}
-    {{- end -}}
+    {{- include "hostname.withProtocol" (list .Values.expose.hostname .) -}}
 {{- else -}}
     {{- "http://localhost:3000" -}}
 {{- end -}}
@@ -189,11 +209,7 @@ Return the hub adapter endpoint
 */}}
 {{- define "ui.adapter.endpoint" -}}
 {{- if and (ne .Values.expose.type "none") .Values.expose.hostname (not (contains "localhost" .Values.expose.hostname)) -}}
-    {{- if hasPrefix "http" .Values.expose.hostname -}}
-        {{- printf "%s/api" .Values.expose.hostname -}}
-    {{- else -}}
-        {{- printf "http://%s/api" .Values.expose.hostname -}}
-    {{- end -}}
+    {{- printf "%s/api" (include "hostname.withProtocol" (list .Values.expose.hostname .)) -}}
 {{- else -}}
     {{- print "http://localhost:5000" -}}
 {{- end -}}

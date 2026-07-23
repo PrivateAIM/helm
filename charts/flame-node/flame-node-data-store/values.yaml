@@ -48,9 +48,41 @@ seaweedfs:
       limits:
         cpu: "1"
         memory: 1Gi
+    podSecurityContext:
+      enabled: true
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
+    containerSecurityContext:
+      enabled: true
+      runAsUser: 1000
+      runAsGroup: 1000
+      runAsNonRoot: true
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: ["ALL"]
 
   admin:
     enabled: true
+    podSecurityContext:
+      enabled: true
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
+    containerSecurityContext:
+      enabled: true
+      runAsUser: 1000
+      runAsGroup: 1000
+      runAsNonRoot: true
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: ["ALL"]
     ## Single-node: drop the chart's default hard pod anti-affinity (same reason as allInOne above).
     affinity: ""
     ## Required: the admin must be told the master address because the standalone master is disabled
