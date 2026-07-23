@@ -2,33 +2,71 @@ blaze:
   nameOverride: node-datastore-blaze
   fullnameOverride: node-datastore-blaze
 
-minio:
-  nameOverride: node-datastore-minio
-  fullnameOverride: node-datastore-minio
+## Globals declared here propagate to this subchart and its seaweedfs grandchild only
+global:
+  seaweedfs:
+    # To avoid collision with the parent SeaweedFS instance
+    serviceAccountName: node-datastore-seaweedfs
+    createClusterRole: false
+    securityConfig:
+      jwtSigning:
+        ## Mounts security.toml on the filer + admin so the Admin UI "Object Store > Users"
+        ## tab can manage S3 identities. Required for creating users / access keys in the UI.
+        filerWrite: true
 
-  serviceAccount:
-    create: true
-    name: node-datastore-minio-sa
-  
-  rootUser: ""
-  rootPassword: ""
+seaweedfs:
+  ## Distinct name so this instance does not collide with the node-local seaweedfs in the parent chart.
+  nameOverride: node-datastore-seaweedfs
+  fullnameOverride: node-datastore-seaweedfs
 
-  ## Use existing Secret that store following variables:
-  ##
-  ## | Chart var    | .data.<key> in Secret |
-  ## |:-------------|:----------------------|
-  ## | rootUser     | rootUser              |
-  ## | rootPassword | rootPassword          |
-  ##
-  ## When set, rootUser and rootPassword above are ignored.
-  existingSecret: ""
+  ## Run master, volume, filer and the S3 gateway in a single all-in-one pod.
+  master: { enabled: false }
+  volume: { enabled: false }
+  filer: { enabled: false }
 
-  mode: standalone
-  replicas: 1
-  resources:
-    requests:
-      memory: 1Gi
+  s3:
+    ## Standalone S3 deployment stays off; the S3 gateway runs inside the all-in-one pod below.
+    enabled: false
 
-  persistence:
+  allInOne:
     enabled: true
-    size: 5Gi
+    ## Disable the chart's default hard pod anti-affinity so this instance can schedule on a
+    ## single-node cluster and co-locate with the node-local SeaweedFS pod.
+    affinity: ""
+    s3:
+      enabled: true
+      enableAuth: false
+    ## The built-in filer web UI is served on port 8888 of the
+    ## node-datastore-seaweedfs-all-in-one Service (port-forward to access).
+    data:
+      type: persistentVolumeClaim
+      size: 5Gi
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: "1"
+        memory: 1Gi
+
+  admin:
+    enabled: true
+    ## Single-node: drop the chart's default hard pod anti-affinity (same reason as allInOne above).
+    affinity: ""
+    ## Required: the admin must be told the master address because the standalone master is disabled
+    ## in all-in-one mode. The all-in-one pod serves the master API on port 9333.
+    masters: "node-datastore-seaweedfs-all-in-one:9333"
+
+    ## Admin UI login. Provide an explicit password: the seaweedfs subchart renders the admin
+    ## Secret (node-datastore-seaweedfs-admin-secret) directly from these values. Leaving
+    ## adminPassword blank disables admin authentication.
+    ## To bring your own Secret instead, set secret.existingSecret (plus userKey/pwKey).
+    secret:
+      adminUser: "admin"
+      adminPassword: ""
+      # Name of an existing secret containing admin credentials. If set, adminUser and adminPassword below are ignored.
+      existingSecret: ""
+      # Key in the existing secret for the admin username. Required if existingSecret is set.
+      userKey: ""
+      # Key in the existing secret for the admin password. Required if existingSecret is set.
+      pwKey: ""
