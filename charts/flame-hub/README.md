@@ -95,16 +95,17 @@ You must give each release its own value for:
 | --- | --- | --- |
 | `global.flameHub.postgresql.host` | `postgresql` | The headless PostgreSQL Service |
 | `global.flameHub.postgresql.secretName` | `flame-hub-pg` | The chart-managed PostgreSQL credential Secret |
-| `harbor.externalDatabase.host` | `postgresql` | Harbor's DB host — **must match** `global.flameHub.postgresql.host` |
-| `harbor.externalDatabase.existingSecret` | `flame-hub-pg` | Harbor's DB secret — **must match** the effective PostgreSQL secret |
+| `harbor.expose.clusterIP.name` | `harbor` | The in-cluster Harbor Service (goharbor cannot template it; `harbor.internalHost` reads it) |
+| `harbor.database.external.host` | `postgresql` | Harbor's DB host — **must match** `global.flameHub.postgresql.host` |
+| `harbor.database.external.existingSecret` | `flame-hub-pg` | Harbor's DB secret — **must match** the effective PostgreSQL secret |
 | `auth.secretName` | `flame-hub-auth` | central chart secret for other service credentials |
 | `authup.auth.existingSecret` | `flame-hub-auth` | subchart reference — **must match** `auth.secretName` |
 | `rabbitmq.auth.existingPasswordSecret` | `flame-hub-auth` | subchart reference — **must match** `auth.secretName` |
 | `redis.auth.existingSecret` | `flame-hub-auth` | subchart reference — **must match** `auth.secretName` |
 | `grafana.admin.existingSecret` | `flame-hub-auth` | subchart reference — **must match** `auth.secretName` |
-| `harbor.existingSecret` | `flame-hub-auth` | subchart reference — **must match** `auth.secretName` |
+| `harbor.existingSecretAdminPassword` | `flame-hub-auth` | subchart reference — **must match** `auth.secretName` |
 
-If you bring your own PostgreSQL Secret via `global.flameHub.postgresql.existingSecret`, that name must be unique per release too, and Harbor's `externalDatabase.existingSecret` must point at the same secret. The Secret must contain both a `username` and a `password` key.
+If you bring your own PostgreSQL Secret via `global.flameHub.postgresql.existingSecret`, that name must be unique per release too, and Harbor's `database.external.existingSecret` must point at the same secret. The Secret must contain both a `username` and a `password` key (goharbor reads the `password` key directly).
 
 ## Installing the FLAME Hub Chart
 

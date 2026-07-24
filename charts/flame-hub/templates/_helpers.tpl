@@ -98,6 +98,17 @@ so resource names can be derived from the parent chart context (fullnameOverride
 {{- end -}}
 
 {{/*
+Whether the local-dev in-cluster Harbor proxy (hostAliases + socat sidecar + dind
+insecure-registry) should be rendered. Truthy only when harborProxy.enabled is set, Harbor
+is in-cluster (not externalHarbor), and an internal Harbor host resolves.
+*/}}
+{{- define "flameHub.harborProxy.enabled" -}}
+{{- if and .Values.harborProxy.enabled (not .Values.externalHarbor.enabled) -}}
+{{- include "harbor.internalHost" . -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Host of the SeaweedFS S3 gateway (served by the all-in-one pod on port 8333).
 */}}
 {{- define "flameHub.seaweedfs.s3Host" -}}
