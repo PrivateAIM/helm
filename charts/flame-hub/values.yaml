@@ -180,7 +180,7 @@ authup:
     trustedOrigins: '{{- if or .Values.global.flameHub.ingress.enabled .Values.global.flameHub.gatewayApi.enabled }}{{ include "flameHub.uiDomain" . }}{{- end }}'
     image:
         repository: "authup/authup"
-        tag: "latest"
+        tag: "1.0.0"
         pullPolicy: "Always"
     auth:
         existingSecret: "flame-hub-auth"
