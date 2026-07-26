@@ -125,5 +125,17 @@ spec:
                   port: 3000
               failureThreshold: 3
               periodSeconds: 60
+        {{- if .Values.provisioning.enabled }}
+          volumeMounts:
+              -   name: provisioning
+                  mountPath: {{ .Values.provisioning.mountPath | quote }}
+                  readOnly: true
+        {{- end }}
+      {{- if .Values.provisioning.enabled }}
+      volumes:
+          -   name: provisioning
+              configMap:
+                  name: {{ tpl (.Values.provisioning.existingConfigMap | default (printf "%s-authup-provisioning" .Release.Name)) . | quote }}
+      {{- end }}
 
 

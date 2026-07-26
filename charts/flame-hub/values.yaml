@@ -56,7 +56,7 @@ global:
 image:
     registry: ghcr.io
     repository: privateaim/hub
-    tag: 0.12.2
+    tag: 0.12.5
     pullPolicy: Always
 
 # internal services
@@ -180,8 +180,14 @@ authup:
     trustedOrigins: '{{- if or .Values.global.flameHub.ingress.enabled .Values.global.flameHub.gatewayApi.enabled }}{{ include "flameHub.uiDomain" . }}{{- end }}'
     image:
         repository: "authup/authup"
-        tag: "latest"
+        tag: "1.0.0-beta.56"
         pullPolicy: "Always"
+    # Declaratively provision the FLAME permission taxonomy and the analyst/diz global
+    # roles into authup at boot. The content is rendered by
+    # templates/authup/provisioning-configmap.yaml and mounted by the authup subchart.
+    provisioning:
+        enabled: true
+        existingConfigMap: '{{ .Release.Name }}-authup-provisioning'
     auth:
         existingSecret: "flame-hub-auth"
 
