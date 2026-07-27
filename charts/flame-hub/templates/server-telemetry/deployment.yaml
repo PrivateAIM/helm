@@ -23,7 +23,7 @@ spec:
                     command: [
                         'sh',
                         '-c',
-                        'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done'
+                        'until nc -z -v -w30 {{ include "flameHub.postgresql.host" . }} 5432; do echo "Waiting for db..."; sleep 5; done'
                     ]
                 -   name: wait-for-redis
                     image: busybox
@@ -81,14 +81,14 @@ spec:
                         -   name: DB_TYPE
                             value: "postgres"
                         -   name: DB_HOST
-                            value: "{{ .Release.Name }}-postgresql-primary"
+                            value: {{ include "flameHub.postgresql.host" . | quote }}
                         -   name: DB_USERNAME
                             value: "postgres"
                         -   name: DB_PASSWORD
                             valueFrom:
                                 secretKeyRef:
-                                    name: {{ include "flameHub.effectiveSecretName" .  }}
-                                    key: postgresql-password
+                                    name: {{ include "flameHub.postgresql.secretName" . }}
+                                    key: password
                         -   name: DB_DATABASE
                             value: "telemetry"
                         -   name: CLIENT_ID

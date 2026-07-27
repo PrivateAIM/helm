@@ -12,7 +12,6 @@ image:
     pullPolicy: "Always"
 
 auth:
-    # Use an existing secret with keys: client-secret, redis-connection-string, postgresql-password
     existingSecret: ""
 
     # or provide credentials in values (used when existingSecret is not set)
@@ -38,6 +37,14 @@ provisioning:
     # Map of filename -> file content, used only when existingConfigMap is empty.
     # Each key becomes a file in the provisioning directory (json/yaml/yml/ts/js).
     files: {}
+
+
+database:
+    host: ""
+    # Secret holding the DB password. When empty, auth.postgresPassword is used inline
+    # instead, which is only appropriate for standalone/dev installs.
+    existingSecret: ""
+    passwordKey: "password"
 
 cookieDomain: ""
 publicURL: ""
