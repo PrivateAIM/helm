@@ -293,47 +293,51 @@ seaweedfs:
             # See /charts/third-party/openebs for details
             # storageClass: "mayastor-replicated"
 
+# Self-hosted single-node PostgreSQL.
+# Replaces the Bitnami postgresql subchart (whose maintained images now require a paid
+# Bitnami subscription) with a minimal, operator-free StatefulSet on the official
+# PostgreSQL image. It stays release-scoped: the Service is published as
+# "<release>-postgresql-primary" on port 5432 — exactly the host Harbor's
+# externalDatabase, authup and the server-* services already point at — so the chart
+# can still be installed multiple times in one namespace without overriding any
+# connection variables. The password is sourced from the shared credentials secret
+# (auth.secretName / auth.existingSecret, key: postgresql-password).
 postgresql:
-    nameOverride: "postgresql"
     image:
-        repository: "bitnamilegacy/postgresql"
-        tag: "17.6.0-debian-12-r4"
+        repository: "postgres"
+        tag: "17.6"
+        pullPolicy: "IfNotPresent"
     auth:
+        # Superuser the services authenticate as (matches harbor externalDatabase.user
+        # and the server-* DB_USERNAME).
+        username: "postgres"
+        # Optional fixed superuser password. Leave empty to auto-generate; the value is
+        # surfaced through the shared credentials secret under secretPasswordKey.
         postgresPassword: "" # Leave empty for auto-generation
-        replicationPassword: "" # Leave empty for auto-generation
-        existingSecret: "flame-hub-auth"
-        secretKeys:
-            adminPasswordKey: "postgresql-password"
-            replicationPasswordKey: "postgresql-replication-password"
-    primary:
-        startupProbe:
-            failureThreshold: 30
-        readinessProbe:
-            failureThreshold: 20
-        persistence:
-            enabled: true
-            size: 16Gi
-            # See /charts/third-party/openebs for details
-            # storageClass: "mayastor-replicated"
-        extendedConfiguration: |
-            max_connections = 1024
-        # https://github.com/bitnami/charts/blob/main/bitnami/harbor/values.yaml
-        initdb:
-            scripts:
-                initial-registry.sql: |
-                    CREATE DATABASE registry ENCODING 'UTF8';
-                    \c registry;
-                    CREATE TABLE schema_migrations(version bigint not null primary key, dirty boolean not null);
-    readReplicas:
-        replicaCount: 0
-        persistence:
-            enabled: true
-            size: 16Gi
-        startupProbe:
-            failureThreshold: 30
-        readinessProbe:
-            failureThreshold: 20
-    architecture: "replication"
+        # Key in the shared credentials secret that holds the superuser password.
+        secretPasswordKey: "postgresql-password"
+    # Application databases created on first initialisation only (empty data dir).
+    # registry is consumed by Harbor; core/storage/telemetry/auth by the FLAME services.
+    databases:
+        - core
+        - storage
+        - telemetry
+        - auth
+        - registry
+    service:
+        port: 5432
+    persistence:
+        size: 16Gi
+        # See /charts/third-party/openebs for details
+        # storageClass: "mayastor-replicated"
+    # Extra flags passed to the postgres server process (mirrors the previous
+    # max_connections tuning).
+    extraArgs:
+        - "-c"
+        - "max_connections=1024"
+    podSecurityContext:
+        fsGroup: 999
+    resources: {}
 
 grafana:
     nameOverride: "grafana"

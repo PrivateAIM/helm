@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+    name: "{{ .Release.Name }}-postgresql"
+    labels:
+        app: "{{ .Release.Name }}-postgresql"
+spec:
+    serviceName: "{{ .Release.Name }}-postgresql-headless"
+    replicas: 1
+    selector:
+        matchLabels:
+            app: "{{ .Release.Name }}-postgresql"
+    template:
+        metadata:
+            labels:
+                app: "{{ .Release.Name }}-postgresql"
+        spec:
+            {{- with .Values.postgresql.podSecurityContext }}
+            securityContext: {{- toYaml . | nindent 16 }}
+            {{- end }}
+            containers:
+                -   name: postgresql
+                    image: "{{ .Values.postgresql.image.repository }}:{{ .Values.postgresql.image.tag }}"
+                    imagePullPolicy: {{ .Values.postgresql.image.pullPolicy }}
+                    {{- with .Values.postgresql.extraArgs }}
+                    args:
+                        {{- toYaml . | nindent 24 }}
+                    {{- end }}
+                    env:
+                        -   name: POSTGRES_USER
+                            value: {{ .Values.postgresql.auth.username | quote }}
+                        -   name: POSTGRES_PASSWORD
+                            valueFrom:
+                                secretKeyRef:
+                                    name: {{ include "flameHub.effectiveSecretName" . }}
+                                    key: {{ .Values.postgresql.auth.secretPasswordKey }}
+                        # Keep PGDATA in a sub-directory of the mount so a fresh PVC
+                        # (which may contain lost+found) does not block initdb.
+                        -   name: PGDATA
+                            value: /var/lib/postgresql/data/pgdata
+                    ports:
+                        -   name: postgresql
+                            containerPort: 5432
+                    readinessProbe:
+                        exec:
+                            command: ["pg_isready", "-U", {{ .Values.postgresql.auth.username | quote }}, "-d", "postgres"]
+                        initialDelaySeconds: 10
+                        periodSeconds: 10
+                        timeoutSeconds: 5
+                        failureThreshold: 20
+                    livenessProbe:
+                        exec:
+                            command: ["pg_isready", "-U", {{ .Values.postgresql.auth.username | quote }}, "-d", "postgres"]
+                        initialDelaySeconds: 30
+                        periodSeconds: 10
+                        timeoutSeconds: 5
+                        failureThreshold: 6
+                    {{- with .Values.postgresql.resources }}
+                    resources: {{- toYaml . | nindent 24 }}
+                    {{- end }}
+                    volumeMounts:
+                        -   name: data
+                            mountPath: /var/lib/postgresql/data
+                        -   name: init
+                            mountPath: /docker-entrypoint-initdb.d
+                            readOnly: true
+            volumes:
+                -   name: init
+                    configMap:
+                        name: "{{ .Release.Name }}-postgresql-init"
+    volumeClaimTemplates:
+        -   metadata:
+                name: data
+            spec:
+                accessModes: ["ReadWriteOnce"]
+                {{- with .Values.postgresql.persistence.storageClass }}
+                storageClassName: {{ . | quote }}
+                {{- end }}
+                resources:
+                    requests:
+                        storage: {{ .Values.postgresql.persistence.size }}
