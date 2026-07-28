@@ -28,7 +28,10 @@ spec:
                     {{- end }}
                     env:
                         -   name: POSTGRES_USER
-                            value: {{ .Values.postgresql.auth.username | quote }}
+                            valueFrom:
+                                secretKeyRef:
+                                    name: {{ include "flameHub.postgresql.secretName" . }}
+                                    key: username
                         -   name: POSTGRES_PASSWORD
                             valueFrom:
                                 secretKeyRef:

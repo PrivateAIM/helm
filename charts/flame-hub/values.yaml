@@ -63,9 +63,9 @@ global:
             # Override per-release only for multiple installs in one namespace.
             secretName: "flame-hub-pg"
             # Bring your own Secret instead: set this to its name and the chart will not
-            # create one, it only reads yours (key must be "password"; goharbor hardcodes
-            # it). Everything that reads the Secret — hub workloads and the authup
-            # subchart follow this automatically.
+            # create one, it only reads yours (must contain both "username" and "password"
+            # keys; goharbor hardcodes "password"). Everything that reads the Secret — hub
+            # workloads and the authup subchart follow this automatically.
             # Keep in sync with harbor.externalDatabase.existingSecret
             existingSecret: ""
 

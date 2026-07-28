@@ -104,7 +104,7 @@ You must give each release its own value for:
 | `grafana.admin.existingSecret` | `flame-hub-auth` | subchart reference — **must match** `auth.secretName` |
 | `harbor.existingSecret` | `flame-hub-auth` | subchart reference — **must match** `auth.secretName` |
 
-If you bring your own PostgreSQL Secret via `global.flameHub.postgresql.existingSecret`, that name must be unique per release too, and Harbor's `externalDatabase.existingSecret` must point at the same secret (key `password`).
+If you bring your own PostgreSQL Secret via `global.flameHub.postgresql.existingSecret`, that name must be unique per release too, and Harbor's `externalDatabase.existingSecret` must point at the same secret. The Secret must contain both a `username` and a `password` key.
 
 ## Installing the FLAME Hub Chart
 
