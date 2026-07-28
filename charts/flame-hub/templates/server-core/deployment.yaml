@@ -95,7 +95,10 @@ spec:
               -   name: DB_HOST
                   value: {{ include "flameHub.postgresql.host" . | quote }}
               -   name: DB_USERNAME
-                  value: "postgres"
+                  valueFrom:
+                      secretKeyRef:
+                          name: {{ include "flameHub.postgresql.secretName" . }}
+                          key: username
               -   name: DB_PASSWORD
                   valueFrom:
                       secretKeyRef:

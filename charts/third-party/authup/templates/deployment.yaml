@@ -92,7 +92,15 @@ spec:
               -   name: DB_HOST
                   value: {{ tpl (required "database.host is required (set authup.database.host in the parent chart)" .Values.database.host) $ | quote }}
               -   name: DB_USERNAME
-                  value: "postgres"
+                  {{- $dbUserSecret := tpl (.Values.database.existingSecret | default "") $ }}
+                  {{- if $dbUserSecret }}
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ $dbUserSecret }}
+                      key: {{ .Values.database.usernameKey | quote }}
+                  {{- else }}
+                  value: {{ .Values.database.username | quote }}
+                  {{- end }}
               -   name: DB_DATABASE
                   value: "auth"
               {{/* Sits outside the auth.existingSecret branch above: the database
@@ -105,7 +113,7 @@ spec:
                       name: {{ $dbSecret }}
                       key: {{ .Values.database.passwordKey | quote }}
                   {{- else }}
-                  value: {{ .Values.auth.postgresPassword | quote }}
+                  value: {{ .Values.database.password | quote }}
                   {{- end }}
           resources:
               requests:

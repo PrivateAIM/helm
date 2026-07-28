@@ -16,7 +16,6 @@ auth:
 
     # or provide credentials in values (used when existingSecret is not set)
     redisPassword: "start123"
-    postgresPassword: "start123"
     adminPassword: "start123"
     clientSecret: "start123"
 
@@ -41,10 +40,13 @@ provisioning:
 
 database:
     host: ""
-    # Secret holding the DB password. When empty, auth.postgresPassword is used inline
-    # instead, which is only appropriate for standalone/dev installs.
+    # Secret holding the DB credentials. When empty, the inline username/password
     existingSecret: ""
     passwordKey: "password"
+    usernameKey: "username"
+    # Inline credentials, used only when existingSecret is not set.
+    username: "postgres"
+    password: "start123"
 
 cookieDomain: ""
 publicURL: ""
