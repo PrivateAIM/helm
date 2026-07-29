@@ -53,6 +53,22 @@ global:
             nginxGatewayFabric:
                 snippets: false
 
+        # PostgreSQL service and secret, kept under global so subcharts (authup) can read
+        # them: Helm shares only `global` into a subchart's values.
+        postgresql:
+            # Service host. Not release-scoped (goharbor cannot derive the release name).
+            # keep in sync with harbor.externalDatabase.host
+            host: "postgresql"
+            # Name of the chart-managed Secret (created when existingSecret is empty).
+            # Override per-release only for multiple installs in one namespace.
+            secretName: "flame-hub-pg"
+            # Bring your own Secret instead: set this to its name and the chart will not
+            # create one, it only reads yours (must contain both "username" and "password"
+            # keys; goharbor hardcodes "password"). Everything that reads the Secret — hub
+            # workloads and the authup subchart follow this automatically.
+            # Keep in sync with harbor.externalDatabase.existingSecret
+            existingSecret: ""
+
 image:
     registry: ghcr.io
     repository: privateaim/hub
@@ -172,6 +188,11 @@ auth:
 # Authentication Provider
 authup:
     publicHttps: false # global.flameHub.publicHttps also enables this
+    # Rendered via tpl in the authup subchart context, so these follow the global.
+    # no need to edit them alongside the pg values.
+    database:
+        host: '{{ include "flameHub.postgresql.host" . }}'
+        existingSecret: '{{ include "flameHub.postgresql.secretName" . }}'
     # Trusted first-party application origins (redirect allowlist for the web client; not CORS).
     # Accepts a comma-separated string or list; bare hosts expand to both http and https origins.
     # The value is rendered as a Helm template inside the authup subchart context.
@@ -294,46 +315,39 @@ seaweedfs:
             # storageClass: "mayastor-replicated"
 
 postgresql:
-    nameOverride: "postgresql"
     image:
-        repository: "bitnamilegacy/postgresql"
-        tag: "17.6.0-debian-12-r4"
+        repository: "postgres"
+        tag: "17.6"
+        pullPolicy: "IfNotPresent"
     auth:
+        # Superuser the services authenticate as
+        username: "postgres"
         postgresPassword: "" # Leave empty for auto-generation
-        replicationPassword: "" # Leave empty for auto-generation
-        existingSecret: "flame-hub-auth"
-        secretKeys:
-            adminPasswordKey: "postgresql-password"
-            replicationPasswordKey: "postgresql-replication-password"
-    primary:
-        startupProbe:
-            failureThreshold: 30
-        readinessProbe:
-            failureThreshold: 20
-        persistence:
-            enabled: true
-            size: 16Gi
-            # See /charts/third-party/openebs for details
-            # storageClass: "mayastor-replicated"
-        extendedConfiguration: |
-            max_connections = 1024
-        # https://github.com/bitnami/charts/blob/main/bitnami/harbor/values.yaml
-        initdb:
-            scripts:
-                initial-registry.sql: |
-                    CREATE DATABASE registry ENCODING 'UTF8';
-                    \c registry;
-                    CREATE TABLE schema_migrations(version bigint not null primary key, dirty boolean not null);
-    readReplicas:
-        replicaCount: 0
-        persistence:
-            enabled: true
-            size: 16Gi
-        startupProbe:
-            failureThreshold: 30
-        readinessProbe:
-            failureThreshold: 20
-    architecture: "replication"
+        # The Secret name and the bring-your-own option live under
+        # global.flameHub.postgresql; only the password override is here.
+    # Application databases created on first initialisation only (empty data dir).
+    # registry is consumed by Harbor; core/storage/telemetry/auth by the FLAME services.
+    databases:
+        - core
+        - storage
+        - telemetry
+        - auth
+        - registry
+    service:
+        # Host and Secret name are under global.flameHub.postgresql. Only the port is here.
+        port: 5432
+    persistence:
+        size: 16Gi
+        # See /charts/third-party/openebs for details
+        # storageClass: "mayastor-replicated"
+    # Extra flags passed to the postgres server process (mirrors the previous
+    # max_connections tuning).
+    extraArgs:
+        - "-c"
+        - "max_connections=1024"
+    podSecurityContext:
+        fsGroup: 999
+    resources: {}
 
 grafana:
     nameOverride: "grafana"
@@ -462,7 +476,7 @@ harbor:
                   [
                       "sh",
                       "-c",
-                      'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done',
+                      'until nc -z -v -w30 postgresql 5432; do echo "Waiting for db..."; sleep 5; done',
                   ]
     core:
         image:
@@ -476,7 +490,7 @@ harbor:
                   [
                       "sh",
                       "-c",
-                      'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done',
+                      'until nc -z -v -w30 postgresql 5432; do echo "Waiting for db..."; sleep 5; done',
                   ]
     jobservice:
         updateStrategy:
@@ -493,7 +507,7 @@ harbor:
                   [
                       "sh",
                       "-c",
-                      'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done',
+                      'until nc -z -v -w30 postgresql 5432; do echo "Waiting for db..."; sleep 5; done',
                   ]
 
     registry:
@@ -518,7 +532,7 @@ harbor:
                   [
                       "sh",
                       "-c",
-                      'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done',
+                      'until nc -z -v -w30 postgresql 5432; do echo "Waiting for db..."; sleep 5; done',
                   ]
     trivy:
         updateStrategy:
@@ -534,18 +548,18 @@ harbor:
                   [
                       "sh",
                       "-c",
-                      'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done',
+                      'until nc -z -v -w30 postgresql 5432; do echo "Waiting for db..."; sleep 5; done',
                   ]
     postgresql:
         enabled: false
     externalDatabase:
-        host: "{{ .Release.Name }}-postgresql-primary"
+        host: "postgresql" # Must match global.flameHub.postgresql.host (goharbor cannot template this)
         port: 5432
         user: "postgres"
         password: ""
         coreDatabase: "registry"
-        existingSecret: "flame-hub-auth"
-        existingSecretPasswordKey: "postgresql-password"
+        existingSecret: "flame-hub-pg" # Must match the effective global.flameHub.postgresql secret (existingSecret or secretName)
+        existingSecretPasswordKey: "password"
         sslmode: "disable"
     redis:
         enabled: true

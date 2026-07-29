@@ -22,7 +22,7 @@ spec:
               command: [
                   'sh',
                   '-c',
-                  'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done'
+                  'until nc -z -v -w30 {{ tpl (required "database.host is required (set authup.database.host in the parent chart)" .Values.database.host) $ }} 5432; do echo "Waiting for db..."; sleep 5; done'
               ]
           -   name: wait-for-redis
               image: busybox
@@ -61,11 +61,6 @@ spec:
                     secretKeyRef:
                       name: {{ .Values.auth.existingSecret }}
                       key: redis-connection-string
-              -   name: DB_PASSWORD
-                  valueFrom:
-                    secretKeyRef:
-                      name: {{ .Values.auth.existingSecret }}
-                      key: postgresql-password
               -   name: USER_ADMIN_PASSWORD
                   valueFrom:
                     secretKeyRef:
@@ -81,8 +76,6 @@ spec:
             {{- else }}
               -   name: REDIS
                   value: "redis://default:{{ .Values.auth.redisPassword }}@{{ .Release.Name }}-redis-master:6379"
-              -   name: DB_PASSWORD
-                  value: {{ .Values.auth.postgresPassword | quote }}
               -   name: USER_ADMIN_PASSWORD
                   value: {{ .Values.auth.adminPassword | quote }}
               -   name: CLIENT_SYSTEM_SECRET
@@ -97,11 +90,31 @@ spec:
               -   name: DB_TYPE
                   value: "postgres"
               -   name: DB_HOST
-                  value: "{{ .Release.Name }}-postgresql-primary"
+                  value: {{ tpl (required "database.host is required (set authup.database.host in the parent chart)" .Values.database.host) $ | quote }}
               -   name: DB_USERNAME
-                  value: "postgres"
+                  {{- $dbUserSecret := tpl (.Values.database.existingSecret | default "") $ }}
+                  {{- if $dbUserSecret }}
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ $dbUserSecret }}
+                      key: {{ .Values.database.usernameKey | quote }}
+                  {{- else }}
+                  value: {{ .Values.database.username | quote }}
+                  {{- end }}
               -   name: DB_DATABASE
                   value: "auth"
+              {{/* Sits outside the auth.existingSecret branch above: the database
+                   credential has its own Secret, independent of the shared auth one. */}}
+              -   name: DB_PASSWORD
+                  {{- $dbSecret := tpl (.Values.database.existingSecret | default "") $ }}
+                  {{- if $dbSecret }}
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ $dbSecret }}
+                      key: {{ .Values.database.passwordKey | quote }}
+                  {{- else }}
+                  value: {{ .Values.database.password | quote }}
+                  {{- end }}
           resources:
               requests:
                   memory: "512Mi"

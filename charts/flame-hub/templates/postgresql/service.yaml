@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+    name: {{ include "flameHub.postgresql.host" . | quote }}
+    labels:
+        app: "{{ .Release.Name }}-postgresql"
+spec:
+    clusterIP: None
+    selector:
+        app: "{{ .Release.Name }}-postgresql"
+    ports:
+        -   name: postgresql
+            protocol: TCP
+            port: {{ .Values.postgresql.service.port }}
+            targetPort: postgresql

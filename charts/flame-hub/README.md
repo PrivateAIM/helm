@@ -66,14 +66,11 @@ The difference is that `existingSecret` is not populated with values from the ch
 The chart requires a secret with the following keys:
 
 ```
-postgresql-password:
-postgresql-replication-password:
 rabbitmq-password:
 redis-password:
 harbor-admin-password:
 grafana-admin-password:
 authup-admin-password:
-postgresql-connection-string:
 redis-connection-string:
 rabbitmq-connection-string:
 harbor-connection-string:
@@ -82,10 +79,32 @@ client-secret:
 Create a secret:
 ```bash
 kubectl create secret generic flame-hub-auth \
-  --from-literal=postgresql-password=verysecurepassword \
   --from-literal=harbor-admin-password=anothersecurepassword \
   # ...
 ```
+
+> **Note:** The chart-managed Secrets carry `helm.sh/resource-policy: keep, so they are not removed upon a `helm uninstall`. This is because PVCs are also retained so they share the same lifecyle.
+
+## Running Multiple Releases in the Same Namespace
+
+Most resources are release-scoped (prefixed with the release name), so several installs can normally coexist in one namespace. **However, some subcharts cannot template values, so we need to provide them with hardcoded ones.** For example, the goharbor chart cannot template its Postgres service name and secret name. The FLAME-Hub comes with working defaults, but running multiple instances in one namespace requires action.
+
+You must give each release its own value for:
+
+| Value | Default | What it names |
+| --- | --- | --- |
+| `global.flameHub.postgresql.host` | `postgresql` | The headless PostgreSQL Service |
+| `global.flameHub.postgresql.secretName` | `flame-hub-pg` | The chart-managed PostgreSQL credential Secret |
+| `harbor.externalDatabase.host` | `postgresql` | Harbor's DB host — **must match** `global.flameHub.postgresql.host` |
+| `harbor.externalDatabase.existingSecret` | `flame-hub-pg` | Harbor's DB secret — **must match** the effective PostgreSQL secret |
+| `auth.secretName` | `flame-hub-auth` | central chart secret for other service credentials |
+| `authup.auth.existingSecret` | `flame-hub-auth` | subchart reference — **must match** `auth.secretName` |
+| `rabbitmq.auth.existingPasswordSecret` | `flame-hub-auth` | subchart reference — **must match** `auth.secretName` |
+| `redis.auth.existingSecret` | `flame-hub-auth` | subchart reference — **must match** `auth.secretName` |
+| `grafana.admin.existingSecret` | `flame-hub-auth` | subchart reference — **must match** `auth.secretName` |
+| `harbor.existingSecret` | `flame-hub-auth` | subchart reference — **must match** `auth.secretName` |
+
+If you bring your own PostgreSQL Secret via `global.flameHub.postgresql.existingSecret`, that name must be unique per release too, and Harbor's `externalDatabase.existingSecret` must point at the same secret. The Secret must contain both a `username` and a `password` key.
 
 ## Installing the FLAME Hub Chart
 
