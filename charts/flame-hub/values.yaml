@@ -427,17 +427,31 @@ prometheus:
 #   - harbor.database.external.host         -> must equal global.flameHub.postgresql.host ("postgresql")
 #   - harbor.database.external.existingSecret -> must equal the effective global.flameHub.postgresql
 #                                                secret (existingSecret or secretName, e.g. "flame-hub-pg")
+#   - harbor.existingSecretAdminPassword      -> must equal the effective harbor secret (existingSecret
+#   - harbor.existingSecretSecretKey             or secretName below, e.g. "flame-hub-harbor")
 harbor:
     enabled: true
     adminUsername: "admin"
-    # Seeds harbor-admin-password in flame-hub-auth (empty => auto-generate). Harbor reads
-    # the password from that secret via existingSecretAdminPassword below.
+    # Harbor's own credentials Secret (admin password, core secretKey, connection string),
+    # created by templates/harbor/secret.yaml.
+    secretName: "flame-hub-harbor"
+    # Bring your own Secret instead: set this and the chart won't create one, it only reads
+    # yours (keys: harbor-admin-password, secretKey, harbor-connection-string). If set, update
+    # the two existingSecret* literals below to match.
+    existingSecret: ""
+    # Seeds harbor-admin-password in the harbor secret
     adminPassword: ""
+    # Optional: pin the 16-char core secretKey (empty -> generate-and-keep, or carry over an
+    # existing value on upgrade). Prefer leaving empty and pre-seeding the Secret.
+    secretKey: ""
     # goharbor's own admin-password key; unused because existingSecretAdminPassword is set,
     # but kept empty so goharbor does not mint a second, different password.
     harborAdminPassword: ""
-    existingSecretAdminPassword: "flame-hub-auth"
+    existingSecretAdminPassword: "flame-hub-harbor"
     existingSecretAdminPasswordKey: "harbor-admin-password"
+    # goharbor mounts this Secret's "secretKey" key as the core encryption key. Must equal the
+    # effective harbor secret name.
+    existingSecretSecretKey: "flame-hub-harbor"
     externalURL: "" # Required by Harbor, e.g. https://harbor.hub.local
     ingress:
         enabled: true # Harbor always needs its own hostname/domain, even when global path-based ingress is enabled

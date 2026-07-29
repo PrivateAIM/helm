@@ -28,15 +28,28 @@ Set `global.flameHub.gatewayApi.enabled: true` along with required values or set
 
 
 ## Credentials
-> 🔐 **By default** this chart will create a new secret with random passwords.
+> 🔐 **By default** this chart generates random passwords on install.
 
-This chart manages credentials using a Kubernetes Secret. By default, it will check for an existing secret named `flame-hub-auth`. If it does not exist, it will create a new secret with random passwords. You can override this behavior by providing your own k8s secret or by explicitly setting individual credentials in the values.
+The chart manages credentials in three Kubernetes Secrets. On install it reuses each Secret if
+it already exists, otherwise it creates it with random values. Each Secret can be overridden — set
+individual values in `values.yaml`, rename it, or bring your own pre-populated Secret.
 
-### Accessing auto-generated credentials
-For example: View the harbor admin password with:
+| Secret | Type | Keys | Rename / bring your own |
+| --- | --- | --- | --- |
+| `flame-hub-auth` | `Opaque` | `rabbitmq-password`, `redis-password`, `grafana-admin-password`, `authup-admin-password`, `authup-client-secret`, `redis-connection-string`, `rabbitmq-connection-string` | `auth.secretName` / `auth.existingSecret` |
+| `flame-hub-pg` | `kubernetes.io/basic-auth` | `username`, `password` (also read by Harbor's DB and the authup subchart) | `global.flameHub.postgresql.secretName` / `.existingSecret` |
+| `flame-hub-harbor` | `Opaque` | `harbor-admin-password`, `secretKey` (exactly 16 chars — goharbor requirement; encrypts robot tokens and replication creds, so it must survive upgrades), `harbor-connection-string` | `harbor.secretName` / `harbor.existingSecret` |
+
+`secretName` renames the chart-managed Secret (still auto-populated). `existingSecret` instead makes
+the chart **read** a Secret you created beforehand — nothing is generated, so it must already contain
+every key above.
+
+### Accessing an auto-generated credential
+
+For example, the Harbor admin password:
 
 ```bash
-kubectl get secret flame-hub-auth -o jsonpath='{.data.harbor-admin-password}' | base64 -d && echo
+kubectl get secret flame-hub-harbor -o jsonpath='{.data.harbor-admin-password}' | base64 -d && echo
 ```
 View the default admin password for the FLAME Hub with:
 ```bash
@@ -45,45 +58,7 @@ kubectl get secret flame-hub-auth -o jsonpath='{.data.authup-admin-password}' | 
 
 > **Note:** If authentication in the WebUI fails, make sure your browser trusts the TLS certificate of the page.
 
-### Using an Existing Secret or changing the secret name
-
-You can configure the secret name in `values.yaml`:
-
-```yaml
-auth:
-  secretName: "my-custom-secret"
-```
-Alternatively, you can provide a **pre-existing secret** with:
-
-```yaml
-auth:
-  existingSecret: "my-custom-secret"
-```
-The difference is that `existingSecret` is not populated with values from the chart or auto-generated. All credentials have to be provided beforehand.
-
-### Creating the secret
-
-The chart requires a secret with the following keys:
-
-```
-rabbitmq-password:
-redis-password:
-harbor-admin-password:
-grafana-admin-password:
-authup-admin-password:
-redis-connection-string:
-rabbitmq-connection-string:
-harbor-connection-string:
-client-secret:
-```
-Create a secret:
-```bash
-kubectl create secret generic flame-hub-auth \
-  --from-literal=harbor-admin-password=anothersecurepassword \
-  # ...
-```
-
-> **Note:** The chart-managed Secrets carry `helm.sh/resource-policy: keep, so they are not removed upon a `helm uninstall`. This is because PVCs are also retained so they share the same lifecyle.
+> **Note:** The chart-managed Secrets carry `helm.sh/resource-policy: keep`, so they are not removed on `helm uninstall` — the same lifecycle as the retained PVCs.
 
 ## Running Multiple Releases in the Same Namespace
 
@@ -103,7 +78,9 @@ You must give each release its own value for:
 | `rabbitmq.auth.existingPasswordSecret` | `flame-hub-auth` | subchart reference — **must match** `auth.secretName` |
 | `redis.auth.existingSecret` | `flame-hub-auth` | subchart reference — **must match** `auth.secretName` |
 | `grafana.admin.existingSecret` | `flame-hub-auth` | subchart reference — **must match** `auth.secretName` |
-| `harbor.existingSecretAdminPassword` | `flame-hub-auth` | subchart reference — **must match** `auth.secretName` |
+| `harbor.secretName` | `flame-hub-harbor` | Harbor's own credentials Secret (admin password, core `secretKey`, connection string) |
+| `harbor.existingSecretAdminPassword` | `flame-hub-harbor` | subchart reference — **must match** `harbor.secretName` |
+| `harbor.existingSecretSecretKey` | `flame-hub-harbor` | subchart reference — **must match** `harbor.secretName` |
 
 If you bring your own PostgreSQL Secret via `global.flameHub.postgresql.existingSecret`, that name must be unique per release too, and Harbor's `database.external.existingSecret` must point at the same secret. The Secret must contain both a `username` and a `password` key (goharbor reads the `password` key directly).
 

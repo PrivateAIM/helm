@@ -84,6 +84,11 @@ Create the name of the service account to use
 {{- $pg.existingSecret | default (required "global.flameHub.postgresql.secretName is required" $pg.secretName) -}}
 {{- end -}}
 
+
+{{- define "flameHub.harbor.secretName" -}}
+{{- .Values.harbor.existingSecret | default (required "harbor.secretName is required" .Values.harbor.secretName) -}}
+{{- end -}}
+
 {{/*
 Full name of the seaweedfs subchart release, mirroring its "seaweedfs.fullname" helper
 so resource names can be derived from the parent chart context (fullnameOverride is not respected).
