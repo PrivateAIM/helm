@@ -58,20 +58,12 @@ offline: false
 ## @param timezone Set the timezone for all components in the FLAME Node, use "TZ identifier" from https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
 timezone: Europe/Berlin
 
-## @param userIdp The following settings are used to configure a separate IDP for the Node UI other than the default keycloak instance
-userIdp:
-  ## @param userIdp.hostname Hostname for a separate IDP to manage users who can access the FLAME Node UI.
-  ## Leave this blank unless you want to use your own IDP
-  hostname:
-  ## @param userIdp.provider User auth provider. Can be 'keycloak', 'auth0', 'authentik', 'onelogin', 'okta', or 'zitadel'
-  provider: keycloak
-
 ## @param rbac Role Based Access Control settings for authenticated users. Controls feature access in the node UI
 rbac:
   ## @param rbac.roleClaimName A period "." separated list of keys leading to the claim in the OIDC token that contains the user's roles
   ## If left blank, RBAC will be disabled and all authenticated users will have full access.
   ## The default value is for the bundled Keycloak instance
-  roleClaimName: "resource_access.node-ui.roles"
+  roleClaimName: "global_access.roles"
   ## @param rbac.adminRole Role name for users who have full access and control as defined in the IDP
   adminRole: "admin"
   ## @param rbac.stewardRole Role name for users who can only modify data stores as defined in the IDP
@@ -128,7 +120,11 @@ hub:
     storage: https://storage.staging.privateaim.net
   ## Credentials used for retrieving a valid token from the hub using a robot account
   auth:
+    ## @param hub.auth.userRealm Realm in which the users for this node are registered
+    userRealm:
+    ## @param hub.auth.clientId Client ID for the node hub client
     clientId:
+    ## @param hub.auth.clientSecret Client secret for the node hub client
     clientSecret:
     ## @param hub.auth.existingSecret Existing k8s secret containing secret for given hub client ID
     ## The secret must have a key named "clientSecret"
