@@ -301,9 +301,6 @@ storageService:
 
 # keycloakx values
 keycloakx:
-  ## @param keycloakx.defaultUserEnabled Enable the creation of the default "flameuser" in keycloak
-  defaultUserEnabled: false
-
   auth:
     ## @param keycloakx.auth.adminUsername Bootstrap admin username for Keycloak. Ignored when existingSecret is set.
     adminUsername: ""
