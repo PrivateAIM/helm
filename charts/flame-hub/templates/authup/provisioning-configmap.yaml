@@ -115,4 +115,31 @@ data:
             - attributes:
                 name: registry
                 is_confidential: false
+{{- if .Values.authup.provisioning.webClient.enabled }}
+      # The Hub UI logs in through the shared `web` client. authup releases
+      # after v1.0.0-beta.58 no longer provision it as a system client, so it
+      # is declared here for every realm (existing and future) via the
+      # wildcard realm entry. `strategy: merge` re-asserts the chart-derived
+      # redirect allowlist on every boot: the follow-the-config behavior the
+      # system client used to provide. A bare `*` is a YAML alias token, so
+      # the name must stay quoted.
+      - attributes:
+          name: "*"
+        relations:
+          clients:
+            - attributes:
+                name: web
+                displayName: Web
+                authMethod: none
+                grantTypes: authorization_code refresh_token
+                builtIn: true
+                redirectUri: 'http://{{ include "flameHub.uiDomain" . }}/**,https://{{ include "flameHub.uiDomain" . }}/**'
+                postLogoutRedirectUri: 'http://{{ include "flameHub.uiDomain" . }}/**,https://{{ include "flameHub.uiDomain" . }}/**'
+              strategy:
+                type: merge
+              relations:
+                globalScopes:
+                  - global
+                  - openid
+{{- end }}
 {{- end }}
