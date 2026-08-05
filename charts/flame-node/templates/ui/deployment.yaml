@@ -82,20 +82,16 @@ spec:
             - name: NUXT_PUBLIC_ORIGIN
               value: {{ printf "%s/flame/api/auth" (include "node.hostname" .) | default "http://localhost:3000/flame/api/auth" }}
             - name: NUXT_PUBLIC_IDP_PROVIDER
-              value: {{ .Values.userIdp.provider | default "keycloak" | quote }}
+              value: hub
             - name: NUXT_PUBLIC_IDP_ISSUER
-              value: {{ include "ui.userIdp.endpoint" . }}
-            {{- if (eq (include "ui.auth.internal" .) "true") }}
-            - name: NUXT_PUBLIC_INTERNAL_KEYCLOAK_URL
-              value: {{ include "keycloak.service.endpoint" . }}
-            {{- end }}
+              value: {{ include "hub.auth.issuerUrl" . | quote }}
             - name: NUXT_IDP_CLIENT_ID
-              value: {{ .Values.ui.idp.clientId | default "node-ui" | quote }}
+              value: {{ required "Hub client ID must be set." .Values.hub.auth.clientId  | quote }}
             - name: NUXT_IDP_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "ui.keycloak.secretName" . }}
-                  key: {{ include "ui.keycloak.secretKey" . }}
+                  name: {{ include "hub.secretName" . }}
+                  key: clientSecret
             - name: NUXT_AUTH_SECRET
               valueFrom:
                 secretKeyRef:

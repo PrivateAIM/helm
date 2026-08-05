@@ -9,6 +9,7 @@ expose:
 hub:
   ## Credentials used for retrieving a valid token from the hub using a robot account
   auth:
+    userRealm: master  # change this to the realm in which the users for this node are registered
     clientId:
     clientSecret:
   ## Values required by the storage service for encrypting intermediate results sent to the Hub
@@ -34,15 +35,11 @@ keycloakx:
     adminPassword: ""
     # existingSecret: ""
 
-# userIdp:
-#   hostname:
-#   provider: keycloak
-
-proxy:
-  httpProxy:
-  httpsProxy:
-  noProxy:
-  # existingSecret:
+# proxy:
+#   httpProxy:
+#   httpsProxy:
+#   noProxy:
+#   existingSecret:
 
 ## If enabled, this will deploy a FHIR and SeaweedFS (S3) server that can be used for testing
 dataStore:
@@ -53,16 +50,3 @@ dataStore:
         adminUser: "admin"
         adminPassword: ""
         # existingSecret: ""
-
-## @param rbac Role Based Access Control settings for authenticated users. Controls feature access in the node UI
-rbac:
-  ## @param rbac.roleClaimName A period "." separated list of keys leading to the claim in the OIDC token that contains the user's roles
-  ## If left blank, RBAC will be disabled and all authenticated users will have full access.
-  ## The default value is for the bundled Keycloak instance
-  roleClaimName: "resource_access.node-ui.roles"
-  ## @param rbac.adminRole Role name for users who have full access and control as defined in the IDP
-  adminRole: "admin"
-  ## @param rbac.stewardRole Role name for users who can only modify data stores as defined in the IDP
-  stewardRole: "steward"
-  ## @param rbac.researcherRole Role name for users who can only modify analyses as defined in the IDP
-  researcherRole: "researcher"

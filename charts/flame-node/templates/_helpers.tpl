@@ -63,6 +63,14 @@ Return the normalized hostname for all node components. Source of truth: expose.
 
 
 {{/*
+Return the hub IDP issuer URL, combining hub.endpoints.auth with hub.auth.userRealm e.g. "https://auth.privateaim.dev/realms/myRealm"
+*/}}
+{{- define "hub.auth.issuerUrl" -}}
+{{- $realm := required "hub.auth.userRealm is required" .Values.hub.auth.userRealm -}}
+{{- printf "%s/realms/%s" (.Values.hub.endpoints.auth | trimSuffix "/") $realm -}}
+{{- end -}}
+
+{{/*
 Return the secret containing the hub robot secret
 */}}
 {{- define "hub.secretName" -}}
@@ -262,17 +270,6 @@ Set the API's root path. If expose is configured (not none), defaults to "/api" 
     {{- print "/api" -}}
 {{- else -}}
     {{- print "" -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Return the endpoint for user authentication
-*/}}
-{{- define "adapter.userIdp.endpoint" -}}
-{{- if .Values.userIdp.hostname -}}
-    {{- print (include "userIdp.hostname" .) -}}
-{{- else -}}
-    {{- print (include "keycloak.service.endpoint" .) -}}
 {{- end -}}
 {{- end -}}
 
