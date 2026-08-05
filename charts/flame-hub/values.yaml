@@ -57,7 +57,7 @@ global:
         # them: Helm shares only `global` into a subchart's values.
         postgresql:
             # Service host. Not release-scoped (goharbor cannot derive the release name).
-            # keep in sync with harbor.externalDatabase.host
+            # keep in sync with harbor.database.external.host
             host: "postgresql"
             # Name of the chart-managed Secret (created when existingSecret is empty).
             # Override per-release only for multiple installs in one namespace.
@@ -66,7 +66,7 @@ global:
             # create one, it only reads yours (must contain both "username" and "password"
             # keys; goharbor hardcodes "password"). Everything that reads the Secret — hub
             # workloads and the authup subchart follow this automatically.
-            # Keep in sync with harbor.externalDatabase.existingSecret
+            # Keep in sync with harbor.database.external.existingSecret
             existingSecret: ""
 
 image:
@@ -419,13 +419,39 @@ prometheus:
                 static_configs:
                   - targets: ["{{ .Release.Name }}-authup-server-core:3000"]
 
+
+# IMPORTANT: the goharbor subchart does NOT evaluate Helm templates in its values, so the
+# few names that need to reference the release must be set as literal strings, and
+# overridden per-release when the release name is not "flame-hub" (e.g. "hub" on hub-dev):
+#   - harbor.expose.clusterIP.name          -> the in-cluster Harbor service (harbor.internalHost reads it)
+#   - harbor.database.external.host         -> must equal global.flameHub.postgresql.host ("postgresql")
+#   - harbor.database.external.existingSecret -> must equal the effective global.flameHub.postgresql
+#                                                secret (existingSecret or secretName, e.g. "flame-hub-pg")
+#   - harbor.existingSecretAdminPassword      -> must equal the effective harbor secret (existingSecret
+#   - harbor.existingSecretSecretKey             or secretName below, e.g. "flame-hub-harbor")
 harbor:
     enabled: true
-    nameOverride: "harbor"
     adminUsername: "admin"
-    adminPassword: "" # Leave empty for auto-generation
-    existingSecret: "flame-hub-auth"
+    # Harbor's own credentials Secret (admin password, core secretKey, connection string),
+    # created by templates/harbor/secret.yaml.
+    secretName: "flame-hub-harbor"
+    # Bring your own Secret instead: set this and the chart won't create one, it only reads
+    # yours (keys: harbor-admin-password, secretKey, harbor-connection-string). If set, update
+    # the two existingSecret* literals below to match.
+    existingSecret: ""
+    # Seeds harbor-admin-password in the harbor secret
+    adminPassword: ""
+    # Optional: pin the 16-char core secretKey (empty -> generate-and-keep, or carry over an
+    # existing value on upgrade). Prefer leaving empty and pre-seeding the Secret.
+    secretKey: ""
+    # goharbor's own admin-password key; unused because existingSecretAdminPassword is set,
+    # but kept empty so goharbor does not mint a second, different password.
+    harborAdminPassword: ""
+    existingSecretAdminPassword: "flame-hub-harbor"
     existingSecretAdminPasswordKey: "harbor-admin-password"
+    # goharbor mounts this Secret's "secretKey" key as the core encryption key. Must equal the
+    # effective harbor secret name.
+    existingSecretSecretKey: "flame-hub-harbor"
     externalURL: "" # Required by Harbor, e.g. https://harbor.hub.local
     ingress:
         enabled: true # Harbor always needs its own hostname/domain, even when global path-based ingress is enabled
@@ -447,126 +473,78 @@ harbor:
             mode: "Terminate"
             certificateRef: ""
             certificateRefNamespace: "" # optional override; defaults to global.flameHub.gatewayApi.tls.certificateRefNamespace
-    migration:
-        enabled: true
-    # persistence:
-    #     persistentVolumeClaim:
-    #         registry:
-    #             storageClass: "mayastor-replicated"
-    # exposureType controls the way the harbor subchart is exposed. The harbor subchart provides
-    # its own ingress, but we need to use exposureType proxy (nginx) to allow access internally.
-    # Ingress is handled by the ingress section above.
-    exposureType: "proxy"
-    nginx:
-        behindReverseProxy: true
+    # --- goharbor subchart values ---
+    # Expose Harbor as an in-cluster ClusterIP service with its own self-signed TLS.
+    # External access is handled by the flame-hub ingress / gatewayApi blocks above.
+    expose:
+        type: clusterIP
         tls:
             enabled: true
-        image:
-            repository: "bitnamilegacy/nginx"
-            tag: "1.29.1-debian-12-r0"
-    portal:
-        image:
-            #repository: "tada5hi/harbor-portal"
-            repository: "bitnamilegacy/harbor-portal"
-            tag: "2.13.2-debian-12-r1"
-        initContainers:
-            - name: wait-for-db
-              image: busybox
-              command:
-                  [
-                      "sh",
-                      "-c",
-                      'until nc -z -v -w30 postgresql 5432; do echo "Waiting for db..."; sleep 5; done',
-                  ]
-    core:
-        image:
-            #repository: "tada5hi/harbor-core"
-            repository: "bitnamilegacy/harbor-core"
-            tag: "2.13.2-debian-12-r3"
-        initContainers:
-            - name: wait-for-db
-              image: busybox
-              command:
-                  [
-                      "sh",
-                      "-c",
-                      'until nc -z -v -w30 postgresql 5432; do echo "Waiting for db..."; sleep 5; done',
-                  ]
-    jobservice:
-        updateStrategy:
-            type: Recreate
-            rollingUpdate: null
-        image:
-            #repository: "tada5hi/harbor-jobservice"
-            repository: "bitnamilegacy/harbor-jobservice"
-            tag: "2.13.2-debian-12-r3"
-        initContainers:
-            - name: wait-for-db
-              image: busybox
-              command:
-                  [
-                      "sh",
-                      "-c",
-                      'until nc -z -v -w30 postgresql 5432; do echo "Waiting for db..."; sleep 5; done',
-                  ]
-
-    registry:
-        updateStrategy:
-            type: Recreate
-            rollingUpdate: null
-        relativeurls: true # Needed for server-core-worker because of TCP forwarding (see https://github.com/distribution/distribution/issues/970#issuecomment-284227065)
-        server:
-            image:
-                #repository: "tada5hi/harbor-registry"
-                repository: "bitnamilegacy/harbor-registry"
-                tag: "2.13.2-debian-12-r2"
-        controller:
-            image:
-                #repository: "tada5hi/harbor-registryctl"
-                repository: "bitnamilegacy/harbor-registryctl"
-                tag: "2.13.2-debian-12-r3"
-        initContainers:
-            - name: wait-for-db
-              image: busybox
-              command:
-                  [
-                      "sh",
-                      "-c",
-                      'until nc -z -v -w30 postgresql 5432; do echo "Waiting for db..."; sleep 5; done',
-                  ]
-    trivy:
-        updateStrategy:
-            type: OnDelete
-        image:
-            #repository: "tada5hi/harbor-adapter-trivy"
-            repository: "bitnamilegacy/harbor-adapter-trivy"
-            tag: "2.13.2-debian-12-r2"
-        initContainers:
-            - name: wait-for-db
-              image: busybox
-              command:
-                  [
-                      "sh",
-                      "-c",
-                      'until nc -z -v -w30 postgresql 5432; do echo "Waiting for db..."; sleep 5; done',
-                  ]
-    postgresql:
-        enabled: false
-    externalDatabase:
-        host: "postgresql" # Must match global.flameHub.postgresql.host (goharbor cannot template this)
-        port: 5432
-        user: "postgres"
-        password: ""
-        coreDatabase: "registry"
-        existingSecret: "flame-hub-pg" # Must match the effective global.flameHub.postgresql secret (existingSecret or secretName)
-        existingSecretPasswordKey: "password"
-        sslmode: "disable"
-    redis:
+            certSource: auto
+            auto:
+                commonName: harbor.local
+        clusterIP:
+            # Literal service name (the subchart cannot template this).
+            # Override to "<release>-harbor" per release.
+            name: "harbor"
+            ports:
+                httpsPort: 443
+    updateStrategy:
+        type: Recreate
+    persistence:
         enabled: true
-        nameOverride: "harbor-redis"
-        image:
-            repository: "bitnamilegacy/redis"
-            tag: "8.2.1-debian-12-r0"
+        resourcePolicy: keep
+        persistentVolumeClaim:
+            registry:
+                existingClaim: ""
+                size: 5Gi
+                # See /charts/third-party/openebs for details
+                # storageClass: "mayastor-replicated"
+            jobservice:
+                jobLog:
+                    existingClaim: ""
+                    size: 1Gi
+            trivy:
+                existingClaim: ""
+                size: 5Gi
+    registry:
+        relativeurls: true # Needed for server-core-worker because of TCP forwarding (see https://github.com/distribution/distribution/issues/970#issuecomment-284227065)
+    # Use the shared cluster PostgreSQL, not Harbor's bundled database.
+    database:
+        type: external
+        external:
+            # Literal service name (goharbor cannot template this). Must equal
+            # global.flameHub.postgresql.host; override per-release if that changes.
+            host: "postgresql"
+            port: "5432"
+            username: "postgres"
+            coreDatabase: "registry"
+            # goharbor requires the key in this secret to be literally "password".
+            # The self-hosted postgres chart (templates/postgresql/secret.yaml) already
+            # stores the credential under that key, so Harbor reads it directly — no
+            # mirror secret needed. Must equal the effective global.flameHub.postgresql
+            # secret (existingSecret or secretName).
+            existingSecret: "flame-hub-pg"
+            sslmode: "disable"
+    # Harbor's own bundled Redis (the app-level redis subchart is separate).
+    redis:
+        type: internal
+
+# In-cluster Harbor access proxy — LOCAL DEV ONLY.
+#
+# The server-core and server-core-worker pods must reach Harbor at the hostname on its TLS
+# certificate (harbor.externalURL). In real deployments Harbor is published at that hostname
+# over public DNS + valid HTTPS, so the pods talk to it directly — leave this disabled.
+#
+# On a local cluster (e.g. k3s with values_local) Harbor has no public DNS and only a
+# self-signed cert, so the hostname is unreachable from inside the pod. Enabling this adds,
+# to both server-core and server-core-worker:
+#   - a hostAlias mapping harbor.host -> 127.0.0.1,
+#   - a socat sidecar that forwards 127.0.0.1:443 to the in-cluster Harbor service, and
+#   - the --insecure-registry flag on the core-worker's docker-in-docker daemon.
+# It has no effect when externalHarbor.enabled is true (that Harbor is already external).
+harborProxy:
+    enabled: false
 
 externalHarbor:
     enabled: false

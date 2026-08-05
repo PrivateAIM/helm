@@ -20,7 +20,7 @@ spec:
                     pathType: "ImplementationSpecific"
                     backend:
                         service:
-                            name: {{ .Release.Name }}-harbor
+                            name: {{ include "harbor.internalHost" . }}
                             port:
                                 number: 443
 {{- end }}

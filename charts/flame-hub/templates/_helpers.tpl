@@ -84,6 +84,11 @@ Create the name of the service account to use
 {{- $pg.existingSecret | default (required "global.flameHub.postgresql.secretName is required" $pg.secretName) -}}
 {{- end -}}
 
+
+{{- define "flameHub.harbor.secretName" -}}
+{{- .Values.harbor.existingSecret | default (required "harbor.secretName is required" .Values.harbor.secretName) -}}
+{{- end -}}
+
 {{/*
 Full name of the seaweedfs subchart release, mirroring its "seaweedfs.fullname" helper
 so resource names can be derived from the parent chart context (fullnameOverride is not respected).
@@ -94,6 +99,17 @@ so resource names can be derived from the parent chart context (fullnameOverride
 {{- .Release.Name | trunc 63 | trimSuffix "-" -}}
 {{- else -}}
 {{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Whether the local-dev in-cluster Harbor proxy (hostAliases + socat sidecar + dind
+insecure-registry) should be rendered. Truthy only when harborProxy.enabled is set, Harbor
+is in-cluster (not externalHarbor), and an internal Harbor host resolves.
+*/}}
+{{- define "flameHub.harborProxy.enabled" -}}
+{{- if and .Values.harborProxy.enabled (not .Values.externalHarbor.enabled) -}}
+{{- include "harbor.internalHost" . -}}
 {{- end -}}
 {{- end -}}
 
