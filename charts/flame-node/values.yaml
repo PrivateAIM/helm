@@ -121,14 +121,14 @@ hub:
   ## Credentials used for retrieving a valid token from the hub using a robot account
   auth:
     ## @param hub.auth.userRealm Realm in which the users for this node are registered
-    userRealm:
+    userRealm: "master"
     ## @param hub.auth.clientId Client ID for the node hub client
     clientId:
     ## @param hub.auth.clientSecret Client secret for the node hub client
     clientSecret:
     ## @param hub.auth.existingSecret Existing k8s secret containing secret for given hub client ID
     ## The secret must have a key named "clientSecret"
-    existingSecret: ""
+    existingSecret:
   ## Values required by the storage service for encrypting intermediate results sent to the Hub
   crypto:
     ## @param hub.crypto.privateKey Content of the private key to be added to the secret. Need to use the "|" scalar:

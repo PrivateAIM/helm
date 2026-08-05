@@ -66,7 +66,8 @@ Return the normalized hostname for all node components. Source of truth: expose.
 Return the hub IDP issuer URL, combining hub.endpoints.auth with hub.auth.userRealm e.g. "https://auth.privateaim.dev/realms/myRealm"
 */}}
 {{- define "hub.auth.issuerUrl" -}}
-{{- printf "%s/realms/%s" .Values.hub.endpoints.auth .Values.hub.auth.userRealm -}}
+{{- $realm := required "hub.auth.userRealm is required" .Values.hub.auth.userRealm -}}
+{{- printf "%s/realms/%s" (.Values.hub.endpoints.auth | trimSuffix "/") $realm -}}
 {{- end -}}
 
 {{/*
