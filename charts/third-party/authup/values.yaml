@@ -50,7 +50,8 @@ database:
 
 cookieDomain: ""
 publicURL: ""
-# Trusted first-party application origins (redirect allowlist for the web client; not CORS).
+# Trusted first-party application origins (redirect allowlist for the built-in
+# system clients, e.g. admin-console; not CORS).
 # Accepts a comma-separated string or a list. Each entry is either a bare host[:port]
 # (e.g. "hub.local", which expands to both its http and https origin) or an explicit-scheme
 # origin (e.g. "https://hub.local", which contributes exactly that origin). Only http/https.
