@@ -72,7 +72,7 @@ global:
 image:
     registry: ghcr.io
     repository: privateaim/hub
-    tag: 0.13.1
+    tag: 0.13.2
     pullPolicy: Always
 
 # internal services
@@ -193,7 +193,9 @@ authup:
     database:
         host: '{{ include "flameHub.postgresql.host" . }}'
         existingSecret: '{{ include "flameHub.postgresql.secretName" . }}'
-    # Trusted first-party application origins (redirect allowlist for the web client; not CORS).
+    # Trusted first-party application origins (redirect allowlist for authup's built-in
+    # system clients; not CORS). The Hub UI logs in through the admin-console client, so
+    # its public origin must be covered here.
     # Accepts a comma-separated string or list; bare hosts expand to both http and https origins.
     # The value is rendered as a Helm template inside the authup subchart context.
     # Defaults to the public domain of the Hub UI (derived from the global ingress/gatewayApi hostname).
