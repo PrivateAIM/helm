@@ -72,7 +72,7 @@ global:
 image:
     registry: ghcr.io
     repository: privateaim/hub
-    tag: 0.13.0
+    tag: 0.13.1
     pullPolicy: Always
 
 # internal services
@@ -194,9 +194,6 @@ authup:
         host: '{{ include "flameHub.postgresql.host" . }}'
         existingSecret: '{{ include "flameHub.postgresql.secretName" . }}'
     # Trusted first-party application origins (redirect allowlist for the web client; not CORS).
-    # Note: authup releases after v1.0.0-beta.58 stop provisioning the shared `web`
-    # client; this list then feeds only the admin-console / account-console system
-    # clients, and the Hub UI's `web` client is declared via provisioning.webClient below.
     # Accepts a comma-separated string or list; bare hosts expand to both http and https origins.
     # The value is rendered as a Helm template inside the authup subchart context.
     # Defaults to the public domain of the Hub UI (derived from the global ingress/gatewayApi hostname).
@@ -204,7 +201,7 @@ authup:
     trustedOrigins: '{{- if or .Values.global.flameHub.ingress.enabled .Values.global.flameHub.gatewayApi.enabled }}{{ include "flameHub.uiDomain" . }}{{- end }}'
     image:
         repository: "authup/authup"
-        tag: "1.0.0-beta.57"
+        tag: "1.0.0-beta.59"
         pullPolicy: "Always"
     # Declaratively provision the FLAME permission taxonomy and the analyst/diz global
     # roles into authup at boot. The content is rendered by
@@ -212,16 +209,6 @@ authup:
     provisioning:
         enabled: true
         existingConfigMap: '{{ .Release.Name }}-authup-provisioning'
-        # Provision the shared `web` login client (the client the Hub UI
-        # authenticates with) into every realm via authup's wildcard realm
-        # entry. Required from the first authup release AFTER v1.0.0-beta.58,
-        # which stops auto-provisioning the per-realm `web` system client.
-        # MUST stay disabled while the authup image tag is <= v1.0.0-beta.58:
-        # older releases reject the wildcard syntax at startup (and still
-        # provision `web` themselves). Flip to true together with the next
-        # authup image bump.
-        webClient:
-            enabled: false
     auth:
         existingSecret: "flame-hub-auth"
 
