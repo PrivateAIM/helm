@@ -12,3 +12,4 @@ Chart.lock
 *.pem
 docs/
 .claude
+node*.yaml

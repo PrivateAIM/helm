@@ -17,4 +17,16 @@ spec:
     allowedRoutes:
       namespaces:
         from: Same
+  {{- if and .Values.dataStore.enabled .Values.dataStore.seaweedfs.admin.enabled .Values.dataStore.seaweedfs.admin.gateway.enabled }}
+  {{- $adminHost := include "flame-node.dataStore.seaweedfs.admin.routeHostname" . }}
+  {{- if and $adminHost (ne $adminHost (include "flame-node.gateway.routeHostname" .)) }}
+  - protocol: HTTP
+    port: 80
+    name: seaweedfs-admin-http
+    hostname: {{ $adminHost | quote }}
+    allowedRoutes:
+      namespaces:
+        from: Same
+  {{- end }}
+  {{- end }}
 {{- end }}

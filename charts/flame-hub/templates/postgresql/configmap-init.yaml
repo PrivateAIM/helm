@@ -1,0 +1,19 @@
+# Mounted at /docker-entrypoint-initdb.d. The official postgres image runs these
+# scripts (via psql, ON_ERROR_STOP=1) only on first initialisation of an empty
+# data directory, mirroring the previous Bitnami initdb behaviour.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: "{{ .Release.Name }}-postgresql-init"
+    labels:
+        app: "{{ .Release.Name }}-postgresql"
+data:
+    01-init-databases.sql: |
+        {{- range .Values.postgresql.databases }}
+        CREATE DATABASE "{{ . }}" ENCODING 'UTF8';
+        {{- end }}
+        {{- if has "registry" .Values.postgresql.databases }}
+        -- Harbor expects its migration bookkeeping table to exist up-front.
+        \connect registry
+        CREATE TABLE IF NOT EXISTS schema_migrations(version bigint not null primary key, dirty boolean not null);
+        {{- end }}

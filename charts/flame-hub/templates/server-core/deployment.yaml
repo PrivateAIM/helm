@@ -17,7 +17,8 @@ spec:
         appGroup: "{{ .Release.Name }}-flame-hub"
     spec:
       restartPolicy: Always
-      {{- if and (not .Values.externalHarbor.enabled) (include "harbor.host" .) }}
+      {{- if and (include "flameHub.harborProxy.enabled" .) (include "harbor.host" .) }}
+      # Local-dev only (harborProxy.enabled): route Harbor's public hostname to the socat sidecar.
       hostAliases:
         - ip: "127.0.0.1"
           hostnames:
@@ -29,7 +30,7 @@ spec:
               command: [
                   'sh',
                   '-c',
-                  'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done'
+                  'until nc -z -v -w30 {{ include "flameHub.postgresql.host" . }} 5432; do echo "Waiting for db..."; sleep 5; done'
               ]
           -   name: wait-for-redis
               image: busybox
@@ -93,14 +94,17 @@ spec:
               -   name: DB_TYPE
                   value: "postgres"
               -   name: DB_HOST
-                  value: "{{ .Release.Name }}-postgresql-primary"
+                  value: {{ include "flameHub.postgresql.host" . | quote }}
               -   name: DB_USERNAME
-                  value: "postgres"
+                  valueFrom:
+                      secretKeyRef:
+                          name: {{ include "flameHub.postgresql.secretName" . }}
+                          key: username
               -   name: DB_PASSWORD
                   valueFrom:
                       secretKeyRef:
-                          name: {{ include "flameHub.effectiveSecretName" .  }}
-                          key: postgresql-password
+                          name: {{ include "flameHub.postgresql.secretName" . }}
+                          key: password
               -   name: DB_DATABASE
                   value: "core"
               -   name: MASTER_IMAGES_BRANCH
@@ -109,7 +113,7 @@ spec:
               -   name: HARBOR_URL
                   valueFrom:
                       secretKeyRef:
-                          name: {{ include "flameHub.effectiveSecretName" .  }}
+                          name: {{ include "flameHub.harbor.secretName" .  }}
                           key: harbor-connection-string
               {{- end }}
               -   name: CLIENT_ID
@@ -144,7 +148,9 @@ spec:
                   port: 3000
               failureThreshold: 3
               periodSeconds: 15
-        {{- if not .Values.externalHarbor.enabled }}
+        {{- if include "flameHub.harborProxy.enabled" . }}
+        # Local-dev only (harborProxy.enabled): forward the aliased Harbor hostname to the
+        # in-cluster Harbor service. Real deployments reach Harbor at its public URL directly.
         - name: harbor-proxy-sidecar
           image: alpine/socat
           args: ["TCP-LISTEN:443,fork,bind=127.0.0.1", "TCP:{{ include "harbor.internalHost" . }}:443"]

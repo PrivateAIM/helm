@@ -12,14 +12,41 @@ image:
     pullPolicy: "Always"
 
 auth:
-    # Use an existing secret with keys: client-secret, redis-connection-string, postgresql-password
     existingSecret: ""
 
     # or provide credentials in values (used when existingSecret is not set)
     redisPassword: "start123"
-    postgresPassword: "start123"
     adminPassword: "start123"
     clientSecret: "start123"
+
+# Declarative provisioning of authup entities (permissions, roles, policies, ...).
+# When enabled, a directory of provisioning files is mounted read-only into
+# <WRITABLE_DIRECTORY_PATH>/provisioning; authup's FileProvisioningSource loads and
+# synchronizes them on every boot (default strategy createOnly, i.e. non-destructive).
+# See https://authup.org (server-core provisioning).
+provisioning:
+    enabled: false
+    # Directory authup scans for provisioning files. Must sit under the container's
+    # WRITABLE_DIRECTORY_PATH (default /usr/src/app/writable in the official image).
+    mountPath: "/usr/src/app/writable/provisioning"
+    # Name of an existing ConfigMap holding the provisioning files. Rendered with tpl,
+    # so a parent chart may pass e.g. '{{ .Release.Name }}-authup-provisioning'.
+    # When empty, a ConfigMap is rendered from `files` below.
+    existingConfigMap: ""
+    # Map of filename -> file content, used only when existingConfigMap is empty.
+    # Each key becomes a file in the provisioning directory (json/yaml/yml/ts/js).
+    files: {}
+
+
+database:
+    host: ""
+    # Secret holding the DB credentials. When empty, the inline username/password
+    existingSecret: ""
+    passwordKey: "password"
+    usernameKey: "username"
+    # Inline credentials, used only when existingSecret is not set.
+    username: "postgres"
+    password: "start123"
 
 cookieDomain: ""
 publicURL: ""

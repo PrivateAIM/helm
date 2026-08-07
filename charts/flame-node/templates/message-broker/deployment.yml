@@ -50,7 +50,10 @@ spec:
           securityContext:
             {{- toYaml .Values.messageBroker.securityContext | nindent 12 }}
           ports:
-            - containerPort: 8080
+            - name: http
+              containerPort: 8080
+            - name: actuator
+              containerPort: 8090
           env:
             - name: TZ
               value: {{ .Values.timezone | default "Europe/Berlin" }}

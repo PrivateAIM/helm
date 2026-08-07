@@ -84,7 +84,7 @@ spec:
                   name: {{ .Release.Name }}-keycloak-client-secrets
                   key: hubAdapterClientSecret
             - name: IDP_URL
-              value: {{ include "adapter.userIdp.endpoint" . }}
+              value: {{ include "hub.auth.issuerUrl" . | quote }}
             {{- if .Values.victorialogs.enabled }}
             - name: VICTORIA_LOGS_URL
               value: {{ printf "http://%s-victorialogs-server.%s.svc.cluster.local:9428" .Release.Name .Release.Namespace }}
@@ -137,24 +137,24 @@ spec:
               value: {{ .Values.rbac.stewardRole | default "" | quote }}
             - name: RESEARCHER_ROLE
               value: {{ .Values.rbac.researcherRole | default "" | quote }}
-            - name: POSTGRES_EVENT_USER
+            - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
                   name: {{ include "postgresql.user.secretName" . }}
                   key: DB_USER
-            - name: POSTGRES_EVENT_PASSWORD
+            - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ include "postgresql.user.secretName" . }}
                   key: DB_PASSWORD
-            - name: POSTGRES_EVENT_DB
+            - name: POSTGRES_DB
               valueFrom:
                 secretKeyRef:
                   name: {{ include "postgresql.user.secretName" . }}
                   key: DB_DATABASE
-            - name: POSTGRES_EVENT_HOST
+            - name: POSTGRES_HOST
               value: {{ include "postgresql.endpoint" . }}
-            - name: POSTGRES_EVENT_PORT
+            - name: POSTGRES_PORT
               value: {{ .Values.postgresql.service.port | default "5432" | quote }}
             {{- if $hasCerts }}
             - name: EXTRA_CA_CERTS

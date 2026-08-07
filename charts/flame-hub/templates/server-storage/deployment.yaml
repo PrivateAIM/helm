@@ -23,7 +23,7 @@ spec:
                     command: [
                         'sh',
                         '-c',
-                        'until nc -z -v -w30 {{ .Release.Name }}-postgresql-primary 5432; do echo "Waiting for db..."; sleep 5; done'
+                        'until nc -z -v -w30 {{ include "flameHub.postgresql.host" . }} 5432; do echo "Waiting for db..."; sleep 5; done'
                     ]
                 -   name: wait-for-redis
                     image: busybox
@@ -39,12 +39,12 @@ spec:
                         '-c',
                         'until nc -z -v -w30 {{ .Release.Name }}-rabbitmq 5672; do echo "Waiting for rabbitmq..."; sleep 5; done'
                     ]
-                -   name: wait-for-minio
+                -   name: wait-for-seaweedfs
                     image: busybox
                     command: [
                         'sh',
                         '-c',
-                        'until nc -z -v -w30 {{ .Release.Name }}-minio 9000; do echo "Waiting for rabbitmq..."; sleep 5; done'
+                        'until nc -z -v -w30 {{ include "flameHub.seaweedfs.s3Host" . }} 8333; do echo "Waiting for seaweedfs..."; sleep 5; done'
                     ]
                 -   name: wait-for-authup
                     image: busybox
@@ -72,24 +72,35 @@ spec:
                                 secretKeyRef:
                                     name: {{ include "flameHub.effectiveSecretName" .  }}
                                     key: rabbitmq-connection-string
-                        -   name: MINIO_CONNECTION_STRING
+                        -   name: S3_ACCESS_KEY
                             valueFrom:
                                 secretKeyRef:
-                                    name: {{ include "flameHub.effectiveSecretName" .  }}
-                                    key: minio-connection-string
+                                    name: {{ include "flameHub.seaweedfs.s3SecretName" . }}
+                                    key: admin_access_key_id
+                        -   name: S3_SECRET_KEY
+                            valueFrom:
+                                secretKeyRef:
+                                    name: {{ include "flameHub.seaweedfs.s3SecretName" . }}
+                                    key: admin_secret_access_key
+                        # The app still expects its S3 config under the MINIO_* name
+                        -   name: MINIO_CONNECTION_STRING
+                            value: "http://$(S3_ACCESS_KEY):$(S3_SECRET_KEY)@{{ include "flameHub.seaweedfs.s3Host" . }}:8333"
                         -   name: AUTHUP_URL
                             value: "http://{{ .Release.Name }}-authup-server-core:3000/"
                         -   name: DB_TYPE
                             value: "postgres"
                         -   name: DB_HOST
-                            value: "{{ .Release.Name }}-postgresql-primary"
+                            value: {{ include "flameHub.postgresql.host" . | quote }}
                         -   name: DB_USERNAME
-                            value: "postgres"
+                            valueFrom:
+                                secretKeyRef:
+                                    name: {{ include "flameHub.postgresql.secretName" . }}
+                                    key: username
                         -   name: DB_PASSWORD
                             valueFrom:
                                 secretKeyRef:
-                                    name: {{ include "flameHub.effectiveSecretName" .  }}
-                                    key: postgresql-password
+                                    name: {{ include "flameHub.postgresql.secretName" . }}
+                                    key: password
                         -   name: DB_DATABASE
                             value: "storage"
                         -   name: CLIENT_ID

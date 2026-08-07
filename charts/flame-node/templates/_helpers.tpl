@@ -24,6 +24,30 @@ true
 {{- end -}}
 
 {{/*
+Return the URL scheme for components: "https" when a TLS secret is configured via expose.tls.secretName, otherwise "http".
+*/}}
+{{- define "hostname.protocol" -}}
+{{- if .Values.expose.tls.secretName -}}
+https
+{{- else -}}
+http
+{{- end -}}
+{{- end -}}
+
+{{/*
+Prefix a hostname with a scheme, defaulting via node.scheme when the hostname doesn't already include one.
+*/}}
+{{- define "hostname.withProtocol" -}}
+{{- $hostname := index . 0 -}}
+{{- $ctx := index . 1 -}}
+{{- if hasPrefix "http" $hostname -}}
+    {{- $hostname -}}
+{{- else -}}
+    {{- printf "%s://%s" (include "hostname.protocol" $ctx) $hostname -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Return the normalized hostname for all node components. Source of truth: expose.hostname.
 */}}
 {{- define "node.hostname" -}}
@@ -31,16 +55,20 @@ Return the normalized hostname for all node components. Source of truth: expose.
     {{- fail "expose.hostname must be set when expose.type is 'ingress' or 'gateway'" -}}
 {{- end -}}
 {{- if .Values.expose.hostname -}}
-    {{- if hasPrefix "http" .Values.expose.hostname -}}
-        {{- .Values.expose.hostname -}}
-    {{- else -}}
-        {{- printf "http://%s" .Values.expose.hostname -}}
-    {{- end -}}
+    {{- include "hostname.withProtocol" (list .Values.expose.hostname .) -}}
 {{- else -}}
     {{- "http://localhost:3000" -}}
 {{- end -}}
 {{- end -}}
 
+
+{{/*
+Return the hub IDP issuer URL, combining hub.endpoints.auth with hub.auth.userRealm e.g. "https://auth.privateaim.dev/realms/myRealm"
+*/}}
+{{- define "hub.auth.issuerUrl" -}}
+{{- $realm := required "hub.auth.userRealm is required" .Values.hub.auth.userRealm -}}
+{{- printf "%s/realms/%s" (.Values.hub.endpoints.auth | trimSuffix "/") $realm -}}
+{{- end -}}
 
 {{/*
 Return the secret containing the hub robot secret
@@ -189,11 +217,7 @@ Return the hub adapter endpoint
 */}}
 {{- define "ui.adapter.endpoint" -}}
 {{- if and (ne .Values.expose.type "none") .Values.expose.hostname (not (contains "localhost" .Values.expose.hostname)) -}}
-    {{- if hasPrefix "http" .Values.expose.hostname -}}
-        {{- printf "%s/api" .Values.expose.hostname -}}
-    {{- else -}}
-        {{- printf "http://%s/api" .Values.expose.hostname -}}
-    {{- end -}}
+    {{- printf "%s/api" (include "hostname.withProtocol" (list .Values.expose.hostname .)) -}}
 {{- else -}}
     {{- print "http://localhost:5000" -}}
 {{- end -}}
@@ -250,17 +274,6 @@ Set the API's root path. If expose is configured (not none), defaults to "/api" 
 {{- end -}}
 
 {{/*
-Return the endpoint for user authentication
-*/}}
-{{- define "adapter.userIdp.endpoint" -}}
-{{- if .Values.userIdp.hostname -}}
-    {{- print (include "userIdp.hostname" .) -}}
-{{- else -}}
-    {{- print (include "keycloak.service.endpoint" .) -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
 Return the JWKS endpoint for user and client authentication which overrides what is fetched by the API.
 */}}
 {{- define "adapter.jwks.endpoint" -}}
@@ -286,6 +299,20 @@ Return the name of the Secret containing the nuxtAuthSecret
 
 {{/*Storage Service helpers*/}}
 {{/*
+Return the endpoint (host:port) of the SeaweedFS S3 gateway.
+*/}}
+{{- define "seaweedfs.s3.endpoint" -}}
+{{- printf "%s-seaweedfs-all-in-one:8333" .Release.Name -}}
+{{- end -}}
+
+{{/*
+Return the name of the Secret that holds the SeaweedFS S3 admin credentials.
+*/}}
+{{- define "seaweedfs.s3.secretName" -}}
+{{- printf "%s-seaweedfs-s3-secret" .Release.Name -}}
+{{- end -}}
+
+{{/*
 Return the secret containing private key
 */}}
 {{- define "hub.crypto.privateKeySecretName" -}}
@@ -303,6 +330,13 @@ Strip scheme from expose.hostname for Gateway API hostnames (HTTPRoute.spec.host
 */}}
 {{- define "flame-node.gateway.routeHostname" -}}
 {{- regexReplaceAll "^https?://(.*)" .Values.expose.hostname "${1}" -}}
+{{- end -}}
+
+{{/*
+Strip scheme from the data-store SeaweedFS admin panel hostname for Gateway API.
+*/}}
+{{- define "flame-node.dataStore.seaweedfs.admin.routeHostname" -}}
+{{- regexReplaceAll "^https?://(.*)" .Values.dataStore.seaweedfs.admin.gateway.hostname "${1}" -}}
 {{- end -}}
 
 {{/*

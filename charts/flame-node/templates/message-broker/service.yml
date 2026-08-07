@@ -19,3 +19,7 @@ spec:
   ports:
     - port: 80
       targetPort: 8080
+      name: http
+    - port: 8090
+      targetPort: 8090
+      name: actuator
