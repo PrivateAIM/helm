@@ -99,21 +99,21 @@ spec:
               value: {{ .Values.proxy.httpsProxy | quote }}
               {{- end }}
           {{- end }}
-            - name: MINIO__ENDPOINT
+            - name: S3__ENDPOINT
               value: {{ include "seaweedfs.s3.endpoint" . }}
-            - name: MINIO__ACCESS_KEY
+            - name: S3__ACCESS_KEY
               valueFrom:
                 secretKeyRef:
                   name: {{ include "seaweedfs.s3.secretName" . }}
                   key: admin_access_key_id
-            - name: MINIO__SECRET_KEY
+            - name: S3__SECRET_KEY
               valueFrom:
                 secretKeyRef:
                   name: {{ include "seaweedfs.s3.secretName" . }}
                   key: admin_secret_access_key
-            - name: MINIO__USE_SSL
+            - name: S3__USE_SSL
               value: {{ .Values.storageService.env.MINIO_USE_SSL | default false | quote }}
-            - name: MINIO__BUCKET
+            - name: S3__BUCKET
               value: {{ required "MinIO bucket must be set." .Values.storageService.env.MINIO_BUCKET | quote }}
             - name: HUB__AUTH__FLOW
               value: "client"
