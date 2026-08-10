@@ -895,7 +895,7 @@ dataStore:
       ## Expose the admin panel in the browser via the node Ingress API
       ingress:
        enabled: false
-       ## @param dataStore.seaweedfs.admin.ingress.hostname Hostname for the admin panel. Must be set even if the same
+       ## @param dataStore.seaweedfs.admin.ingress.host Hostname for the admin panel. Must be set even if the same
        ## as .expose.hostname
        host:
        ## @param dataStore.seaweedfs.admin.ingress.path Base path the admin process serves from.

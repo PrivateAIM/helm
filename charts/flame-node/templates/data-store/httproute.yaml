@@ -7,6 +7,9 @@
 {{- if and (not $dedicated) (not $prefix) -}}
 {{- fail "dataStore.seaweedfs.admin.urlPrefix must be set (e.g. /seaweedfs) when exposing the admin panel on the shared node hostname: the seaweedfs admin serves its UI and post-login redirects from this prefix, and the HTTPRoute matches the same path. Otherwise set dataStore.seaweedfs.admin.gateway.hostname to a dedicated hostname (served at root)." -}}
 {{- end -}}
+{{- if and $prefix (not (hasPrefix "/" $prefix)) -}}
+{{- fail (printf "dataStore.seaweedfs.admin.urlPrefix must start with a leading slash (got %q), e.g. /seaweedfs: the HTTPRoute PathPrefix match requires an absolute path." .Values.dataStore.seaweedfs.admin.urlPrefix) -}}
+{{- end -}}
 {{- $path := ternary (default "/" $prefix) $prefix $dedicated -}}
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
