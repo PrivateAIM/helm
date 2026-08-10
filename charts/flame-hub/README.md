@@ -79,8 +79,11 @@ You must give each release its own value for:
 | `redis.auth.existingSecret` | `flame-hub-auth` | subchart reference — **must match** `auth.secretName` |
 | `grafana.admin.existingSecret` | `flame-hub-auth` | subchart reference — **must match** `auth.secretName` |
 | `harbor.secretName` | `flame-hub-harbor` | Harbor's own credentials Secret (admin password, core `secretKey`, connection string) |
-| `harbor.existingSecretAdminPassword` | `flame-hub-harbor` | subchart reference — **must match** `harbor.secretName` |
-| `harbor.existingSecretSecretKey` | `flame-hub-harbor` | subchart reference — **must match** `harbor.secretName` |
+| `harbor.existingSecretAdminPassword` | `flame-hub-harbor` | goharbor reference — **must match** the effective Harbor secret (`harbor.existingSecret` when set, otherwise `harbor.secretName`) |
+| `harbor.existingSecretSecretKey` | `flame-hub-harbor` | goharbor reference — **must match** the effective Harbor secret (`harbor.existingSecret` when set, otherwise `harbor.secretName`) |
+
+If you bring your own Harbor Secret via `harbor.existingSecret`, the two `harbor.existingSecret*`
+references above must point at that supplied Secret.
 
 If you bring your own PostgreSQL Secret via `global.flameHub.postgresql.existingSecret`, that name must be unique per release too, and Harbor's `database.external.existingSecret` must point at the same secret. The Secret must contain both a `username` and a `password` key (goharbor reads the `password` key directly).
 

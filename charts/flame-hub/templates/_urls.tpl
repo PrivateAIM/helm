@@ -172,6 +172,10 @@ This is used by pods to access harbor. If ExternalHarbor is used, this will be t
 {{ include "harbor.host" . }}
 {{- else -}}
 {{- if .Values.harbor.enabled -}}
+{{- $exposeType := .Values.harbor.expose.type | default "clusterIP" -}}
+{{- if ne $exposeType "clusterIP" -}}
+{{- fail (printf "harbor.expose.type=%q is not supported by this chart: harbor.internalHost (used by the wait-for-harbor init container and in-cluster access) only resolves the clusterIP Service. Set harbor.expose.type=clusterIP, or use externalHarbor." $exposeType) -}}
+{{- end -}}
 {{- .Values.harbor.expose.clusterIP.name | default "harbor" -}}
 {{- end }}
 {{- end }}
