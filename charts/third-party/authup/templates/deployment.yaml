@@ -29,7 +29,7 @@ spec:
               command: [
                   'sh',
                   '-c',
-                  'until nc -z -v -w30 {{ tpl (.Values.redis.host | default (printf "%s-redis" .Release.Name)) $ }} 6379; do echo "Waiting for redis..."; sleep 5; done'
+                  'until nc -z -v -w30 {{ tpl (.Values.redis.host | default (printf "%s-redis" .Release.Name)) $ }} {{ tpl (.Values.redis.port | toString | default "6379") $ }}; do echo "Waiting for redis..."; sleep 5; done'
               ]
       containers:
         - name: "{{ .Release.Name }}-authup-server-core"
@@ -75,7 +75,7 @@ spec:
                       key: authup-client-secret
             {{- else }}
               -   name: REDIS
-                  value: "redis://default:{{ .Values.auth.redisPassword }}@{{ tpl (.Values.redis.host | default (printf "%s-redis" .Release.Name)) $ }}:6379"
+                  value: "redis://default:{{ .Values.auth.redisPassword }}@{{ tpl (.Values.redis.host | default (printf "%s-redis" .Release.Name)) $ }}:{{ tpl (.Values.redis.port | toString | default "6379") $ }}"
               -   name: USER_ADMIN_PASSWORD
                   value: {{ .Values.auth.adminPassword | quote }}
               -   name: CLIENT_SYSTEM_SECRET

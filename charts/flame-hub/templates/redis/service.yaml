@@ -11,5 +11,5 @@ spec:
     ports:
         -   name: redis
             protocol: TCP
-            port: {{ .Values.redis.service.port }}
+            port: {{ include "flameHub.redis.port" . }}
             targetPort: redis

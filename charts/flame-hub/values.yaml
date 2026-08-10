@@ -69,12 +69,12 @@ global:
             # Keep in sync with harbor.database.external.existingSecret
             existingSecret: ""
 
-        # Redis service host, kept under global so the authup subchart can read it
-        # (Helm shares only `global`). Consumed via the flameHub.redis.host helper.
+        # Consumed via the flameHub.redis.host / flameHub.redis.port helpers, which also name the chart-managed Redis Service.
         redis:
-            # Leave empty for the release-scoped default "<release>-redis" (the
-            # chart-managed Redis in templates/redis).
+            # Name of the chart-managed Redis Service. Leave empty for the release-scoped
+            # default "<release>-redis". This is NOT an external-Redis switch.
             host: ""
+            port: 6379
 
 image:
     registry: ghcr.io
@@ -200,9 +200,10 @@ authup:
     database:
         host: '{{ include "flameHub.postgresql.host" . }}'
         existingSecret: '{{ include "flameHub.postgresql.secretName" . }}'
-    # Redis host for authup, following the chart-managed Redis (or redis.host override).
+    # Redis host/port for authup, following the chart-managed Redis (global.flameHub.redis).
     redis:
         host: '{{ include "flameHub.redis.host" . }}'
+        port: '{{ include "flameHub.redis.port" . }}'
     # Trusted first-party application origins (redirect allowlist for authup's built-in
     # system clients; not CORS). The Hub UI logs in through the admin-console client, so
     # its public origin must be covered here.
@@ -260,8 +261,8 @@ rabbitmq:
 # The password lives in the shared flame-hub-auth Secret under
 # redis-password/redis-connection-string.
 redis:
-    # Service host is configured under global.flameHub.redis.host (needs to be readable
-    # by the authup subchart).
+    # Service host/port are configured under global.flameHub.redis (they must be readable
+    # by the authup subchart). The settings below configure the chart-managed Redis pod.
     image:
         repository: "redis"
         tag: "8.2.1"
@@ -270,8 +271,6 @@ redis:
         # Password override; leave empty for auto-generation into flame-hub-auth.
         # The Secret name / bring-your-own option is auth.secretName / auth.existingSecret.
         password: ""
-    service:
-        port: 6379
     persistence:
         enabled: true
         size: 4Gi

@@ -42,6 +42,8 @@ redis:
     # Redis host authup connects to. Rendered with tpl, so a parent chart may pass a
     # helper, e.g. '{{ include "flameHub.redis.host" . }}'. Defaults to <release>-redis.
     host: ""
+    # Redis port. Also tpl-rendered (a parent may pass a helper). Defaults to 6379.
+    port: ""
 
 database:
     host: ""
