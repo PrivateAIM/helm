@@ -225,7 +225,7 @@ storageService:
   image:
     repository: ghcr.io/privateaim/node-storage-service
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.2.0
+    tag: 0.2.1
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -510,7 +510,7 @@ podOrchestrator:
   image:
     repository: ghcr.io/privateaim/node-pod-orchestration
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.6.1
+    tag: 0.6.2
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
