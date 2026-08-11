@@ -1,5 +1,98 @@
 # Changelog
 
+## [0.2.0](https://github.com/PrivateAIM/helm/compare/flame-node-0.1.0...flame-node-0.2.0) (2026-08-11)
+
+
+### ⚠ BREAKING CHANGES
+
+* **flame-node:** working node seaweedfs and updated values_min
+* **flame-node:** working node seaweedfs and updated values_min
+* harden flame-node chart security
+* allow passing proxy info as secret in flame-node
+
+### Features
+
+* add HUB_LOGGING environment variable ([95d8309](https://github.com/PrivateAIM/helm/commit/95d8309bfc0910fa305576f0e6f750f0310fc49c))
+* allow passing proxy info as secret in flame-node ([cb9629a](https://github.com/PrivateAIM/helm/commit/cb9629a5010a841b3331dee6cfc9bf32a9b91398))
+* external gateway option ([#129](https://github.com/PrivateAIM/helm/issues/129)) ([c6ae564](https://github.com/PrivateAIM/helm/commit/c6ae5647fc3942238e22ab47771d628a18eb972b))
+* **flame-node:** v1 of seaweedfs ([1feaa67](https://github.com/PrivateAIM/helm/commit/1feaa671c144d54489005723e6bb4d765b7cf711))
+* **flame-node:** v1 of seaweedfs ([ded1f20](https://github.com/PrivateAIM/helm/commit/ded1f20338c0e709c896fa140c53e4bf485e860e))
+* **flame-node:** working node seaweedfs and updated values_min ([3fb3cad](https://github.com/PrivateAIM/helm/commit/3fb3cad6658f6b32ab5e2d77cbd01e3e4870ea31))
+* **flame-node:** working node seaweedfs and updated values_min ([386d5c8](https://github.com/PrivateAIM/helm/commit/386d5c87d123452a7a89b6ec1d41f66158f9ab8c))
+* harden flame-node chart security ([e4fa99f](https://github.com/PrivateAIM/helm/commit/e4fa99fa6c0db36afc5016602874d4d6c3a825f4))
+* integrate Harbor ([#86](https://github.com/PrivateAIM/helm/issues/86)) ([dd1ac29](https://github.com/PrivateAIM/helm/commit/dd1ac2939e91dd0e80209a9fd854b97c1c6978d8))
+* **kong:** add custom minio-gateway plugin configuration ([206fd2f](https://github.com/PrivateAIM/helm/commit/206fd2f798389276f16bca6c2b1aa3af1af64bb2))
+* **mb:** add node message broker service port for health checks ([30db93a](https://github.com/PrivateAIM/helm/commit/30db93abec10bf90542f01620b14a845c947e0d2))
+* **node:** add conditional httproute for seaweedfs ([e6adcd9](https://github.com/PrivateAIM/helm/commit/e6adcd966623b287770374984e971f9a00e968be))
+* **node:** add conditional httproute for seaweedfs ([e165f97](https://github.com/PrivateAIM/helm/commit/e165f978669d1c023353ecf3f41b28005e1c4680))
+* **node:** add default roles to keycloak and update HA ([ce24387](https://github.com/PrivateAIM/helm/commit/ce243879ec87dd293e1dbc951e9d0dab48e2c357))
+* **node:** add env vars for PO deploy for net stats ([793e119](https://github.com/PrivateAIM/helm/commit/793e11998cd4b1787d9ff031421c2abf2b1cc7df))
+* **node:** add gateway api support to victorialogs ([7548a2e](https://github.com/PrivateAIM/helm/commit/7548a2e3a4b2bdfabc1e26852615b82fc9842bee))
+* **node:** add keycloak secret sync job with rbac ([38778fa](https://github.com/PrivateAIM/helm/commit/38778fa768a120721c22c641e2f3cc0dd46c1ac5))
+* **node:** add postgres env vars to hub adapter deployment ([cdadf58](https://github.com/PrivateAIM/helm/commit/cdadf586fc69809e9dee60db21e5b3e0f3e95327))
+* **node:** add statusLoopInterval to podOrc values ([66fc9a1](https://github.com/PrivateAIM/helm/commit/66fc9a1d973f7bbb5a034cbd3b00e597a867d7ba))
+* **node:** add victoria logs to Chart.yaml and values.yaml ([0d18328](https://github.com/PrivateAIM/helm/commit/0d1832810d971ec98e85e86ffaf2ec6e425e38c8))
+* **node:** allow user to set custom nuxt auth secret for node ui ([22a4b9c](https://github.com/PrivateAIM/helm/commit/22a4b9c8a4bf492ec41375ee8fb551d3daa01bef))
+* **node:** log level parsing in victorialogs ([1473dd7](https://github.com/PrivateAIM/helm/commit/1473dd719de2d92b517d2f525ff145e08aa8b48c))
+* **node:** make nuxt auth secret persist between upgrades ([23d550d](https://github.com/PrivateAIM/helm/commit/23d550d651d87048188dbad762cb1dbdc8b859a4))
+* **node:** working gateway templates ([2c36c34](https://github.com/PrivateAIM/helm/commit/2c36c34798aaf14708457357cbff749ab2329b9a))
+
+
+### Bug Fixes
+
+* annoying punkt ([fa44f34](https://github.com/PrivateAIM/helm/commit/fa44f343f119ee2790f815195013796c78bb6be6))
+* annoying punkt ([e38c441](https://github.com/PrivateAIM/helm/commit/e38c441ddefc0390ea5eed35c67566028c299fcb))
+* correct typo in enableHubLogging description for clarity ([4f931d3](https://github.com/PrivateAIM/helm/commit/4f931d398783443db4011a680d6f0046d5e19fb2))
+* **flame-node:** allow keycloak to start when expose type is none ([e5af584](https://github.com/PrivateAIM/helm/commit/e5af5840959aaa64ea8c147891dcccd2af89535f))
+* **flame-node:** disable seaweedfs CR ([1de5f2f](https://github.com/PrivateAIM/helm/commit/1de5f2fcfd256b99fd0e3c86b47ba39a87c014c2))
+* **flame-node:** disable seaweedfs CR ([720a7c7](https://github.com/PrivateAIM/helm/commit/720a7c73b486bf8458665cd645be9f1bb15a6cdc))
+* **flame-node:** enable manually setting KC service secrets ([ea79496](https://github.com/PrivateAIM/helm/commit/ea7949607bf9b986c31e7a465c1637488ddc9088))
+* **flame-node:** harden security contexts with numerical non-root users for third party images ([72456d7](https://github.com/PrivateAIM/helm/commit/72456d7872c2b081c506b360f50802bcce9ad50f))
+* **flame-node:** helper functions apply https when tls provided ([fedb6c5](https://github.com/PrivateAIM/helm/commit/fedb6c55f80bcd89a0e69a5040888fbd1f8fcf17))
+* **flame-node:** move secret separators within if blocks ([d0b4f24](https://github.com/PrivateAIM/helm/commit/d0b4f2408b205eb606d5bfd5180c0d6ec15c3634))
+* **flame-node:** set seaweed admin credentials in values ([9505cae](https://github.com/PrivateAIM/helm/commit/9505cae37ba039752b851e69faa27cb5c5bb458c))
+* **flame-node:** set seaweed admin credentials in values ([e7df924](https://github.com/PrivateAIM/helm/commit/e7df9242315927f8247f8a16aee98411ad85e34d))
+* **node:** add default empty string to robotSecret so b64enc works ([cd51b71](https://github.com/PrivateAIM/helm/commit/cd51b71f896156e424c25954df488b9d461b8af2))
+* **node:** add hostname for local keycloak ([371aeca](https://github.com/PrivateAIM/helm/commit/371aecae3d22a4616d17c065d6fd2eada0a69fc9))
+* **node:** add support for gateway TLS termination ([11105ed](https://github.com/PrivateAIM/helm/commit/11105ed23c0719ae6ae79c89fbd7e45762f3a106))
+* **node:** avoid conflicting seaweed SAs ([c774be8](https://github.com/PrivateAIM/helm/commit/c774be800390d4e2a01a9f1ed4103c9c4121ca6c))
+* **node:** avoid conflicting seaweed SAs ([98d14d4](https://github.com/PrivateAIM/helm/commit/98d14d4983d6a5c086b53d7f29dcd574513f1b6a))
+* **node:** improve hostname parsing in edge cases ([6240a92](https://github.com/PrivateAIM/helm/commit/6240a925bee9a46a94436df95ef4fd702e339041))
+* **node:** increase buffer size for JWT in UI ([1040aa2](https://github.com/PrivateAIM/helm/commit/1040aa2113a7d705448d33d89bd921d8f6ac6c6a))
+* **node:** make use of keycloak http relativePath in URL generation ([8ba9abd](https://github.com/PrivateAIM/helm/commit/8ba9abd15a488562716800c6c617a7b5b3c53111))
+* **node:** modify kc settings for upstream TLS termination ([22d77f8](https://github.com/PrivateAIM/helm/commit/22d77f898b44a14d8fa7a8eae54514e194df4696))
+* **node:** remove "offline" value and fix sign in when ingress disabled ([64feebd](https://github.com/PrivateAIM/helm/commit/64feebde5e613109d9d3f8900b68b9f738da32a5))
+* **node:** update victorialogs alias names ([8beca80](https://github.com/PrivateAIM/helm/commit/8beca80956670af3d0d2fc9313d1ff321eb7d9b8))
+* **node:** use standard value naming schema ([f745ba8](https://github.com/PrivateAIM/helm/commit/f745ba8e154ca22c04037ee664fcbb916a121942))
+* typos and add labels to po resources ([4d6ee9d](https://github.com/PrivateAIM/helm/commit/4d6ee9d55b2cabfcdf3cc4a4a39c73e8f4ab01b7))
+* update hub authentication variables to use client ID and secret ([c7da749](https://github.com/PrivateAIM/helm/commit/c7da7499df4bf63cccb02ad128a2ea931d10e832))
+* update HUB_LOGGING and STATUS_LOOP_INTERVAL values to ensure correct type handling ([f2d1737](https://github.com/PrivateAIM/helm/commit/f2d17374baae6bba978be9015415c98198fe6bfc))
+* update mongodb pvc size ([ad354a4](https://github.com/PrivateAIM/helm/commit/ad354a42c916d2da9b60c77f619fedb3c186fb2c))
+* update mongodb pvc size ([cdf93bc](https://github.com/PrivateAIM/helm/commit/cdf93bc0fcfe9ee7e0153cc687f4cadc233f23f0))
+* **values:** add robot user and secret fields for hub authentication ([4612449](https://github.com/PrivateAIM/helm/commit/4612449440d0e77de016661d22a6006b0901b6c6))
+* **values:** update hub authentication to use client ID and secret ([989c326](https://github.com/PrivateAIM/helm/commit/989c3260db28cdd97ed0f460acb6ee8077f817b7))
+* **values:** update image tag to new-hub for testing ([de18eb6](https://github.com/PrivateAIM/helm/commit/de18eb6aeadcc67a0a59447c15aa4e7fb322bd8e))
+
+
+### Performance Improvements
+
+* **flame-node:** simplify seaweed inetgration ([717652c](https://github.com/PrivateAIM/helm/commit/717652c016f53e050b5d7ae5ae17ee87b9ec099b))
+* **flame-node:** simplify seaweed inetgration ([ede43da](https://github.com/PrivateAIM/helm/commit/ede43dadeba8b8abe232d88f3919af72040a15b9))
+* **node:** change podorc image pullPolicy to IfNotPresent ([f8203ed](https://github.com/PrivateAIM/helm/commit/f8203ed5b8760b3a841f8ed23924e364e7287f5c))
+* **node:** have hub adapter wait for keycloak init ([f35f109](https://github.com/PrivateAIM/helm/commit/f35f1094d8899b651d5b1cf29216edc0d21e8365))
+* **node:** optimize ui and HA probes ([c8ef560](https://github.com/PrivateAIM/helm/commit/c8ef5600db1775a2cab6e450ae998a8bdff7845e))
+* **node:** remove mogodb logs from victorialogs ([2916202](https://github.com/PrivateAIM/helm/commit/29162021fdb31b6687a1fa69861ca517555587bc))
+* **node:** set internal KC to prod ([eb9df33](https://github.com/PrivateAIM/helm/commit/eb9df3341a51fa250dd2fd6cdc3de8ba37c5aa66))
+* **node:** set wait-for-keycloak initcontainer to use kc health ep ([219ee42](https://github.com/PrivateAIM/helm/commit/219ee42e08052d674e4201868ad1b4114015fd64))
+
+
+### Reverts
+
+* **mb:** add proxy whitelist back ([12937cd](https://github.com/PrivateAIM/helm/commit/12937cd5ce607a4754168f7437a6c12d43bc9e6d))
+* **node:** add offline back to values ([04b4c1b](https://github.com/PrivateAIM/helm/commit/04b4c1bd05303008a8ee0f5ba58720e402c5b570))
+* **node:** revert helpers ([fa8a5ee](https://github.com/PrivateAIM/helm/commit/fa8a5ee08868201feaa2532295d1d75bd3f82139))
+* **node:** revert node UI env vars ([0e282b4](https://github.com/PrivateAIM/helm/commit/0e282b4e0dd3fccb0fa36094299cf5dacfcb2b58))
+
 ## [0.1.0](https://github.com/PrivateAIM/helm/compare/flame-node-0.0.11...flame-node-0.1.0) (2026-06-01)
 
 

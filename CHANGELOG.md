@@ -1,5 +1,63 @@
 # Changelog
 
+## [0.2.0](https://github.com/PrivateAIM/helm/compare/root-0.1.0...root-0.2.0) (2026-08-11)
+
+
+### ⚠ BREAKING CHANGES
+
+* **flame-hub:** migrate harbor from bitnami to goharbor chart
+* **flame-node:** working node seaweedfs and updated values_min
+* **flame-node:** working node seaweedfs and updated values_min
+
+### Features
+
+* add database configuration for messenger ([cb0037a](https://github.com/PrivateAIM/helm/commit/cb0037a6c13f2b9a79d58143e48ea758a5b7c0f7))
+* **authup:** pass TRUSTED_ORIGINS to server-core, defaulting to t… ([#143](https://github.com/PrivateAIM/helm/issues/143)) ([c95e160](https://github.com/PrivateAIM/helm/commit/c95e160b291bf7768f10c3fae04c2cc799b12025))
+* **authup:** provision permissions, roles and registry client via authup provisioning ([#152](https://github.com/PrivateAIM/helm/issues/152)) ([d7fd514](https://github.com/PrivateAIM/helm/commit/d7fd514e0e875558da53f2fb690e3bd69c58893f))
+* **flame-hub:** migrate harbor from bitnami to goharbor chart ([2cfc29f](https://github.com/PrivateAIM/helm/commit/2cfc29f5f050de1425d12457478d041fea1a0406))
+* **flame-hub:** prepare postgres service and secret config for the upcoming migration to goharbor ([660b4bf](https://github.com/PrivateAIM/helm/commit/660b4bf9391b4f62731a270999b838d9e4450bd1))
+* **flame-hub:** replace bitnami postgresql subchart with self-hosted postgres ([7ecdbb7](https://github.com/PrivateAIM/helm/commit/7ecdbb7ace6ed78c08bf8802f5605f6b758175aa))
+* **flame-node:** v1 of seaweedfs ([1feaa67](https://github.com/PrivateAIM/helm/commit/1feaa671c144d54489005723e6bb4d765b7cf711))
+* **flame-node:** v1 of seaweedfs ([ded1f20](https://github.com/PrivateAIM/helm/commit/ded1f20338c0e709c896fa140c53e4bf485e860e))
+* **flame-node:** working node seaweedfs and updated values_min ([3fb3cad](https://github.com/PrivateAIM/helm/commit/3fb3cad6658f6b32ab5e2d77cbd01e3e4870ea31))
+* **flame-node:** working node seaweedfs and updated values_min ([386d5c8](https://github.com/PrivateAIM/helm/commit/386d5c87d123452a7a89b6ec1d41f66158f9ab8c))
+* **hub:** separate harbor secret from main chart secret, generate random harbor "secretKey" in addition to password ([751a1c7](https://github.com/PrivateAIM/helm/commit/751a1c7a9a8f084735eefe407600e4395fe64a38))
+* **hub:** tune startup and readiness probes of flame hub services ([#144](https://github.com/PrivateAIM/helm/issues/144)) ([42e565a](https://github.com/PrivateAIM/helm/commit/42e565a357591ed1ccc4f83fde2ce028b3aeead1))
+* **mb:** add node message broker service port for health checks ([30db93a](https://github.com/PrivateAIM/helm/commit/30db93abec10bf90542f01620b14a845c947e0d2))
+* **node:** add conditional httproute for seaweedfs ([e6adcd9](https://github.com/PrivateAIM/helm/commit/e6adcd966623b287770374984e971f9a00e968be))
+* **node:** add conditional httproute for seaweedfs ([e165f97](https://github.com/PrivateAIM/helm/commit/e165f978669d1c023353ecf3f41b28005e1c4680))
+* **node:** make nuxt auth secret persist between upgrades ([23d550d](https://github.com/PrivateAIM/helm/commit/23d550d651d87048188dbad762cb1dbdc8b859a4))
+* **openebs:** tune mayastor settings and disable unused openebs hostpath storage class ([580dc1d](https://github.com/PrivateAIM/helm/commit/580dc1d5262c8f37c4570989b4e0bcd2a68e14f6))
+* use postres user from secret for consistency ([454174b](https://github.com/PrivateAIM/helm/commit/454174bc37b3acfd0123032f888a83e0148b123e))
+
+
+### Bug Fixes
+
+* **flame-node:** allow keycloak to start when expose type is none ([e5af584](https://github.com/PrivateAIM/helm/commit/e5af5840959aaa64ea8c147891dcccd2af89535f))
+* **flame-node:** disable seaweedfs CR ([1de5f2f](https://github.com/PrivateAIM/helm/commit/1de5f2fcfd256b99fd0e3c86b47ba39a87c014c2))
+* **flame-node:** disable seaweedfs CR ([720a7c7](https://github.com/PrivateAIM/helm/commit/720a7c73b486bf8458665cd645be9f1bb15a6cdc))
+* **flame-node:** enable manually setting KC service secrets ([ea79496](https://github.com/PrivateAIM/helm/commit/ea7949607bf9b986c31e7a465c1637488ddc9088))
+* **flame-node:** harden security contexts with numerical non-root users for third party images ([72456d7](https://github.com/PrivateAIM/helm/commit/72456d7872c2b081c506b360f50802bcce9ad50f))
+* **flame-node:** helper functions apply https when tls provided ([fedb6c5](https://github.com/PrivateAIM/helm/commit/fedb6c55f80bcd89a0e69a5040888fbd1f8fcf17))
+* **flame-node:** move secret separators within if blocks ([d0b4f24](https://github.com/PrivateAIM/helm/commit/d0b4f2408b205eb606d5bfd5180c0d6ec15c3634))
+* **flame-node:** set seaweed admin credentials in values ([9505cae](https://github.com/PrivateAIM/helm/commit/9505cae37ba039752b851e69faa27cb5c5bb458c))
+* **flame-node:** set seaweed admin credentials in values ([e7df924](https://github.com/PrivateAIM/helm/commit/e7df9242315927f8247f8a16aee98411ad85e34d))
+* **hub:** implement the rabbit's suggestions: helper improvement, README clarity ([#168](https://github.com/PrivateAIM/helm/issues/168)) ([ac082b3](https://github.com/PrivateAIM/helm/commit/ac082b3d22bf74ec6f60114ff4d98eec571210cd))
+* **hub:** increase seaweedFS maxVolumes number and volumeSizeLimitMB to 2G ([#155](https://github.com/PrivateAIM/helm/issues/155)) ([e79895e](https://github.com/PrivateAIM/helm/commit/e79895eed4406f4e3648a55c3b063af91fa4ab86))
+* **hub:** reduce write events on new seaweed buckets ([dbe113b](https://github.com/PrivateAIM/helm/commit/dbe113bad9d6f85658a681ff6a4f350dc01b3b89))
+* **hub:** remove orphan line of code in harbor secret ([884c3da](https://github.com/PrivateAIM/helm/commit/884c3dadf931ebd642ac4d44dfed637cbfff1183))
+* **node:** avoid conflicting seaweed SAs ([c774be8](https://github.com/PrivateAIM/helm/commit/c774be800390d4e2a01a9f1ed4103c9c4121ca6c))
+* **node:** avoid conflicting seaweed SAs ([98d14d4](https://github.com/PrivateAIM/helm/commit/98d14d4983d6a5c086b53d7f29dcd574513f1b6a))
+* **node:** use standard value naming schema ([f745ba8](https://github.com/PrivateAIM/helm/commit/f745ba8e154ca22c04037ee664fcbb916a121942))
+* postgres statefulset use username from BYO secret ([f77daf2](https://github.com/PrivateAIM/helm/commit/f77daf294d1b2798916993aaad388d6bbddbbed4))
+* remove upgrade transition mechanism in PG secret. The secret must be pre-created anyway in all instances that have harbor (because of habor pre-upgrade hooks) ([7f28a98](https://github.com/PrivateAIM/helm/commit/7f28a98188a7a18e889cedec09dcedb718e982ee))
+
+
+### Performance Improvements
+
+* **flame-node:** simplify seaweed inetgration ([717652c](https://github.com/PrivateAIM/helm/commit/717652c016f53e050b5d7ae5ae17ee87b9ec099b))
+* **flame-node:** simplify seaweed inetgration ([ede43da](https://github.com/PrivateAIM/helm/commit/ede43dadeba8b8abe232d88f3919af72040a15b9))
+
 ## [0.1.0](https://github.com/PrivateAIM/helm/compare/root-0.0.11...root-0.1.0) (2026-06-01)
 
 
