@@ -78,7 +78,7 @@ Return the secret containing the hub robot secret
 {{- if $clientSecretName -}}
     {{- printf "%s" (tpl $clientSecretName $) -}}
 {{- else -}}
-    {{- printf "%s-hub-robot-secret" .Release.Name -}}
+    {{- printf "%s-hub-client-secret" .Release.Name -}}
 {{- end -}}
 {{- end -}}
 

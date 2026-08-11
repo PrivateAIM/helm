@@ -225,7 +225,7 @@ storageService:
   image:
     repository: ghcr.io/privateaim/node-storage-service
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.1.8
+    tag: 0.2.1
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -404,7 +404,7 @@ hubAdapter:
   image:
     repository: ghcr.io/privateaim/node-hub-api-adapter
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.8.0
+    tag: 0.8.1
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -510,7 +510,7 @@ podOrchestrator:
   image:
     repository: ghcr.io/privateaim/node-pod-orchestration
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.6.1
+    tag: 0.6.2
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -624,7 +624,7 @@ messageBroker:
   image:
     repository: ghcr.io/privateaim/node-message-broker
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.6.4
+    tag: 0.7.0
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -727,7 +727,7 @@ ui:
   image:
     repository: ghcr.io/privateaim/node-ui
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.8.0
+    tag: 0.8.1
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -895,7 +895,7 @@ dataStore:
       ## Expose the admin panel in the browser via the node Ingress API
       ingress:
        enabled: false
-       ## @param dataStore.seaweedfs.admin.ingress.hostname Hostname for the admin panel. Must be set even if the same
+       ## @param dataStore.seaweedfs.admin.ingress.host Hostname for the admin panel. Must be set even if the same
        ## as .expose.hostname
        host:
        ## @param dataStore.seaweedfs.admin.ingress.path Base path the admin process serves from.

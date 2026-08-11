@@ -121,6 +121,14 @@ spec:
               value: {{ printf "http://%s-kong-admin.%s.svc.cluster.local:80" .Release.Name .Release.Namespace }}
             - name: KONG_PROXY_SERVICE_URL
               value: {{ printf "http://%s-kong-proxy.%s.svc.cluster.local:80" .Release.Name .Release.Namespace }}
+            - name: MESSAGE_BROKER_URL
+              value: {{ printf "http://%s-node-message-broker.%s.svc.cluster.local:8090" .Release.Name .Release.Namespace }}
+            {{- if .Values.dataStore.enabled }}
+            - name: S3_URL
+              value: {{ printf "http://node-datastore-seaweedfs-all-in-one.%s.svc.cluster.local:8333" .Release.Namespace }}
+            - name: FHIR_URL
+              value: {{ printf "http://node-datastore-blaze.%s.svc.cluster.local:80" .Release.Namespace }}
+            {{- end }}
             - name: HUB_SERVICE_URL
               value: {{ .Values.hub.endpoints.core | default "https://core.privateaim.dev" | quote }}
             - name: HUB_AUTH_SERVICE_URL

@@ -91,14 +91,18 @@ Create the name of the service account to use
 
 {{/*
 Full name of the seaweedfs subchart release, mirroring its "seaweedfs.fullname" helper
-so resource names can be derived from the parent chart context (fullnameOverride is not respected).
+so resource names can be derived from the parent chart context.
 */}}
 {{- define "flameHub.seaweedfs.fullname" -}}
+{{- if .Values.seaweedfs.fullnameOverride -}}
+{{- .Values.seaweedfs.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
 {{- $name := default "seaweedfs" .Values.seaweedfs.nameOverride -}}
 {{- if contains $name .Release.Name -}}
 {{- .Release.Name | trunc 63 | trimSuffix "-" -}}
 {{- else -}}
 {{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
 {{- end -}}
 {{- end -}}
 
@@ -143,6 +147,36 @@ Validate ingress mode: global path-based ingress and individual service ingresse
 -}}
 {{- if and $globalIngressEnabled $individualIngressEnabled -}}
 {{- fail "Ingress configuration is mutually exclusive: disable global.flameHub.ingress.enabled or disable individual service ingress settings (clientUI, serverCore, serverMessenger, serverStorage, serverTelemetry, authup)." -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Validate that the goharbor subchart's un-templatable literals still point at the effective
+flame-hub PostgreSQL and Harbor names.
+*/}}
+{{- define "flameHub.validateNames" -}}
+{{- if and .Values.harbor.enabled (not .Values.externalHarbor.enabled) -}}
+{{- $pgHost := include "flameHub.postgresql.host" . -}}
+{{- $pgSecret := include "flameHub.postgresql.secretName" . -}}
+{{- $harborSecret := include "flameHub.harbor.secretName" . -}}
+{{- $ext := .Values.harbor.database.external -}}
+{{- if eq (.Values.harbor.database.type | default "external") "external" -}}
+{{- if ne ($ext.host | toString) $pgHost -}}
+{{- fail (printf "harbor.database.external.host (%q) must equal the effective PostgreSQL host global.flameHub.postgresql.host (%q)." ($ext.host | toString) $pgHost) -}}
+{{- end -}}
+{{- if ne ($ext.existingSecret | toString) $pgSecret -}}
+{{- fail (printf "harbor.database.external.existingSecret (%q) must equal the effective PostgreSQL secret (%q = global.flameHub.postgresql existingSecret|secretName)." ($ext.existingSecret | toString) $pgSecret) -}}
+{{- end -}}
+{{- if ne ($ext.username | toString) (.Values.postgresql.auth.username | toString) -}}
+{{- fail (printf "harbor.database.external.username (%q) must equal postgresql.auth.username (%q)." ($ext.username | toString) (.Values.postgresql.auth.username | toString)) -}}
+{{- end -}}
+{{- end -}}
+{{- if ne (.Values.harbor.existingSecretAdminPassword | toString) $harborSecret -}}
+{{- fail (printf "harbor.existingSecretAdminPassword (%q) must equal the effective Harbor secret (%q = harbor existingSecret|secretName)." (.Values.harbor.existingSecretAdminPassword | toString) $harborSecret) -}}
+{{- end -}}
+{{- if ne (.Values.harbor.existingSecretSecretKey | toString) $harborSecret -}}
+{{- fail (printf "harbor.existingSecretSecretKey (%q) must equal the effective Harbor secret (%q = harbor existingSecret|secretName)." (.Values.harbor.existingSecretSecretKey | toString) $harborSecret) -}}
+{{- end -}}
 {{- end -}}
 {{- end -}}
 
