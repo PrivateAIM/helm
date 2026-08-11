@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.2.0](https://github.com/PrivateAIM/helm/compare/authup-0.1.0...authup-0.2.0) (2026-08-11)
+
+
+### Features
+
+* **authup:** pass TRUSTED_ORIGINS to server-core, defaulting to t… ([#143](https://github.com/PrivateAIM/helm/issues/143)) ([c95e160](https://github.com/PrivateAIM/helm/commit/c95e160b291bf7768f10c3fae04c2cc799b12025))
+* **authup:** provision permissions, roles and registry client via authup provisioning ([#152](https://github.com/PrivateAIM/helm/issues/152)) ([d7fd514](https://github.com/PrivateAIM/helm/commit/d7fd514e0e875558da53f2fb690e3bd69c58893f))
+* **flame-hub:** prepare postgres service and secret config for the upcoming migration to goharbor ([660b4bf](https://github.com/PrivateAIM/helm/commit/660b4bf9391b4f62731a270999b838d9e4450bd1))
+* **hub:** tune startup and readiness probes of flame hub services ([#144](https://github.com/PrivateAIM/helm/issues/144)) ([42e565a](https://github.com/PrivateAIM/helm/commit/42e565a357591ed1ccc4f83fde2ce028b3aeead1))
+* use postres user from secret for consistency ([454174b](https://github.com/PrivateAIM/helm/commit/454174bc37b3acfd0123032f888a83e0148b123e))
+
 ## [0.1.0](https://github.com/PrivateAIM/helm/compare/authup-0.0.11...authup-0.1.0) (2026-06-01)
 
 

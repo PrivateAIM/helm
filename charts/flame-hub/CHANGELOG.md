@@ -1,5 +1,34 @@
 # Changelog
 
+## [0.2.0](https://github.com/PrivateAIM/helm/compare/flame-hub-0.1.0...flame-hub-0.2.0) (2026-08-11)
+
+
+### ⚠ BREAKING CHANGES
+
+* **flame-hub:** migrate harbor from bitnami to goharbor chart
+
+### Features
+
+* add database configuration for messenger ([cb0037a](https://github.com/PrivateAIM/helm/commit/cb0037a6c13f2b9a79d58143e48ea758a5b7c0f7))
+* **authup:** pass TRUSTED_ORIGINS to server-core, defaulting to t… ([#143](https://github.com/PrivateAIM/helm/issues/143)) ([c95e160](https://github.com/PrivateAIM/helm/commit/c95e160b291bf7768f10c3fae04c2cc799b12025))
+* **authup:** provision permissions, roles and registry client via authup provisioning ([#152](https://github.com/PrivateAIM/helm/issues/152)) ([d7fd514](https://github.com/PrivateAIM/helm/commit/d7fd514e0e875558da53f2fb690e3bd69c58893f))
+* **flame-hub:** migrate harbor from bitnami to goharbor chart ([2cfc29f](https://github.com/PrivateAIM/helm/commit/2cfc29f5f050de1425d12457478d041fea1a0406))
+* **flame-hub:** prepare postgres service and secret config for the upcoming migration to goharbor ([660b4bf](https://github.com/PrivateAIM/helm/commit/660b4bf9391b4f62731a270999b838d9e4450bd1))
+* **flame-hub:** replace bitnami postgresql subchart with self-hosted postgres ([7ecdbb7](https://github.com/PrivateAIM/helm/commit/7ecdbb7ace6ed78c08bf8802f5605f6b758175aa))
+* **hub:** separate harbor secret from main chart secret, generate random harbor "secretKey" in addition to password ([751a1c7](https://github.com/PrivateAIM/helm/commit/751a1c7a9a8f084735eefe407600e4395fe64a38))
+* **hub:** tune startup and readiness probes of flame hub services ([#144](https://github.com/PrivateAIM/helm/issues/144)) ([42e565a](https://github.com/PrivateAIM/helm/commit/42e565a357591ed1ccc4f83fde2ce028b3aeead1))
+* use postres user from secret for consistency ([454174b](https://github.com/PrivateAIM/helm/commit/454174bc37b3acfd0123032f888a83e0148b123e))
+
+
+### Bug Fixes
+
+* **hub:** implement the rabbit's suggestions: helper improvement, README clarity ([#168](https://github.com/PrivateAIM/helm/issues/168)) ([ac082b3](https://github.com/PrivateAIM/helm/commit/ac082b3d22bf74ec6f60114ff4d98eec571210cd))
+* **hub:** increase seaweedFS maxVolumes number and volumeSizeLimitMB to 2G ([#155](https://github.com/PrivateAIM/helm/issues/155)) ([e79895e](https://github.com/PrivateAIM/helm/commit/e79895eed4406f4e3648a55c3b063af91fa4ab86))
+* **hub:** reduce write events on new seaweed buckets ([dbe113b](https://github.com/PrivateAIM/helm/commit/dbe113bad9d6f85658a681ff6a4f350dc01b3b89))
+* **hub:** remove orphan line of code in harbor secret ([884c3da](https://github.com/PrivateAIM/helm/commit/884c3dadf931ebd642ac4d44dfed637cbfff1183))
+* postgres statefulset use username from BYO secret ([f77daf2](https://github.com/PrivateAIM/helm/commit/f77daf294d1b2798916993aaad388d6bbddbbed4))
+* remove upgrade transition mechanism in PG secret. The secret must be pre-created anyway in all instances that have harbor (because of habor pre-upgrade hooks) ([7f28a98](https://github.com/PrivateAIM/helm/commit/7f28a98188a7a18e889cedec09dcedb718e982ee))
+
 ## [0.1.0](https://github.com/PrivateAIM/helm/compare/flame-hub-0.0.11...flame-hub-0.1.0) (2026-06-01)
 
 
