@@ -37,6 +37,38 @@ provisioning:
     # Each key becomes a file in the provisioning directory (json/yaml/yml/ts/js).
     files: {}
 
+# Operator theming of the served consoles (the auth/login surfaces and the
+# account console). When enabled, a theme directory is mounted read-only and
+# authup reads <mountPath>/theme.json for design tokens, document title,
+# favicon and logo, and serves <mountPath>/assets over HTTP at /theme/<name>.
+# See https://authup.org/guide/deployment/theming.html
+theme:
+    enabled: false
+    # Directory authup scans for the theme. Any absolute path works - unlike
+    # provisioning, a theme need not live under WRITABLE_DIRECTORY_PATH.
+    mountPath: "/etc/authup/theme"
+    # Name of an existing ConfigMap holding the theme files. Rendered with tpl,
+    # so a parent chart may pass e.g. '{{ .Release.Name }}-authup-theme'.
+    # A ConfigMap is the intended carrier: authup resolves theme assets per
+    # request instead of caching a realpath, so a ConfigMap update is picked up
+    # without a pod restart. Binary assets (png/woff2) need a binaryData
+    # section, which only an existingConfigMap can provide.
+    # When empty, a ConfigMap is rendered from `files` below.
+    existingConfigMap: ""
+    # ConfigMap key -> path inside the theme directory. Needed because a
+    # ConfigMap key cannot contain "/", while authup expects the manifest at the
+    # theme root and every servable asset under assets/. Projecting assets as a
+    # second volumeMount nested at <mountPath>/assets is not an option either:
+    # the theme root is itself a read-only ConfigMap volume, so nothing can be
+    # mounted inside it.
+    # Kubernetes projects ONLY the keys named in a volume's `items`, so once
+    # this map is set it must name every key of the ConfigMap.
+    # Empty = each key lands at the theme root under its own name.
+    paths: {}
+    # Map of filename -> file content, used only when existingConfigMap is empty.
+    # Text files only (theme.json, *.css, *.svg).
+    files: {}
+
 
 database:
     host: ""

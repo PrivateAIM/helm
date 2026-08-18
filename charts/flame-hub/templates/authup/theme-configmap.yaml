@@ -1,0 +1,73 @@
+{{- if .Values.authup.theme.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ .Release.Name }}-authup-theme"
+  labels:
+    app: "{{ .Release.Name }}-authup-server-core"
+data:
+  # Authup console theme - carries the FLAME Hub design onto the surfaces authup
+  # serves itself (the auth/login pages and the account console at /account), so
+  # the hop out of the Hub UI and back does not change appearance mid-flow.
+  #
+  # Ported from @privateaim/client-vue-theme (packages/client-vue-theme/src/index.css
+  # in PrivateAIM/hub) - keep the values below in sync with it.
+  #
+  # Only a handful of tokens are needed: @authup/client-web-kit-theme defines every
+  # --authup-* token in terms of the --vc-color-* semantic aliases from
+  # @vuecs/design, and server-core emits this block into `@layer authup-theme`,
+  # which sorts LAST in the console's layer order. Overriding the semantic tokens
+  # therefore cascades into every console surface without restating each one -
+  # the same override seam the Hub UI itself uses.
+  #
+  # Manifest grammar (enforced at authup boot, see the theme contract in
+  # server-core): token names must match ^--[a-z][a-z0-9-]*$; values are capped at
+  # 256 chars and may not contain } < > ; @ \ /* or a resource-loading function
+  # such as url(); var() and color-mix() are fine. Asset paths must start with
+  # "assets/". An invalid manifest FAILS THE BOOT, so validate changes with
+  # `helm template` before rolling them out.
+  theme.json: |
+    {
+      "version": 1,
+      "title": "PrivateAim - HUB",
+      "favicon": "assets/logo.svg",
+      "logo": "assets/logo.svg",
+      "tokens": {
+        "--privateaim-brand-coral": "#ff5b5b",
+        "--privateaim-brand-teal": "#4ecdc4",
+        "--privateaim-brand-purple": "#6259ca",
+        "--privateaim-brand-blue": "#1e90ff",
+
+        "--vc-color-primary-50": "color-mix(in oklab, var(--privateaim-brand-coral) 8%, white)",
+        "--vc-color-primary-100": "color-mix(in oklab, var(--privateaim-brand-coral) 16%, white)",
+        "--vc-color-primary-200": "color-mix(in oklab, var(--privateaim-brand-coral) 32%, white)",
+        "--vc-color-primary-300": "color-mix(in oklab, var(--privateaim-brand-coral) 52%, white)",
+        "--vc-color-primary-400": "color-mix(in oklab, var(--privateaim-brand-coral) 74%, white)",
+        "--vc-color-primary-500": "color-mix(in oklab, var(--privateaim-brand-coral) 90%, white)",
+        "--vc-color-primary-600": "var(--privateaim-brand-coral)",
+        "--vc-color-primary-700": "color-mix(in oklab, var(--privateaim-brand-coral) 82%, black)",
+        "--vc-color-primary-800": "color-mix(in oklab, var(--privateaim-brand-coral) 64%, black)",
+        "--vc-color-primary-900": "color-mix(in oklab, var(--privateaim-brand-coral) 50%, black)",
+        "--vc-color-primary-950": "color-mix(in oklab, var(--privateaim-brand-coral) 32%, black)",
+
+        "--authup-auth-accent": "var(--vc-color-primary-600)",
+        "--authup-auth-accent-alt": "var(--privateaim-brand-teal)",
+
+        "--authup-auth-card-border-radius": "0.5rem",
+        "--authup-account-card-border-radius": "0.5rem"
+      },
+      "tokensDark": {
+        "--vc-color-bg": "#2a2d35",
+        "--vc-color-bg-muted": "#343742",
+        "--vc-color-bg-elevated": "#3a3e49",
+        "--vc-color-border": "#3e414c"
+      }
+    }
+  # The Hub's flame mark, verbatim from apps/client-ui/components/svg/Logo.svg in
+  # PrivateAIM/hub - the same file the Hub UI renders in its header, footer and
+  # login page. Serves as both console logo and favicon; the manifest's `logo`
+  # paints it over the built-in mark's box and hides the mark, so no size token
+  # is involved, and its viewBox keeps it crisp at every size.
+  logo.svg: |
+{{ .Files.Get "files/authup-theme/logo.svg" | indent 4 }}
+{{- end }}
