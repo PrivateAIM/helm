@@ -55,6 +55,10 @@ spec:
               -   name: TRUSTED_ORIGINS
                   value: {{ . | quote }}
             {{- end }}
+            {{- if .Values.theme.enabled }}
+              -   name: THEME_DIRECTORY_PATH
+                  value: {{ .Values.theme.mountPath | quote }}
+            {{- end }}
             {{- if .Values.auth.existingSecret }}
               -   name: REDIS
                   valueFrom:
@@ -138,17 +142,43 @@ spec:
                   port: 3000
               failureThreshold: 3
               periodSeconds: 60
-        {{- if .Values.provisioning.enabled }}
+        {{- if or .Values.provisioning.enabled .Values.theme.enabled }}
           volumeMounts:
+            {{- if .Values.provisioning.enabled }}
               -   name: provisioning
                   mountPath: {{ .Values.provisioning.mountPath | quote }}
                   readOnly: true
+            {{- end }}
+            {{- if .Values.theme.enabled }}
+              -   name: theme
+                  mountPath: {{ .Values.theme.mountPath | quote }}
+                  readOnly: true
+            {{- end }}
         {{- end }}
-      {{- if .Values.provisioning.enabled }}
+      {{- if or .Values.provisioning.enabled .Values.theme.enabled }}
       volumes:
+        {{- if .Values.provisioning.enabled }}
           -   name: provisioning
               configMap:
                   name: {{ tpl (.Values.provisioning.existingConfigMap | default (printf "%s-authup-provisioning" .Release.Name)) . | quote }}
+        {{- end }}
+        {{- if .Values.theme.enabled }}
+          {{- /* `items` restores the theme's on-disk layout: a ConfigMap key
+                 cannot contain "/", but the manifest must sit at the theme
+                 root and every servable asset under assets/. Listing items
+                 projects ONLY the named keys, hence the all-or-nothing
+                 contract on theme.paths (see values.yaml). */}}
+          -   name: theme
+              configMap:
+                  name: {{ tpl (.Values.theme.existingConfigMap | default (printf "%s-authup-theme" .Release.Name)) . | quote }}
+                {{- with .Values.theme.paths }}
+                  items:
+                  {{- range $key, $path := . }}
+                      -   key: {{ $key | quote }}
+                          path: {{ $path | quote }}
+                  {{- end }}
+                {{- end }}
+        {{- end }}
       {{- end }}
 
 

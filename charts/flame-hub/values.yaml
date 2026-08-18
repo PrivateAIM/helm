@@ -211,6 +211,20 @@ authup:
     provisioning:
         enabled: true
         existingConfigMap: '{{ .Release.Name }}-authup-provisioning'
+    # Brand the consoles authup serves itself (auth/login + the account console
+    # at /account) with the FLAME Hub design, so leaving the Hub UI for a login
+    # or a profile change does not change appearance mid-flow. The theme content
+    # is rendered by templates/authup/theme-configmap.yaml and mounted by the
+    # authup subchart.
+    theme:
+        enabled: true
+        existingConfigMap: '{{ .Release.Name }}-authup-theme'
+        # A ConfigMap key cannot contain "/", so the on-disk layout authup expects
+        # is restored here: the manifest at the theme root, servable assets under
+        # assets/. Must stay exhaustive - a key missing here is not mounted at all.
+        paths:
+            theme.json: "theme.json"
+            logo.svg: "assets/logo.svg"
     auth:
         existingSecret: "flame-hub-auth"
 
