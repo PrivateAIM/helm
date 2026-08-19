@@ -262,7 +262,9 @@ authup:
         # Bare hosts expand to both their http and https origin. Each entry is rendered as a
         # Helm template inside the authup subchart context.
         # Defaults to the public domain of the Hub UI (derived from the global ingress/gatewayApi hostname).
-        # If the client UI uses its own hostname (per-service routing), set this explicitly.
+        # With per-service routing (both global modes off) this renders empty, because the
+        # UI hostname lives in clientUI.*, which is not visible in subchart context. Set the
+        # origin explicitly there - an unlisted UI origin cannot complete a login.
         trustedOrigins:
             - '{{- if or .Values.global.flameHub.ingress.enabled .Values.global.flameHub.gatewayApi.enabled }}{{ include "flameHub.uiDomain" . }}{{- end }}'
         # Read the DB user from the same Secret as the password. externalDatabase.user
