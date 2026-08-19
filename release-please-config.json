@@ -10,22 +10,10 @@
     "charts/flame-hub": {
       "component": "flame-hub",
       "release-type": "helm",
-      "skip-github-release": true,
-      "extra-files": [
-        {
-          "type": "yaml",
-          "path": "Chart.yaml",
-          "jsonpath": "$.dependencies[?(@.name=='authup')].version"
-        }
-      ]
+      "skip-github-release": true
     },
     "charts/flame-node": {
       "component": "flame-node",
-      "release-type": "helm",
-      "skip-github-release": true
-    },
-    "charts/third-party/authup": {
-      "component": "authup",
       "release-type": "helm",
       "skip-github-release": true
     }
@@ -37,8 +25,7 @@
       "components": [
         "root",
         "flame-hub",
-        "flame-node",
-        "authup"
+        "flame-node"
       ]
     }
   ],

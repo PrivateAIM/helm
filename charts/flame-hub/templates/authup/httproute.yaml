@@ -1,4 +1,9 @@
-{{- if or .Values.global.flameHub.gatewayApi.enabled .Values.authup.gatewayApi.enabled -}}
+{{/* Rendered here rather than via the subchart's authup.server.route (added upstream in
+   0.2.2): route.enabled is a plain boolean and cannot be tpl-rendered, so the single
+   global.flameHub.gatewayApi.enabled switch could no longer turn this route on with the
+   others, and a static true would emit a stray HTTPRoute in ingress mode. The
+   SnippetsFilter below has no upstream equivalent either. */}}
+{{- if or .Values.global.flameHub.gatewayApi.enabled .Values.global.flameHub.authup.gatewayApi.enabled -}}
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -7,13 +12,13 @@ spec:
     parentRefs:
 {{- include "flame-hub.gateway.parentRefs" . | nindent 8 }}
     hostnames:
-        - {{ .Values.authup.gatewayApi.hostname | default .Values.global.flameHub.gatewayApi.hostname | quote }}
+        - {{ .Values.global.flameHub.authup.gatewayApi.hostname | default .Values.global.flameHub.gatewayApi.hostname | quote }}
     rules:
         - matches:
             - path:
                 type: PathPrefix
-                value: {{ .Values.authup.gatewayApi.path }}
-          {{- $rewrite := ne .Values.authup.gatewayApi.path "/" }}
+                value: {{ .Values.global.flameHub.authup.gatewayApi.path }}
+          {{- $rewrite := ne .Values.global.flameHub.authup.gatewayApi.path "/" }}
           {{- $ngfSnip := .Values.global.flameHub.gatewayApi.nginxGatewayFabric.snippets }}
           {{- if or $rewrite $ngfSnip }}
           filters:
@@ -33,6 +38,6 @@ spec:
           {{- end }}
           {{- end }}
           backendRefs:
-            - name: {{ .Release.Name }}-authup-server-core
+            - name: {{ .Release.Name }}-authup-server
               port: 3000
 {{- end }}

@@ -11,7 +11,7 @@
     (dict "name" "server-messenger"  "enabled" (or $globalEnabled $.Values.serverMessenger.gatewayApi.enabled)  "hostname" $.Values.serverMessenger.gatewayApi.hostname)
     (dict "name" "server-storage"    "enabled" (or $globalEnabled $.Values.serverStorage.gatewayApi.enabled)    "hostname" $.Values.serverStorage.gatewayApi.hostname)
     (dict "name" "server-telemetry"  "enabled" (or $globalEnabled $.Values.serverTelemetry.gatewayApi.enabled)  "hostname" $.Values.serverTelemetry.gatewayApi.hostname)
-    (dict "name" "authup"            "enabled" (or $globalEnabled $.Values.authup.gatewayApi.enabled)            "hostname" $.Values.authup.gatewayApi.hostname)
+    (dict "name" "authup"            "enabled" (or $globalEnabled $.Values.global.flameHub.authup.gatewayApi.enabled)            "hostname" $.Values.global.flameHub.authup.gatewayApi.hostname)
 -}}
 {{- if $svc.enabled -}}
 {{- $h := $svc.hostname | default $globalHostname -}}

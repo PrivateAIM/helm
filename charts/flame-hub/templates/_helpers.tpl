@@ -143,7 +143,7 @@ Validate ingress mode: global path-based ingress and individual service ingresse
     .Values.serverMessenger.ingress.enabled
     .Values.serverStorage.ingress.enabled
     .Values.serverTelemetry.ingress.enabled
-    .Values.authup.ingress.enabled
+    .Values.authup.server.ingress.enabled
 -}}
 {{- if and $globalIngressEnabled $individualIngressEnabled -}}
 {{- fail "Ingress configuration is mutually exclusive: disable global.flameHub.ingress.enabled or disable individual service ingress settings (clientUI, serverCore, serverMessenger, serverStorage, serverTelemetry, authup)." -}}

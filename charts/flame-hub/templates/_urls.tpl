@@ -107,24 +107,40 @@ clientUI hostname / ui domain
 {{- end -}}
 
 {{/*
-authup publicURL
+authup publicURL.
+
+Named under flameHub.* rather than authup.*: the authup.* template namespace now
+belongs to the subchart, and Helm compiles every chart's templates into one shared
+namespace, so a same-named upstream helper would silently win.
+
+Callable from this chart AND from a tpl-rendered value inside the authup subchart -
+that is how values.yaml sets authup.server.publicUrl. Hence the routing knobs live
+under global.flameHub.authup (a subchart sees only `global`), and the subchart's own
+ingress is read from whichever side is in scope.
 */}}
-{{- define "authup.publicURL" -}}
+{{- define "flameHub.authup.publicURL" -}}
+{{- $authup := .Values.global.flameHub.authup -}}
+{{- $ingress := dict -}}
+{{- if hasKey .Values "authup" -}}
+  {{- $ingress = .Values.authup.server.ingress -}}
+{{- else -}}
+  {{- $ingress = .Values.server.ingress -}}
+{{- end -}}
 {{- $prefix := "http" -}}
-{{- if or .Values.authup.publicHttps .Values.global.flameHub.publicHttps -}}
+{{- if or $authup.publicHttps .Values.global.flameHub.publicHttps -}}
   {{- $prefix = "https" -}}
 {{- end -}}
 {{- $hostname := "" -}}
 {{- $path := "" -}}
-{{- if .Values.authup.ingress.enabled -}}
-  {{- $hostname = .Values.authup.ingress.hostname -}}
-  {{- $path = .Values.authup.ingress.path | default "/" -}}
+{{- if $ingress.enabled -}}
+  {{- $hostname = $ingress.hostname -}}
+  {{- $path = $ingress.path | default "/" -}}
 {{- else if .Values.global.flameHub.ingress.enabled -}}
   {{- $hostname = .Values.global.flameHub.ingress.hostname -}}
   {{- $path = "/auth/" -}}
-{{- else if or .Values.authup.gatewayApi.enabled .Values.global.flameHub.gatewayApi.enabled -}}
-  {{- $hostname = .Values.authup.gatewayApi.hostname | default .Values.global.flameHub.gatewayApi.hostname -}}
-  {{- $path = .Values.authup.gatewayApi.path | default "/" -}}
+{{- else if or $authup.gatewayApi.enabled .Values.global.flameHub.gatewayApi.enabled -}}
+  {{- $hostname = $authup.gatewayApi.hostname | default .Values.global.flameHub.gatewayApi.hostname -}}
+  {{- $path = $authup.gatewayApi.path | default "/" -}}
 {{- end -}}
 {{- if $hostname -}}
 {{- printf "%s://%s%s" $prefix $hostname $path | trimSuffix "/" | printf "%s/" -}}

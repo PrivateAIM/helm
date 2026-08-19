@@ -53,6 +53,22 @@ global:
             nginxGatewayFabric:
                 snippets: false
 
+        # Hub-side routing for the authup subchart. Kept under global for the same
+        # reason as postgresql below: the authup chart's values schema is strict
+        # (additionalProperties: false), so these parent-only knobs cannot live in
+        # the `authup:` block, and `flameHub.authup.publicURL` has to resolve them
+        # while rendering *inside* the subchart (values.yaml derives
+        # authup.server.publicUrl through tpl).
+        # The subchart owns its own Ingress (authup.server.ingress); only the shared
+        # Gateway API route is rendered by this chart, because it needs a path
+        # rewrite and the NGF snippets filter (see authup/helm#12).
+        authup:
+            publicHttps: false # global.flameHub.publicHttps also enables this
+            gatewayApi:
+                enabled: false # global.flameHub.gatewayApi.enabled also enables this
+                hostname: "" # empty = global.flameHub.gatewayApi.hostname
+                path: "/auth"
+
         # PostgreSQL service and secret, kept under global so subcharts (authup) can read
         # them: Helm shares only `global` into a subchart's values.
         postgresql:
@@ -183,68 +199,128 @@ auth:
     # IMPORTANT:If you set this, you must also update the subchart configurations below to point to your secret!
     existingSecret: ""
 
+    # Seed values for the two authup credentials this chart writes into the secret
+    # above. They live here rather than under `authup.auth`, because the authup
+    # subchart refuses to render when an existing secret is referenced alongside
+    # inline credentials.
+    # Default Password for the FLAME Hub Admin User
+    authupAdminPassword: "" # Leave empty for auto-generation
+    # Default secret for the FLAME Hub System Client
+    authupClientSecret: "" # Leave empty for auto-generation
+
 ## Dependencies / Subcharts
 
-# Authentication Provider
+# Authentication provider. Upstream chart: https://github.com/authup/helm
+# Its values schema is strict (additionalProperties: false), so only keys the
+# subchart itself declares may appear here - the Hub-side routing knobs live under
+# global.flameHub.authup.
+# The image is no longer pinned here: the chart's appVersion tracks the authup
+# release, so bumping authup means bumping the dependency version in Chart.yaml.
 authup:
-    publicHttps: false # global.flameHub.publicHttps also enables this
-    # Rendered via tpl in the authup subchart context, so these follow the global.
-    # no need to edit them alongside the pg values.
-    database:
-        host: '{{ include "flameHub.postgresql.host" . }}'
-        existingSecret: '{{ include "flameHub.postgresql.secretName" . }}'
-    # Trusted first-party application origins (redirect allowlist for authup's built-in
-    # system clients; not CORS). The Hub UI logs in through the admin-console client, so
-    # its public origin must be covered here.
-    # Accepts a comma-separated string or list; bare hosts expand to both http and https origins.
-    # The value is rendered as a Helm template inside the authup subchart context.
-    # Defaults to the public domain of the Hub UI (derived from the global ingress/gatewayApi hostname).
-    # If the client UI uses its own hostname (per-service routing), set this explicitly.
-    trustedOrigins: '{{- if or .Values.global.flameHub.ingress.enabled .Values.global.flameHub.gatewayApi.enabled }}{{ include "flameHub.uiDomain" . }}{{- end }}'
-    image:
-        repository: "authup/authup"
-        tag: "1.0.0-beta.62"
-        pullPolicy: "Always"
-    # Declaratively provision the FLAME permission taxonomy and the analyst/diz global
-    # roles into authup at boot. The content is rendered by
-    # templates/authup/provisioning-configmap.yaml and mounted by the authup subchart.
-    provisioning:
-        enabled: true
-        existingConfigMap: '{{ .Release.Name }}-authup-provisioning'
-    # Brand the consoles authup serves itself (auth/login + the account console
-    # at /account) with the FLAME Hub design, so leaving the Hub UI for a login
-    # or a profile change does not change appearance mid-flow. The theme content
-    # is rendered by templates/authup/theme-configmap.yaml and mounted by the
-    # authup subchart.
-    theme:
-        enabled: true
-        existingConfigMap: '{{ .Release.Name }}-authup-theme'
-        # A ConfigMap key cannot contain "/", so the on-disk layout authup expects
-        # is restored here: the manifest at the theme root, servable assets under
-        # assets/. Must stay exhaustive - a key missing here is not mounted at all.
-        paths:
-            theme.json: "theme.json"
-            logo.svg: "assets/logo.svg"
-    auth:
-        existingSecret: "flame-hub-auth"
-
-        # Default Password for the FLAME Hub Admin User
-        adminPassword: "" # Leave empty for auto-generation
-
-        # Default secret for the FLAME Hub System Client
-        clientSecret: "" # Leave empty for auto-generation
-    ingress:
+    # The Hub brings its own PostgreSQL and Redis; the chart's bundled PostgreSQL and
+    # Valkey stay off (valkey is off by default).
+    postgresql:
         enabled: false
-        hostname: ""
-        className: ""
-        annotations:
-            nginx.ingress.kubernetes.io/proxy-buffer-size: "256k"
-            nginx.ingress.kubernetes.io/proxy-buffers-number: "8"
-            nginx.ingress.kubernetes.io/proxy-busy-buffers-size: "512k"
-    gatewayApi:
-        enabled: false # global.flameHub.gatewayApi.enabled also enables this
-        hostname: "" # empty = global.flameHub.gatewayApi.hostname
-        path: "/auth"
+    # Rendered via tpl in the authup subchart context, so these follow the global
+    # postgres values. no need to edit them alongside the pg values.
+    externalDatabase:
+        host: '{{ include "flameHub.postgresql.host" . }}'
+        database: "auth"
+        existingSecret: '{{ include "flameHub.postgresql.secretName" . }}'
+        existingSecretPasswordKey: "password"
+        # user is deliberately left at the chart default: it is a plain env value and
+        # is shadowed below by a secretKeyRef onto the pg Secret's "username" key, so
+        # bringing your own pg Secret with a different user needs no change here.
+    # The connection string is pre-built in the credentials Secret under the key the
+    # chart already expects (externalRedis.existingSecretKey: redis-connection-string).
+    externalRedis:
+        existingSecret: "flame-hub-auth"
+    auth:
+        # IMPORTANT: keep in sync with auth.secretName / auth.existingSecret below.
+        existingSecret: "flame-hub-auth"
+        # The key names this chart writes; the subchart's own defaults differ
+        # (admin-password / system-client-secret), so they are mapped rather than
+        # rotating the credentials of existing installations.
+        secretKeys:
+            adminPasswordKey: "authup-admin-password"
+            systemClientSecretKey: "authup-client-secret"
+        # The system client is the identity the Hub services authenticate as
+        # (CLIENT_ID=system + authup-client-secret).
+        systemClientEnabled: true
+        # Re-assert both credentials on every boot, so rotating them in the Secret
+        # actually takes effect (what the previous chart did unconditionally).
+        adminPasswordReset: true
+        systemClientSecretReset: true
+    server:
+        # Public URL / OIDC issuer origin. Derived from the Hub's routing rather than
+        # the subchart's own ingress, because the default deployment routes authup
+        # through the shared Hub ingress at /auth/.
+        publicUrl: '{{ include "flameHub.authup.publicURL" . }}'
+        # Trusted first-party application origins (redirect allowlist for authup's built-in
+        # system clients; not CORS). The Hub UI logs in through the admin-console client, so
+        # its public origin must be covered here.
+        # Bare hosts expand to both their http and https origin. Each entry is rendered as a
+        # Helm template inside the authup subchart context.
+        # Defaults to the public domain of the Hub UI (derived from the global ingress/gatewayApi hostname).
+        # If the client UI uses its own hostname (per-service routing), set this explicitly.
+        trustedOrigins:
+            - '{{- if or .Values.global.flameHub.ingress.enabled .Values.global.flameHub.gatewayApi.enabled }}{{ include "flameHub.uiDomain" . }}{{- end }}'
+        # Read the DB user from the same Secret as the password. externalDatabase.user
+        # is a plain value, but an env entry outranks the chart's env ConfigMap, so this
+        # avoids duplicating postgresql.auth.username as a second source of truth.
+        extraEnvVars:
+            -   name: DB_USERNAME
+                valueFrom:
+                    secretKeyRef:
+                        name: '{{ include "flameHub.postgresql.secretName" . }}'
+                        key: username
+        # Wait for the backing services, like every other Hub workload (tpl-rendered
+        # in the authup subchart context).
+        initContainers:
+            -   name: wait-for-db
+                image: busybox
+                command: ['sh', '-c', 'until nc -z -v -w30 {{ include "flameHub.postgresql.host" . }} 5432; do echo "Waiting for db..."; sleep 5; done']
+            -   name: wait-for-redis
+                image: busybox
+                command: ['sh', '-c', 'until nc -z -v -w30 {{ .Release.Name }}-redis-master 6379; do echo "Waiting for redis..."; sleep 5; done']
+        # Declaratively provision the FLAME permission taxonomy and the analyst/diz global
+        # roles into authup at boot. The content is rendered by
+        # templates/authup/provisioning-configmap.yaml and mounted by the authup subchart.
+        provisioning:
+            enabled: true
+            existingConfigMap: '{{ .Release.Name }}-authup-provisioning'
+        # Brand the consoles authup serves itself (auth/login + the account console
+        # at /account) with the FLAME Hub design, so leaving the Hub UI for a login
+        # or a profile change does not change appearance mid-flow. The theme content
+        # is rendered by templates/authup/theme-configmap.yaml and mounted by the
+        # authup subchart.
+        # The subchart's native theme.tokens/logo values are not used: the logo is read
+        # from this chart's files/, which a subchart's .Files cannot reach.
+        theme:
+            enabled: true
+            existingConfigMap: '{{ .Release.Name }}-authup-theme'
+            # A ConfigMap key cannot contain "/", so the on-disk layout authup expects
+            # is restored here: the manifest at the theme root, servable assets under
+            # assets/. Must stay exhaustive - a key missing here is not mounted at all.
+            existingConfigMapItems:
+                -   key: "theme.json"
+                    path: "theme.json"
+                -   key: "logo.svg"
+                    path: "assets/logo.svg"
+        # service specific ingress configuration. If you use this, you will need a
+        # separate domain for each service. The shared Gateway API route lives under
+        # global.flameHub.authup.gatewayApi instead.
+        ingress:
+            enabled: false
+            hostname: ""
+            ingressClassName: ""
+            annotations:
+                nginx.ingress.kubernetes.io/proxy-buffer-size: "256k"
+                nginx.ingress.kubernetes.io/proxy-buffers-number: "8"
+                nginx.ingress.kubernetes.io/proxy-busy-buffers-size: "512k"
+    # The Hub ships its own UI; authup's bundled admin console is not deployed.
+    adminConsole:
+        enabled: false
 
 rabbitmq:
     nameOverride: "rabbitmq"
@@ -435,9 +511,9 @@ prometheus:
               - job_name: flame-hub-server-telemetry
                 static_configs:
                   - targets: ["{{ .Release.Name }}-flame-hub-server-telemetry:3000"]
-              - job_name: authup-server-core
+              - job_name: authup-server
                 static_configs:
-                  - targets: ["{{ .Release.Name }}-authup-server-core:3000"]
+                  - targets: ["{{ .Release.Name }}-authup-server:3000"]
 
 
 # IMPORTANT: the goharbor subchart does NOT evaluate Helm templates in its values, so the

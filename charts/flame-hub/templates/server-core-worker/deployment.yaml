@@ -39,7 +39,7 @@ spec:
               command: [
                   'sh',
                   '-c',
-                  'until nc -z -v -w30 {{ .Release.Name }}-authup-server-core 3000; do echo "Waiting for authup..."; sleep 5; done'
+                  'until nc -z -v -w30 {{ .Release.Name }}-authup-server 3000; do echo "Waiting for authup..."; sleep 5; done'
               ]
           {{- if include "harbor.internalHost" . }}
           -   name: wait-for-harbor
@@ -70,7 +70,7 @@ spec:
                   name: {{ include "flameHub.effectiveSecretName" .  }}
                   key: rabbitmq-connection-string
             - name: AUTHUP_URL
-              value: "http://{{ .Release.Name }}-authup-server-core:3000/"
+              value: "http://{{ .Release.Name }}-authup-server:3000/"
             - name: CORE_URL
               value: "http://{{ .Release.Name }}-flame-hub-server-core:3000/"
             - name: STORAGE_URL

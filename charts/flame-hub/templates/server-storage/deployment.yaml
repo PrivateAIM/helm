@@ -51,7 +51,7 @@ spec:
                     command: [
                         'sh',
                         '-c',
-                        'until nc -z -v -w30 {{ .Release.Name }}-authup-server-core 3000; do echo "Waiting for authup..."; sleep 5; done'
+                        'until nc -z -v -w30 {{ .Release.Name }}-authup-server 3000; do echo "Waiting for authup..."; sleep 5; done'
                     ]
             containers:
                 -   name: "{{ .Release.Name }}-flame-hub-server-storage"
@@ -86,7 +86,7 @@ spec:
                         -   name: MINIO_CONNECTION_STRING
                             value: "http://$(S3_ACCESS_KEY):$(S3_SECRET_KEY)@{{ include "flameHub.seaweedfs.s3Host" . }}:8333"
                         -   name: AUTHUP_URL
-                            value: "http://{{ .Release.Name }}-authup-server-core:3000/"
+                            value: "http://{{ .Release.Name }}-authup-server:3000/"
                         -   name: DB_TYPE
                             value: "postgres"
                         -   name: DB_HOST
