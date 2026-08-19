@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/PrivateAIM/helm/compare/root-0.2.0...root-0.2.1) (2026-08-19)
+
+
+### Features
+
+* **hub:** theme the authup consoles with the hub design ([fd85d42](https://github.com/PrivateAIM/helm/commit/fd85d42f5dffc5bd6534a967e273683124d37de4))
+
 ## [0.2.0](https://github.com/PrivateAIM/helm/compare/root-0.1.0...root-0.2.0) (2026-08-11)
 
 
