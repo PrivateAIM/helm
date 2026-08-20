@@ -315,6 +315,10 @@ authup:
             enabled: false
             hostnames:
                 - '{{ include "flameHub.authup.defaultHost" . }}'
+            # The Gateway this chart renders. With an external Gateway
+            # (global.flameHub.gatewayApi.gateway.external) override this with that
+            # Gateway's name/namespace/sectionName - a values list cannot drop the
+            # namespace and sectionName keys conditionally.
             parentRefs:
                 - name: '{{ .Release.Name }}-flame-hub-gateway'
             matches:
