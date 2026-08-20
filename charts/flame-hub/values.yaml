@@ -53,22 +53,6 @@ global:
             nginxGatewayFabric:
                 snippets: false
 
-        # Hub-side routing for the authup subchart. Kept under global for the same
-        # reason as postgresql below: the authup chart's values schema is strict
-        # (additionalProperties: false), so these parent-only knobs cannot live in
-        # the `authup:` block, and `flameHub.authup.publicURL` has to resolve them
-        # while rendering *inside* the subchart (values.yaml derives
-        # authup.server.publicUrl through tpl).
-        # The subchart owns its own Ingress (authup.server.ingress); only the shared
-        # Gateway API route is rendered by this chart, because it needs a path
-        # rewrite and the NGF snippets filter (see authup/helm#12).
-        authup:
-            publicHttps: false # global.flameHub.publicHttps also enables this
-            gatewayApi:
-                enabled: false # global.flameHub.gatewayApi.enabled also enables this
-                hostname: "" # empty = global.flameHub.gatewayApi.hostname
-                path: "/auth"
-
         # PostgreSQL service and secret, kept under global so subcharts (authup) can read
         # them: Helm shares only `global` into a subchart's values.
         postgresql:
@@ -212,8 +196,8 @@ auth:
 
 # Authentication provider. Upstream chart: https://github.com/authup/helm
 # Its values schema is strict (additionalProperties: false), so only keys the
-# subchart itself declares may appear here - the Hub-side routing knobs live under
-# global.flameHub.authup.
+# subchart itself declares may appear here - including the routing, which uses the
+# chart's own server.ingress / server.route rather than Hub-specific keys.
 # The image is no longer pinned here: the chart's appVersion tracks the authup
 # release, so bumping authup means bumping the dependency version in Chart.yaml.
 authup:
@@ -252,10 +236,12 @@ authup:
         adminPasswordReset: true
         systemClientSecretReset: true
     server:
-        # Public URL / OIDC issuer origin. Derived from the Hub's routing rather than
-        # the subchart's own ingress, because the default deployment routes authup
-        # through the shared Hub ingress at /auth/.
-        publicUrl: '{{ include "flameHub.authup.publicURL" . }}'
+        # Public URL / OIDC issuer origin, and the single source of truth for
+        # authup's public address - this chart reads it back for the Hub UI.
+        # Defaults to the shared Hub hostname + /auth. With per-service routing
+        # there is no shared hostname, so set it explicitly (together with
+        # server.route.hostnames below).
+        publicUrl: '{{ include "flameHub.authup.defaultPublicURL" . }}'
         # Trusted first-party application origins (redirect allowlist for authup's built-in
         # system clients; not CORS). The Hub UI logs in through the admin-console client, so
         # its public origin must be covered here.
@@ -310,8 +296,7 @@ authup:
                 -   key: "logo.svg"
                     path: "assets/logo.svg"
         # service specific ingress configuration. If you use this, you will need a
-        # separate domain for each service. The shared Gateway API route lives under
-        # global.flameHub.authup.gatewayApi instead.
+        # separate domain for each service.
         ingress:
             enabled: false
             hostname: ""
@@ -320,6 +305,37 @@ authup:
                 nginx.ingress.kubernetes.io/proxy-buffer-size: "256k"
                 nginx.ingress.kubernetes.io/proxy-buffers-number: "8"
                 nginx.ingress.kubernetes.io/proxy-busy-buffers-size: "512k"
+        # Gateway API route, rendered by the authup subchart itself.
+        # `enabled` is a plain boolean the subchart cannot tpl-render, so unlike the
+        # other services it does NOT follow global.flameHub.gatewayApi.enabled - turn
+        # it on per environment (see authup/helm#15).
+        # The remaining entries are tpl-rendered in subchart context, so they may only
+        # reference global.* and the subchart's own values.
+        route:
+            enabled: false
+            hostnames:
+                - '{{ include "flameHub.authup.defaultHost" . }}'
+            parentRefs:
+                - name: '{{ .Release.Name }}-flame-hub-gateway'
+            matches:
+                -   path:
+                        type: "PathPrefix"
+                        value: "/auth"
+            # Strips the /auth prefix before it reaches authup. With a dedicated
+            # authup hostname, set matches to "/" and drop this filter.
+            # NGINX Gateway Fabric users additionally append the SnippetsFilter this
+            # chart renders (see templates/authup/snippetsfilter-timeouts.yaml):
+            #   -   type: "ExtensionRef"
+            #       extensionRef:
+            #           group: "gateway.nginx.org"
+            #           kind: "SnippetsFilter"
+            #           name: '{{ .Release.Name }}-authup-ngf-snippets'
+            filters:
+                -   type: "URLRewrite"
+                    urlRewrite:
+                        path:
+                            type: "ReplacePrefixMatch"
+                            replacePrefixMatch: "/"
     # The Hub ships its own UI; authup's bundled admin console is not deployed.
     adminConsole:
         enabled: false

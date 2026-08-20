@@ -107,46 +107,47 @@ clientUI hostname / ui domain
 {{- end -}}
 
 {{/*
-authup publicURL.
+Default host for authup: the shared Hub hostname.
+Reads only global.flameHub.*, so it resolves identically in this chart and
+inside the authup subchart (where a tpl value sees only `global`).
+Empty with per-service routing - there is no shared hostname to derive from.
+*/}}
+{{- define "flameHub.authup.defaultHost" -}}
+{{- $g := .Values.global.flameHub -}}
+{{- if $g.ingress.enabled -}}
+{{- $g.ingress.hostname -}}
+{{- else if $g.gatewayApi.enabled -}}
+{{- $g.gatewayApi.hostname -}}
+{{- end -}}
+{{- end -}}
 
-Named under flameHub.* rather than authup.*: the authup.* template namespace now
-belongs to the subchart, and Helm compiles every chart's templates into one shared
-namespace, so a same-named upstream helper would silently win.
+{{/*
+Default public URL / OIDC issuer for authup: the shared Hub hostname + /auth.
+Used as the default of authup.server.publicUrl, so it is rendered in the
+authup subchart context - keep it on global.flameHub.* only.
+Returns empty rather than failing: with per-service routing the operator sets
+authup.server.publicUrl (and server.route.hostnames) explicitly.
+*/}}
+{{- define "flameHub.authup.defaultPublicURL" -}}
+{{- $host := include "flameHub.authup.defaultHost" . -}}
+{{- if $host -}}
+{{- $prefix := ternary "https" "http" .Values.global.flameHub.publicHttps -}}
+{{- printf "%s://%s/auth" $prefix $host -}}
+{{- end -}}
+{{- end -}}
 
-Callable from this chart AND from a tpl-rendered value inside the authup subchart -
-that is how values.yaml sets authup.server.publicUrl. Hence the routing knobs live
-under global.flameHub.authup (a subchart sees only `global`), and the subchart's own
-ingress is read from whichever side is in scope.
+{{/*
+The effective authup public URL, as the Hub UI must call it.
+authup.server.publicUrl is the single source of truth; it is a tpl value, so it
+is rendered here in this chart's context (its default reads only globals, so it
+yields the same string the subchart computes for PUBLIC_URL).
 */}}
 {{- define "flameHub.authup.publicURL" -}}
-{{- $authup := .Values.global.flameHub.authup -}}
-{{- $ingress := dict -}}
-{{- if hasKey .Values "authup" -}}
-  {{- $ingress = .Values.authup.server.ingress -}}
-{{- else -}}
-  {{- $ingress = .Values.server.ingress -}}
+{{- $url := tpl (.Values.authup.server.publicUrl | default "" | toString) . | trim -}}
+{{- if not $url -}}
+{{- fail "Hostname for authup is not defined! Set authup.server.publicUrl (it defaults to the global ingress/gatewayApi hostname, which is unset here)." -}}
 {{- end -}}
-{{- $prefix := "http" -}}
-{{- if or $authup.publicHttps .Values.global.flameHub.publicHttps -}}
-  {{- $prefix = "https" -}}
-{{- end -}}
-{{- $hostname := "" -}}
-{{- $path := "" -}}
-{{- if $ingress.enabled -}}
-  {{- $hostname = $ingress.hostname -}}
-  {{- $path = $ingress.path | default "/" -}}
-{{- else if .Values.global.flameHub.ingress.enabled -}}
-  {{- $hostname = .Values.global.flameHub.ingress.hostname -}}
-  {{- $path = "/auth/" -}}
-{{- else if or $authup.gatewayApi.enabled .Values.global.flameHub.gatewayApi.enabled -}}
-  {{- $hostname = $authup.gatewayApi.hostname | default .Values.global.flameHub.gatewayApi.hostname -}}
-  {{- $path = $authup.gatewayApi.path | default "/" -}}
-{{- end -}}
-{{- if $hostname -}}
-{{- printf "%s://%s%s" $prefix $hostname $path | trimSuffix "/" | printf "%s/" -}}
-{{- else -}}
-{{- fail "Hostname for authup is not defined!" -}}
-{{- end -}}
+{{- $url | trimSuffix "/" | printf "%s/" -}}
 {{- end -}}
 
 {{/*

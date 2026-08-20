@@ -1,8 +1,15 @@
 {{- $globalEnabled := .Values.global.flameHub.gatewayApi.enabled -}}
 {{- $harborEnabled := and .Values.harbor.enabled (not .Values.externalHarbor.enabled) (or $globalEnabled .Values.harbor.gatewayApi.enabled) -}}
 {{- $globalHostname := .Values.global.flameHub.gatewayApi.hostname -}}
+{{/* First entry of authup.server.route.hostnames, rendered here (it is a tpl value). */}}
+{{- $authupHostname := "" -}}
+{{- with .Values.authup.server.route.hostnames -}}
+{{- $authupHostname = tpl (index . 0 | toString) $ -}}
+{{- end -}}
 
-{{/* Collect unique hostnames from enabled services */}}
+{{/* Collect unique hostnames from enabled services.
+     authup routes itself (authup.server.route), so its listener follows that value
+     rather than the global switch - route.enabled is not tpl-rendered. */}}
 {{- $seen := dict -}}
 {{- $listeners := list -}}
 {{- range $svc := list
@@ -11,7 +18,7 @@
     (dict "name" "server-messenger"  "enabled" (or $globalEnabled $.Values.serverMessenger.gatewayApi.enabled)  "hostname" $.Values.serverMessenger.gatewayApi.hostname)
     (dict "name" "server-storage"    "enabled" (or $globalEnabled $.Values.serverStorage.gatewayApi.enabled)    "hostname" $.Values.serverStorage.gatewayApi.hostname)
     (dict "name" "server-telemetry"  "enabled" (or $globalEnabled $.Values.serverTelemetry.gatewayApi.enabled)  "hostname" $.Values.serverTelemetry.gatewayApi.hostname)
-    (dict "name" "authup"            "enabled" (or $globalEnabled $.Values.global.flameHub.authup.gatewayApi.enabled)            "hostname" $.Values.global.flameHub.authup.gatewayApi.hostname)
+    (dict "name" "authup"            "enabled" $.Values.authup.server.route.enabled                                        "hostname" $authupHostname)
 -}}
 {{- if $svc.enabled -}}
 {{- $h := $svc.hostname | default $globalHostname -}}
