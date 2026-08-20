@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+    name: "{{ .Release.Name }}-rabbitmq"
+    labels:
+        app: "{{ .Release.Name }}-rabbitmq"
+spec:
+    serviceName: "{{ .Release.Name }}-rabbitmq"
+    replicas: 1
+    selector:
+        matchLabels:
+            app: "{{ .Release.Name }}-rabbitmq"
+    template:
+        metadata:
+            labels:
+                app: "{{ .Release.Name }}-rabbitmq"
+        spec:
+            {{- with .Values.rabbitmq.podSecurityContext }}
+            securityContext: {{- toYaml . | nindent 16 }}
+            {{- end }}
+            containers:
+                -   name: rabbitmq
+                    image: "{{ .Values.rabbitmq.image.repository }}:{{ .Values.rabbitmq.image.tag }}"
+                    imagePullPolicy: {{ .Values.rabbitmq.image.pullPolicy }}
+                    env:
+                        -   name: RABBITMQ_DEFAULT_USER
+                            value: {{ .Values.rabbitmq.auth.username | quote }}
+                        -   name: RABBITMQ_DEFAULT_PASS
+                            valueFrom:
+                                secretKeyRef:
+                                    name: {{ include "flameHub.effectiveSecretName" . }}
+                                    key: rabbitmq-password
+                        # Stable node name so the Mnesia dir on the PVC is reused across restarts.
+                        -   name: RABBITMQ_NODENAME
+                            value: "rabbit@localhost"
+                        -   name: RABBITMQ_USE_LONGNAME
+                            value: "false"
+                    ports:
+                        -   name: amqp
+                            containerPort: 5672
+                    readinessProbe:
+                        exec:
+                            command: ["rabbitmq-diagnostics", "-q", "ping"]
+                        initialDelaySeconds: 15
+                        periodSeconds: 10
+                        timeoutSeconds: 10
+                        failureThreshold: 20
+                    livenessProbe:
+                        exec:
+                            command: ["rabbitmq-diagnostics", "-q", "check_running"]
+                        initialDelaySeconds: 60
+                        periodSeconds: 30
+                        timeoutSeconds: 15
+                        failureThreshold: 6
+                    {{- with .Values.rabbitmq.resources }}
+                    resources: {{- toYaml . | nindent 24 }}
+                    {{- end }}
+                    volumeMounts:
+                        -   name: data
+                            mountPath: /var/lib/rabbitmq
+            {{- if not .Values.rabbitmq.persistence.enabled }}
+            volumes:
+                -   name: data
+                    emptyDir: {}
+            {{- end }}
+    {{- if .Values.rabbitmq.persistence.enabled }}
+    volumeClaimTemplates:
+        -   metadata:
+                name: data
+            spec:
+                accessModes: ["ReadWriteOnce"]
+                {{- with .Values.rabbitmq.persistence.storageClass }}
+                storageClassName: {{ . | quote }}
+                {{- end }}
+                resources:
+                    requests:
+                        storage: {{ .Values.rabbitmq.persistence.size }}
+    {{- end }}
