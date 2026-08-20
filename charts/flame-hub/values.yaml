@@ -69,6 +69,13 @@ global:
             # Keep in sync with harbor.database.external.existingSecret
             existingSecret: ""
 
+        # Consumed via the flameHub.redis.host / flameHub.redis.port helpers, which also name the chart-managed Redis Service.
+        redis:
+            # Name of the chart-managed Redis Service. Leave empty for the release-scoped
+            # default "<release>-redis". This is NOT an external-Redis switch.
+            host: ""
+            port: 6379
+
 image:
     registry: ghcr.io
     repository: privateaim/hub
@@ -193,6 +200,10 @@ authup:
     database:
         host: '{{ include "flameHub.postgresql.host" . }}'
         existingSecret: '{{ include "flameHub.postgresql.secretName" . }}'
+    # Redis host/port for authup, following the chart-managed Redis (global.flameHub.redis).
+    redis:
+        host: '{{ include "flameHub.redis.host" . }}'
+        port: '{{ include "flameHub.redis.port" . }}'
     # Trusted first-party application origins (redirect allowlist for authup's built-in
     # system clients; not CORS). The Hub UI logs in through the admin-console client, so
     # its public origin must be covered here.
@@ -260,25 +271,30 @@ rabbitmq:
     # See /charts/third-party/openebs for details
     # persistence:
     #     storageClass: "mayastor-replicated"
+# Single-node Redis (no replication). Rendered from templates/redis.
+# The password lives in the shared flame-hub-auth Secret under
+# redis-password/redis-connection-string.
 redis:
-    nameOverride: "redis"
-    startupProbe:
-        failureThreshold: 15
-    readinessProbe:
-        failureThreshold: 10
-    auth:
-        enabled: true
-        password: "" # Leave empty for auto-generation
-        existingSecret: "flame-hub-auth"
-        existingSecretPasswordKey: "redis-password"
+    # Service host/port are configured under global.flameHub.redis (they must be readable
+    # by the authup subchart). The settings below configure the chart-managed Redis pod.
     image:
-        #repository: "tada5hi/redis"
-        repository: "bitnamilegacy/redis"
-        tag: "8.2.1-debian-12-r0"
-    # See /charts/third-party/openebs for details
-    # master:
-    #     persistence:
-    #         storageClass: "mayastor-replicated"
+        repository: "redis"
+        tag: "8.2.1"
+        pullPolicy: "IfNotPresent"
+    auth:
+        # Password override; leave empty for auto-generation into flame-hub-auth.
+        # The Secret name / bring-your-own option is auth.secretName / auth.existingSecret.
+        password: ""
+    persistence:
+        enabled: true
+        size: 4Gi
+        # See /charts/third-party/openebs for details
+        # storageClass: "mayastor-replicated"
+    # Extra flags appended to the redis-server command (after --requirepass).
+    extraArgs: []
+    podSecurityContext:
+        fsGroup: 999
+    resources: {}
 
 # seaweedfs is the S3 object store used by server-storage.
 # S3 admin credentials are auto-generated into the "<release>-seaweedfs-s3-secret" Secret
