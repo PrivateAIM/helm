@@ -77,7 +77,6 @@ You must give each release its own value for:
 | `authup.auth.existingSecret` | `flame-hub-auth` | subchart reference — **must match** `auth.secretName` |
 | `authup.externalRedis.existingSecret` | `flame-hub-auth` | subchart reference (reads `redis-connection-string`) — **must match** `auth.secretName` |
 | `rabbitmq.auth.existingPasswordSecret` | `flame-hub-auth` | subchart reference — **must match** `auth.secretName` |
-| `redis.auth.existingSecret` | `flame-hub-auth` | subchart reference — **must match** `auth.secretName` |
 | `grafana.admin.existingSecret` | `flame-hub-auth` | subchart reference — **must match** `auth.secretName` |
 | `harbor.secretName` | `flame-hub-harbor` | Harbor's own credentials Secret (admin password, core `secretKey`, connection string) |
 | `harbor.existingSecretAdminPassword` | `flame-hub-harbor` | goharbor reference — **must match** the effective Harbor secret (`harbor.existingSecret` when set, otherwise `harbor.secretName`) |

@@ -30,7 +30,7 @@ spec:
                     command: [
                         'sh',
                         '-c',
-                        'until nc -z -v -w30 {{ .Release.Name }}-redis-master 6379; do echo "Waiting for redis..."; sleep 5; done'
+                        'until nc -z -v -w30 {{ include "flameHub.redis.host" . }} {{ include "flameHub.redis.port" . }}; do echo "Waiting for redis..."; sleep 5; done'
                     ]
                 -   name: wait-for-rabbitmq
                     image: busybox

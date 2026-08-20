@@ -85,6 +85,21 @@ Create the name of the service account to use
 {{- end -}}
 
 
+{{/*
+Name/host of the chart-managed Redis Service. Read from global.flameHub.redis so the value also resolves inside
+subcharts (Helm shares only `global`); the authup subchart reaches it through this helper.
+*/}}
+{{- define "flameHub.redis.host" -}}
+{{- $redis := (((.Values.global).flameHub).redis) | default dict -}}
+{{- $redis.host | default (printf "%s-redis" .Release.Name) -}}
+{{- end -}}
+
+{{- define "flameHub.redis.port" -}}
+{{- $redis := (((.Values.global).flameHub).redis) | default dict -}}
+{{- $redis.port | default 6379 -}}
+{{- end -}}
+
+
 {{- define "flameHub.harbor.secretName" -}}
 {{- .Values.harbor.existingSecret | default (required "harbor.secretName is required" .Values.harbor.secretName) -}}
 {{- end -}}
