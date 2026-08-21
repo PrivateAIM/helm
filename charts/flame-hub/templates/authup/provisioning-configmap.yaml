@@ -1,10 +1,10 @@
-{{- if .Values.authup.provisioning.enabled }}
+{{- if .Values.authup.server.provisioning.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: "{{ .Release.Name }}-authup-provisioning"
   labels:
-    app: "{{ .Release.Name }}-authup-server-core"
+    app: "{{ .Release.Name }}-authup-server"
 data:
   flame.yaml: |
     # Authup provisioning — FLAME Hub bootstrap: permission taxonomy, global roles

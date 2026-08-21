@@ -12,12 +12,29 @@ global:
       nginxGatewayFabric:
         snippets: true
 
+auth:
+  # Specify a default FLAME admin password for local testing
+  authupAdminPassword: "" # Leave empty for auto-generation
+  # See README.md for more details on how to access auto-generated credentials
+
 authup:
-  publicURL: "https://hub.local"
-  auth:
-    # Specify a default FLAME admin password for local testing
-    adminPassword: "" # Leave empty for auto-generation
-    # See README.md for more details on how to access auto-generated credentials
+  server:
+    route:
+      # authup renders its own HTTPRoute and does not follow the global switch
+      enabled: true
+      # This example enables NGF snippets, so the SnippetsFilter is referenced on
+      # top of the chart's default /auth prefix rewrite.
+      filters:
+        - type: "URLRewrite"
+          urlRewrite:
+            path:
+              type: "ReplacePrefixMatch"
+              replacePrefixMatch: "/"
+        - type: "ExtensionRef"
+          extensionRef:
+            group: "gateway.nginx.org"
+            kind: "SnippetsFilter"
+            name: '{{ .Release.Name }}-authup-ngf-snippets'
 
 harbor:
   enabled: true

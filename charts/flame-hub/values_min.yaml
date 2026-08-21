@@ -7,12 +7,10 @@ global:
       enabled: true
       hostname: "hub.local"
 
-authup:
-  publicURL: "https://hub.local"
-  auth:
-    # Specify a default FLAME admin password for local testing
-    adminPassword: "" # Leave empty for auto-generation
-    # See README.md for more details on how to access auto-generated credentials
+auth:
+  # Specify a default FLAME admin password for local testing
+  authupAdminPassword: "" # Leave empty for auto-generation
+  # See README.md for more details on how to access auto-generated credentials
 
 harbor:
   enabled: true

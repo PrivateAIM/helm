@@ -24,6 +24,7 @@ dependencies:
     name: harbor
     version: 1.19.1
     repository: https://helm.goharbor.io
+  # Upstream chart: https://github.com/authup/helm
   - name: authup
-    repository: file://../third-party/authup
-    version: 0.1.0
+    version: 0.2.2
+    repository: https://helm.authup.org
