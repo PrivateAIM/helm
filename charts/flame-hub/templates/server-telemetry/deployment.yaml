@@ -19,35 +19,40 @@ spec:
             restartPolicy: Always
             initContainers:
                 -   name: wait-for-db
-                    image: busybox
+                    image: busybox:1.38
+                    imagePullPolicy: IfNotPresent
                     command: [
                         'sh',
                         '-c',
                         'until nc -z -v -w30 {{ include "flameHub.postgresql.host" . }} 5432; do echo "Waiting for db..."; sleep 5; done'
                     ]
                 -   name: wait-for-redis
-                    image: busybox
+                    image: busybox:1.38
+                    imagePullPolicy: IfNotPresent
                     command: [
                         'sh',
                         '-c',
                         'until nc -z -v -w30 {{ include "flameHub.redis.host" . }} {{ include "flameHub.redis.port" . }}; do echo "Waiting for redis..."; sleep 5; done'
                     ]
                 -   name: wait-for-rabbitmq
-                    image: busybox
+                    image: busybox:1.38
+                    imagePullPolicy: IfNotPresent
                     command: [
                         'sh',
                         '-c',
                         'until nc -z -v -w30 {{ .Release.Name }}-rabbitmq 5672; do echo "Waiting for rabbitmq..."; sleep 5; done'
                     ]
                 -   name: wait-for-authup
-                    image: busybox
+                    image: busybox:1.38
+                    imagePullPolicy: IfNotPresent
                     command: [
                         'sh',
                         '-c',
                         'until nc -z -v -w30 {{ .Release.Name }}-authup-server 3000; do echo "Waiting for authup..."; sleep 5; done'
                     ]
                 - name: wait-for-vl
-                  image: busybox
+                  image: busybox:1.38
+                  imagePullPolicy: IfNotPresent
                   command: [
                     'sh',
                     '-c',

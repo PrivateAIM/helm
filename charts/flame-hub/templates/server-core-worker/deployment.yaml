@@ -28,14 +28,16 @@ spec:
       {{- end }}
       initContainers:
           -   name: wait-for-rabbitmq
-              image: busybox
+              image: busybox:1.38
+              imagePullPolicy: IfNotPresent
               command: [
                   'sh',
                   '-c',
                   'until nc -z -v -w30 {{ .Release.Name }}-rabbitmq 5672; do echo "Waiting for rabbitmq..."; sleep 5; done'
               ]
           -   name: wait-for-authup
-              image: busybox
+              image: busybox:1.38
+              imagePullPolicy: IfNotPresent
               command: [
                   'sh',
                   '-c',
@@ -43,7 +45,8 @@ spec:
               ]
           {{- if include "harbor.internalHost" . }}
           -   name: wait-for-harbor
-              image: busybox
+              image: busybox:1.38
+              imagePullPolicy: IfNotPresent
               command: [
                   'sh',
                   '-c',
