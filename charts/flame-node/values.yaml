@@ -225,7 +225,7 @@ storageService:
   image:
     repository: ghcr.io/privateaim/node-storage-service
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.2.1
+    tag: edge
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
