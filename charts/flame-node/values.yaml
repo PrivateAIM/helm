@@ -820,7 +820,7 @@ dataStore:
 
     persistence:
       enabled: true
-      size: 5Gi
+      size: 50Gi
 
     # ⚠️ Note:
     # The dataPopulatorJob is intended for initial population of FHIR resources with dummy data from Synthea.
@@ -838,7 +838,12 @@ dataStore:
   seaweedfs:
     ## Run everything (master, volume, filer, S3) in a single pod.
     master: { enabled: false }
-    volume: { enabled: false }
+    volume:
+      enabled: false
+      dataDirs:
+        - name: data1
+          type: "custom"
+          maxVolumes: 7000
     filer: { enabled: false }
 
     s3:
@@ -1116,7 +1121,12 @@ keycloak-postgresql:
 seaweedfs:
   ## Run everything in a single pod and disable the standalone components.
   master: { enabled: false }
-  volume: { enabled: false }
+  volume:
+    enabled: false
+    dataDirs:
+      - name: data1
+        type: "custom"
+        maxVolumes: 7000
   filer: { enabled: false }
 
   s3:
