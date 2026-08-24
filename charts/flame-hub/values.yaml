@@ -254,12 +254,13 @@ authup:
         # its public origin must be covered here.
         # Bare hosts expand to both their http and https origin. Each entry is rendered as a
         # Helm template inside the authup subchart context.
-        # Defaults to the public domain of the Hub UI (derived from the global ingress/gatewayApi hostname).
-        # With per-service routing (both global modes off) this renders empty, because the
-        # UI hostname lives in clientUI.*, which is not visible in subchart context. Set the
-        # origin explicitly there - an unlisted UI origin cannot complete a login.
+        # Defaults to the public domain of the Hub UI, derived from the global
+        # ingress/gatewayApi hostname. With per-service routing (both global modes off) there
+        # is no such hostname and clientUI.* is not visible here, so replace this entry with
+        # the UI origin - the render says so rather than leaving the list empty, because an
+        # unlisted origin cannot complete a login and only fails at the first login attempt.
         trustedOrigins:
-            - '{{- if or .Values.global.flameHub.ingress.enabled .Values.global.flameHub.gatewayApi.enabled }}{{ include "flameHub.uiDomain" . }}{{- end }}'
+            - '{{ include "flameHub.uiDomain" . }}'
         # Read the DB user from the same Secret as the password. externalDatabase.user
         # is a plain value, but an env entry outranks the chart's env ConfigMap, so this
         # avoids duplicating postgresql.auth.username as a second source of truth.
