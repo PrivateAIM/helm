@@ -101,8 +101,10 @@ clientUI hostname / ui domain
 {{- end -}}
 {{- if $hostname -}}
 {{- $hostname -}}
+{{- else if hasKey .Values "clientUI" -}}
+{{- fail "Hostname for UI domain is not defined! Set clientUI.ingress.hostname, clientUI.gatewayApi.hostname, or a global.flameHub.ingress / .gatewayApi hostname." -}}
 {{- else -}}
-{{- fail "Hostname for UI domain is not defined!" -}}
+{{- fail "Hostname for UI domain is not defined here: this renders inside the authup subchart, which cannot see clientUI.* - Helm shares only `global` with a subchart. With per-service routing, set authup.server.trustedOrigins to the Hub UI origin explicitly; an origin missing from it cannot complete a login." -}}
 {{- end -}}
 {{- end -}}
 
