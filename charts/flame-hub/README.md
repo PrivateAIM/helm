@@ -22,7 +22,7 @@ Set `global.flameHub.gatewayApi.enabled: true` along with required values or set
 
 ### Key Differences from Ingress
 
-- While `global.flameHub.gatewayApi.enabled` enables gatewayApi for all services, the per-service configuration (domain, path) is still done in each service's values section.
+- While `global.flameHub.gatewayApi.enabled` enables gatewayApi for all services, the per-service configuration (domain, path) is still done in each service's values section — authup being the exception, which is configured through `authup.server.route` in the upstream chart's own vocabulary.
 - If you are using NGF and have `nginxGatewayFabric.snippets` enabled in the `global.flameHub` section, the correct proxy parameters will be set. Otherwise, please use the annotations field to achieve the same configuration, or else the Hub will not be usable.
 - Unlike ingress-nginx, Gateway Controllers usually expose a LoadBalancer Service. If you want to expose your cluster directly, extra steps are necessary.
 

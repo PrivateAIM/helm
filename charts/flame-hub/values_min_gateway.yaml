@@ -20,8 +20,6 @@ auth:
 authup:
   server:
     route:
-      # authup renders its own HTTPRoute and does not follow the global switch
-      enabled: true
       # This example enables NGF snippets, so the SnippetsFilter is referenced on
       # top of the chart's default /auth prefix rewrite.
       filters:
