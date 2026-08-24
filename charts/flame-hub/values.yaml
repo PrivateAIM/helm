@@ -247,7 +247,7 @@ authup:
         # authup's public address - this chart reads it back for the Hub UI.
         # Defaults to the shared Hub hostname + /auth. With per-service routing
         # there is no shared hostname, so set it explicitly (together with
-        # server.route.hostnames below).
+        # server.route.enabled and server.route.hostnames below).
         publicUrl: '{{ include "flameHub.authup.defaultPublicURL" . }}'
         # Trusted first-party application origins (redirect allowlist for authup's built-in
         # system clients; not CORS). The Hub UI logs in through the admin-console client, so
@@ -314,13 +314,17 @@ authup:
                 nginx.ingress.kubernetes.io/proxy-buffers-number: "8"
                 nginx.ingress.kubernetes.io/proxy-busy-buffers-size: "512k"
         # Gateway API route, rendered by the authup subchart itself.
-        # `enabled` is a plain boolean the subchart cannot tpl-render, so unlike the
-        # other services it does NOT follow global.flameHub.gatewayApi.enabled - turn
-        # it on per environment (see authup/helm#15).
-        # The remaining entries are tpl-rendered in subchart context, so they may only
+        # `enabled` follows global.flameHub.gatewayApi.enabled like every other service.
+        # The subchart renders it through its strict "authup.flag" helper: a template
+        # yielding "true" enables the route, "false"/"" disable it, anything else fails.
+        # Set a plain true/false here to opt authup in or out on its own.
+        # `enabled` and `hostnames` are rendered by this chart as well (see
+        # "flameHub.authup.routeEnabled" and templates/gateway.yaml), so they may only
+        # reference global.* - a subchart-scoped path fails in that context.
+        # The remaining entries are tpl-rendered in subchart context only, so they may
         # reference global.* and the subchart's own values.
         route:
-            enabled: false
+            enabled: '{{ .Values.global.flameHub.gatewayApi.enabled }}'
             hostnames:
                 - '{{ include "flameHub.authup.defaultHost" . }}'
             # The Gateway this chart renders. With an external Gateway

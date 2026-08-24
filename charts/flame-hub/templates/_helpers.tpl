@@ -166,6 +166,20 @@ Validate ingress mode: global path-based ingress and individual service ingresse
 {{- end -}}
 
 {{/*
+authup.server.route.enabled, resolved the way the authup subchart resolves it.
+The value is a tpl string (it defaults to global.flameHub.gatewayApi.enabled), so a plain
+`if` would read a rendered "false" as a non-empty, and therefore truthy, string. Going
+through the subchart's own strict helper keeps what this chart renders around the route -
+the Gateway listener and the NGF SnippetsFilter - in agreement with the HTTPRoute the
+subchart renders. Yields "true" or "", so it drops straight into an `if`.
+*/}}
+{{- define "flameHub.authup.routeEnabled" -}}
+{{- if .Values.authup.server.enabled -}}
+{{- include "authup.flag" (dict "value" .Values.authup.server.route.enabled "context" . "key" "authup.server.route.enabled") -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Validate that the goharbor subchart's un-templatable literals still point at the effective
 flame-hub PostgreSQL and Harbor names.
 */}}
