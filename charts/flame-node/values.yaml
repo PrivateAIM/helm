@@ -820,7 +820,7 @@ dataStore:
 
     persistence:
       enabled: true
-      size: 50Gi
+      size: 5Gi
 
     # ⚠️ Note:
     # The dataPopulatorJob is intended for initial population of FHIR resources with dummy data from Synthea.
@@ -843,7 +843,7 @@ dataStore:
       dataDirs:
         - name: data1
           type: "custom"
-          maxVolumes: 7000
+          maxVolumes: 1000
     filer: { enabled: false }
 
     s3:
@@ -852,14 +852,16 @@ dataStore:
 
     allInOne:
       enabled: true
+      extraEnvironmentVars:
+        WEED_MASTER_VOLUME_GROWTH_COPY_1: "1"
       s3:
         enabled: true
         enableAuth: false
-      ## Built-in filer web UI is served on port 8888 of the
-      ## node-datastore-seaweedfs-all-in-one Service (port-forward to access).
+
       data:
         type: persistentVolumeClaim
         size: 5Gi
+      
       podSecurityContext:
         enabled: true
         runAsUser: 1000

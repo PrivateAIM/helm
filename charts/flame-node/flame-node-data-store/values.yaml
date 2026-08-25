@@ -21,7 +21,12 @@ seaweedfs:
 
   ## Run master, volume, filer and the S3 gateway in a single all-in-one pod.
   master: { enabled: false }
-  volume: { enabled: false }
+  volume:
+    enabled: false
+    dataDirs:
+      - name: data1
+        type: "custom"
+        maxVolumes: 1000
   filer: { enabled: false }
 
   s3:
@@ -30,17 +35,17 @@ seaweedfs:
 
   allInOne:
     enabled: true
-    ## Disable the chart's default hard pod anti-affinity so this instance can schedule on a
-    ## single-node cluster and co-locate with the node-local SeaweedFS pod.
+    extraEnvironmentVars:
+      WEED_MASTER_VOLUME_GROWTH_COPY_1: "1"
+
     affinity: ""
     s3:
       enabled: true
       enableAuth: false
-    ## The built-in filer web UI is served on port 8888 of the
-    ## node-datastore-seaweedfs-all-in-one Service (port-forward to access).
+
     data:
       type: persistentVolumeClaim
-      size: 5Gi
+      size: 50Gi
     resources:
       requests:
         cpu: 250m
