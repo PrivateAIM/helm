@@ -3,6 +3,16 @@ entries:
   authup:
   - apiVersion: v2
     appVersion: 0.1.0
+    created: "2026-08-25T13:48:22.092890353Z"
+    description: A Helm chart for Kubernetes
+    digest: 18f63754f99a7840c2b470e4f52398791a329e82efe6119f2ebc05fc1e502e4f
+    name: authup
+    type: application
+    urls:
+    - https://github.com/PrivateAIM/helm/releases/download/authup-0.2.1/authup-0.2.1.tgz
+    version: 0.2.1
+  - apiVersion: v2
+    appVersion: 0.1.0
     created: "2026-08-13T13:15:05.3949877Z"
     description: A Helm chart for Kubernetes
     digest: aa4f54e723c4feaa83e409bed71e650bebd78800fbad9cdaac18bbdfb391b50d
@@ -114,6 +124,16 @@ entries:
   blaze:
   - apiVersion: v2
     appVersion: 0.34.0
+    created: "2026-08-25T13:48:22.370515048Z"
+    description: A Helm chart for Kubernetes
+    digest: 34fc96c73fc532a897c9a965536bff312f157b210ea0f9f2d6f5d724436517b5
+    name: blaze
+    type: application
+    urls:
+    - https://github.com/PrivateAIM/helm/releases/download/blaze-0.2.1/blaze-0.2.1.tgz
+    version: 0.2.1
+  - apiVersion: v2
+    appVersion: 0.34.0
     created: "2026-08-13T13:15:05.675969261Z"
     description: A Helm chart for Kubernetes
     digest: ffb17ad9125997b20ea86fe76b51d1ceeb1a97b31f4aa365e58a6624f2238ce5
@@ -213,6 +233,45 @@ entries:
     - https://github.com/PrivateAIM/helm/releases/download/blaze-0.0.4/blaze-0.0.4.tgz
     version: 0.0.4
   flame-hub:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2026-08-25T13:48:22.64422863Z"
+    dependencies:
+    - name: common
+      repository: oci://registry-1.docker.io/bitnamicharts
+      version: 2.31.4
+    - name: redis
+      repository: oci://registry-1.docker.io/bitnamicharts
+      version: 22.0.6
+    - name: rabbitmq
+      repository: oci://registry-1.docker.io/bitnamicharts
+      version: 16.0.14
+    - name: seaweedfs
+      repository: https://seaweedfs.github.io/seaweedfs/helm
+      version: 4.39.0
+    - name: grafana
+      repository: oci://registry-1.docker.io/bitnamicharts
+      version: 12.1.8
+    - name: victoria-logs-cluster
+      repository: https://victoriametrics.github.io/helm-charts/
+      version: 0.0.24
+    - name: prometheus
+      repository: oci://registry-1.docker.io/bitnamicharts
+      version: 2.1.23
+    - condition: harbor.enabled
+      name: harbor
+      repository: https://helm.goharbor.io
+      version: 1.19.1
+    - name: authup
+      repository: file://../third-party/authup
+      version: 0.2.1
+    description: A Helm chart for Kubernetes
+    digest: dc82498e16b254b5cff4483b0a37877badcf1a3aa996f59c9fa1ec89d98e2098
+    name: flame-hub
+    type: application
+    urls:
+    - https://github.com/PrivateAIM/helm/releases/download/flame-hub-0.2.1/flame-hub-0.2.1.tgz
+    version: 0.2.1
   - apiVersion: v2
     appVersion: 0.1.0
     created: "2026-08-13T13:15:05.937784579Z"
@@ -945,6 +1004,51 @@ entries:
   flame-node:
   - apiVersion: v2
     appVersion: 0.2.2
+    created: "2026-08-25T13:48:22.927288508Z"
+    dependencies:
+    - name: keycloakx
+      repository: oci://ghcr.io/codecentric/helm-charts
+      version: 7.1.9
+    - alias: dataStore
+      condition: dataStore.enabled
+      name: flame-node-data-store
+      repository: file://./flame-node-data-store
+      version: 0.2.1
+    - name: kong
+      repository: https://charts.konghq.com
+      version: 2.52.0
+    - alias: postgresql
+      name: postgres
+      repository: https://groundhog2k.github.io/helm-charts
+      version: 1.5.8
+    - alias: kong-postgresql
+      name: postgres
+      repository: https://groundhog2k.github.io/helm-charts
+      version: 1.5.8
+    - alias: keycloak-postgresql
+      name: postgres
+      repository: https://groundhog2k.github.io/helm-charts
+      version: 1.5.8
+    - name: seaweedfs
+      repository: https://seaweedfs.github.io/seaweedfs/helm
+      version: 4.37.0
+    - name: mongodb
+      repository: https://groundhog2k.github.io/helm-charts
+      version: 0.7.1
+    - alias: victorialogs
+      condition: victorialogs.enabled
+      name: victoria-logs-single
+      repository: https://victoriametrics.github.io/helm-charts
+      version: 0.12.1
+    description: A Helm chart for deploying the Flame Node
+    digest: 96bcd675685f2db29acd330746e73971c59e4c235d96db898fe4a12706b13aaa
+    name: flame-node
+    type: application
+    urls:
+    - https://github.com/PrivateAIM/helm/releases/download/flame-node-0.2.1/flame-node-0.2.1.tgz
+    version: 0.2.1
+  - apiVersion: v2
+    appVersion: 0.2.2
     created: "2026-08-13T13:15:06.21069379Z"
     dependencies:
     - name: keycloakx
@@ -1374,6 +1478,24 @@ entries:
     - https://github.com/PrivateAIM/helm/releases/download/flame-node-0.0.4/flame-node-0.0.4.tgz
     version: 0.0.4
   flame-node-data-store:
+  - apiVersion: v2
+    appVersion: 0.9.0
+    created: "2026-08-25T13:48:23.190321696Z"
+    dependencies:
+    - name: blaze
+      repository: file://blaze
+      version: 0.2.1
+    - name: seaweedfs
+      repository: https://seaweedfs.github.io/seaweedfs/helm
+      version: 4.39.0
+    description: A Helm chart for deploying blaze (FHIR) and seaweedfs (S3) data stores
+      for testing the Flame Node
+    digest: 0826e1f6bb655857b2039b68c45c889d09f46d6243fec0898d5c049914a568f8
+    name: flame-node-data-store
+    type: application
+    urls:
+    - https://github.com/PrivateAIM/helm/releases/download/flame-node-data-store-0.2.1/flame-node-data-store-0.2.1.tgz
+    version: 0.2.1
   - apiVersion: v2
     appVersion: 0.9.0
     created: "2026-08-13T13:15:06.414145149Z"
@@ -1847,6 +1969,20 @@ entries:
   openebs-wrapper:
   - apiVersion: v2
     appVersion: 4.5.0
+    created: "2026-08-25T13:48:23.596842108Z"
+    dependencies:
+    - name: openebs
+      repository: https://openebs.github.io/openebs
+      version: 4.5.0
+    description: OpenEBS for FLAME
+    digest: a35660d567293d6cfe37829447133e92eec06cc9c13e173f7b5a1259f7fbbed5
+    name: openebs-wrapper
+    type: application
+    urls:
+    - https://github.com/PrivateAIM/helm/releases/download/openebs-wrapper-0.2.1/openebs-wrapper-0.2.1.tgz
+    version: 0.2.1
+  - apiVersion: v2
+    appVersion: 4.5.0
     created: "2026-08-13T13:15:06.796137902Z"
     dependencies:
     - name: openebs
@@ -1887,4 +2023,4 @@ entries:
     urls:
     - https://github.com/PrivateAIM/helm/releases/download/openebs-wrapper-0.0.11/openebs-wrapper-0.0.11.tgz
     version: 0.0.11
-generated: "2026-08-13T13:15:06.796333169Z"
+generated: "2026-08-25T13:48:23.597017455Z"
