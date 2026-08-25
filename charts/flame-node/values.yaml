@@ -171,6 +171,23 @@ kong:
           name: postgres-kong-credentials-secret
           key: kongDbPassword
 
+# Kong chart only waits for db if its own postgres is enabled.
+# The FLAME Node uses a separate postgres, so we need a wait-for-postgres init container to ensure the database is ready before starting Kong.
+# Otherwise Kong migrations will fail and the pod will crashloop.
+  deployment:
+    initContainers:
+      - name: wait-for-kong-postgresql
+        image: busybox:1.38
+        imagePullPolicy: IfNotPresent
+        command:
+          - sh
+          - -ec
+          - |
+            until nc -z -w 2 flame-node-kong-postgresql 5432; do
+              echo "Waiting for Kong PostgreSQL..."
+              sleep 2
+            done
+
   admin:
     enabled: true
     type: ClusterIP
