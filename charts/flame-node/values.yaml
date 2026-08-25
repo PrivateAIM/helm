@@ -855,7 +855,12 @@ dataStore:
   seaweedfs:
     ## Run everything (master, volume, filer, S3) in a single pod.
     master: { enabled: false }
-    volume: { enabled: false }
+    volume:
+      enabled: false
+      dataDirs:
+        - name: data1
+          type: "custom"
+          maxVolumes: 1000
     filer: { enabled: false }
 
     s3:
@@ -864,14 +869,16 @@ dataStore:
 
     allInOne:
       enabled: true
+      extraEnvironmentVars:
+        WEED_MASTER_VOLUME_GROWTH_COPY_1: "1"
       s3:
         enabled: true
         enableAuth: false
-      ## Built-in filer web UI is served on port 8888 of the
-      ## node-datastore-seaweedfs-all-in-one Service (port-forward to access).
+
       data:
         type: persistentVolumeClaim
         size: 5Gi
+      
       podSecurityContext:
         enabled: true
         runAsUser: 1000
@@ -1133,7 +1140,12 @@ keycloak-postgresql:
 seaweedfs:
   ## Run everything in a single pod and disable the standalone components.
   master: { enabled: false }
-  volume: { enabled: false }
+  volume:
+    enabled: false
+    dataDirs:
+      - name: data1
+        type: "custom"
+        maxVolumes: 7000
   filer: { enabled: false }
 
   s3:
