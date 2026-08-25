@@ -235,6 +235,21 @@ storageService:
     OIDC_CERTS_URL:
     OIDC_CLIENT_ID_CLAIM_NAME: azp
 
+  ## An init container that waits for SeaweedFS and creates bucket for storage service if it does not exist
+  bucketInit:
+    enabled: true
+    image: chrislusf/seaweedfs:4.37
+    pullPolicy: IfNotPresent
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 1000
+      runAsGroup: 1000
+      privileged: false
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: [ALL]
+    resources: {}
+
   # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
   replicaCount: 1
 
@@ -1152,9 +1167,8 @@ seaweedfs:
     s3:
       enabled: true
       enableAuth: true
-      ## Default bucket the storage service reads from / writes to.
-      createBuckets:
-        - name: flame
+      ## Leave empty so the subchart does not render its post-install/post-upgrade bucket, storage handles it
+      createBuckets: []
     data:
       type: persistentVolumeClaim
       size: 10Gi
