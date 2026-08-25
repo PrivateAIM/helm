@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/PrivateAIM/helm/compare/flame-node-0.2.0...flame-node-0.2.1) (2026-08-19)
+
+
+### Miscellaneous Chores
+
+* **flame-node:** Synchronize global versions
+
 ## [0.2.0](https://github.com/PrivateAIM/helm/compare/flame-node-0.1.0...flame-node-0.2.0) (2026-08-11)
 
 
