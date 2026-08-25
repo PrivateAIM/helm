@@ -324,6 +324,17 @@ Return the secret containing private key
 {{- end -}}
 {{- end -}}
 
+{{/*
+Return a checksum of externally provisioned node credentials. These Secrets are
+updated outside Helm, so hashing the rendered values alone would not trigger a
+rollout when credentials rotate.
+*/}}
+{{- define "flame-node.credentialsChecksum" -}}
+{{- $clientSecret := lookup "v1" "Secret" .Release.Namespace (include "hub.secretName" .) -}}
+{{- $privateKeySecret := lookup "v1" "Secret" .Release.Namespace (include "hub.crypto.privateKeySecretName" .) -}}
+{{- printf "%s|%s" (toJson (default (dict) $clientSecret.data)) (toJson (default (dict) $privateKeySecret.data)) | sha256sum -}}
+{{- end -}}
+
 
 {{/*
 Strip scheme from expose.hostname for Gateway API hostnames (HTTPRoute.spec.hostnames, listener hostname).

@@ -22,6 +22,7 @@ spec:
   template:
     metadata:
       annotations:
+        privateaim.net/credentials-checksum: {{ include "flame-node.credentialsChecksum" . }}
         {{- with .Values.hubAdapter.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
