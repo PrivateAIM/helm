@@ -498,17 +498,17 @@ grafana:
         passwordKey: "grafana-admin-password"
     persistence:
         enabled: true
+    # Not exactly sure why, but the init-chown container always crashes
+    # on the second boot of the pod.
+    initChownData:
+        enabled: false
     grafana.ini:
         server:
             # served behind the /grafana ingress path (rewrite strips the prefix to /)
             root_url: "%(protocol)s://%(domain)s/grafana"
             serve_from_sub_path: false
-        plugins:
-            # the VictoriaLogs datasource plugin is unsigned; grafana refuses to load it otherwise
-            allow_loading_unsigned_plugins: victoriametrics-logs-datasource
-
     plugins:
-        - "https://github.com/VictoriaMetrics/victorialogs-datasource/releases/download/v0.27.1/victoriametrics-logs-datasource-v0.27.1.zip;victoriametrics-logs-datasource"
+        - "victoriametrics-logs-datasource"
 
     datasources:
         datasources.yaml:
