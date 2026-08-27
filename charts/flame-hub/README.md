@@ -4,7 +4,7 @@ You can choose if you want to use the chart's harbor, or you external harbor ins
 
 
 ## Storage
-The chart will use whichever storage class is the default in your cluster, unless you specify otherwise in the values. See `/charts/third-party/openebs` for instructions how to setup Mayastor Storage Replication. This requires 3+ nodes in your cluster and will replicate persistant volumes accross them.
+The chart will use whichever storage class is the default in your cluster, unless you specify otherwise in the values.
 
 
 ## Ingress
@@ -114,8 +114,6 @@ cd helm
 cd charts/flame-hub
 ```
 Create your custom values file or copy the suggested minimal example.
-> **Storage Replication (optional)** see the comments regarding mayastor in `values.yaml` on how to configure your values file for storage replication
-
 ```bash
 cp values_min.yaml <my-custom-values-file>
 ```
