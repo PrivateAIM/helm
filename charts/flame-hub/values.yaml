@@ -488,29 +488,70 @@ postgresql:
         fsGroup: 999
     resources: {}
 
+# Upstream community chart grafana/grafana (image grafana/grafana), replacing the
+# retired Bitnami grafana subchart. See issue 2026-08-20-flame-hub-grafana-upstream-chart.
 grafana:
-    nameOverride: "grafana"
+    # official image; chart default is grafana/grafana. Pinned appVersion 12.3.1 (chart 10.5.15).
     image:
-        #repository: "tada5hi/grafana"
-        repository: "bitnamilegacy/grafana"
-        tag: "12.1.1-debian-12-r1"
+        repository: grafana/grafana
+
+    # Keep the client-facing Service on port 3000 so the /grafana ingress rule and the
+    # server-telemetry HTTPRoute/Ingress (which reference {release}-grafana:3000) need no change.
+    # The community chart defaults service.port to 80 -> 3000 targetPort; we pin it back to 3000.
+    service:
+        port: 3000
+
+    # Admin credentials come from the shared flame-hub-auth Secret, seeded by
+    # templates/credentials-secret.yaml (keys grafana-admin-user / grafana-admin-password).
+    # `admin.password` below is NOT consumed by this chart; it is the seed input that
+    # credentials-secret.yaml reads (.Values.grafana.admin.password) — keep it for that lookup.
     admin:
-        password: "" # Leave empty for auto-generation
+        password: "" # Leave empty for auto-generation into flame-hub-auth
         existingSecret: "flame-hub-auth"
-        existingSecretPasswordKey: "grafana-admin-password"
-    dashboardsProvider:
-        enabled: true
+        userKey: "grafana-admin-user"
+        passwordKey: "grafana-admin-password"
+
+    # Dashboards are not provisioned and the PVC is disposable — run stateless (chart default).
+    persistence:
+        enabled: false
+
+    # grafana.ini is deep-merged onto the chart defaults (replaces the old `grafana` ConfigMap).
+    grafana.ini:
+        server:
+            # served behind the /grafana ingress path (rewrite strips the prefix to /)
+            root_url: "%(protocol)s://%(domain)s/grafana"
+            serve_from_sub_path: false
+        plugins:
+            # the VictoriaLogs datasource plugin is unsigned; grafana refuses to load it otherwise
+            allow_loading_unsigned_plugins: victoriametrics-logs-datasource
+
+    # Install the VictoriaLogs datasource plugin from the pinned release zip (URL;folder form,
+    # equivalent to the old Bitnami GF_PLUGINS_PREINSTALL_SYNC entry).
+    plugins:
+        - "https://github.com/VictoriaMetrics/victorialogs-datasource/releases/download/v0.27.1/victoriametrics-logs-datasource-v0.27.1.zip;victoriametrics-logs-datasource"
+
+    # Provisioned datasources (replaces the old grafana-datasources Secret). The chart runs
+    # `tpl` over these values, so {{ .Release.Name }} resolves against the parent release.
     datasources:
-        secretName: grafana-datasources
-    config:
-        useGrafanaIniFile: true
-        grafanaIniConfigMap: grafana
-    grafana:
-        updateStrategy:
-            type: Recreate
-        extraEnvVars:
-            - name: GF_PLUGINS_PREINSTALL_SYNC
-              value: "victoriametrics-logs-datasource@0.27.1@https://github.com/VictoriaMetrics/victorialogs-datasource/releases/download/v0.27.1/victoriametrics-logs-datasource-v0.27.1.zip"
+        datasources.yaml:
+            apiVersion: 1
+            datasources:
+                - name: Prometheus
+                  type: prometheus
+                  access: proxy
+                  url: http://{{ .Release.Name }}-prometheus-server:9090
+                  jsonData:
+                      httpMethod: POST
+                      manageAlerts: true
+                      prometheusType: Prometheus
+                      prometheusVersion: 2.44.0
+                      cacheLevel: 'High'
+                      disableRecordingRules: false
+                      incrementalQueryOverlapWindow: 10m
+                - name: VL
+                  type: victoriametrics-logs-datasource
+                  url: http://{{ .Release.Name }}-victoria-logs-vlselect:9471
+
     # See /charts/third-party/openebs for details
     # persistence:
     #     storageClass: "mayastor-replicated"
