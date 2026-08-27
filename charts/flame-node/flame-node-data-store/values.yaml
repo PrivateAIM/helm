@@ -27,7 +27,24 @@ seaweedfs:
       - name: data1
         type: "custom"
         maxVolumes: 1000
-  filer: { enabled: false }
+  filer:
+    enabled: false
+    podSecurityContext:
+      enabled: true
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
+    containerSecurityContext:
+      enabled: true
+      runAsUser: 1000
+      runAsGroup: 1000
+      runAsNonRoot: true
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: ["ALL"]
 
   s3:
     ## Standalone S3 deployment stays off; the S3 gateway runs inside the all-in-one pod below.
