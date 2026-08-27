@@ -12,8 +12,8 @@ dependencies:
     version: 4.39.0
     repository: https://seaweedfs.github.io/seaweedfs/helm
   - name: grafana
-    version: 12.1.8
-    repository: oci://registry-1.docker.io/bitnamicharts
+    version: 10.5.15
+    repository: https://grafana.github.io/helm-charts
   - name: victoria-logs-cluster
     version: 0.0.24
     repository: https://victoriametrics.github.io/helm-charts/

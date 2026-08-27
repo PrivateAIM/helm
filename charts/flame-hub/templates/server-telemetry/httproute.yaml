@@ -22,7 +22,7 @@ spec:
                   replacePrefixMatch: /
           backendRefs:
             - name: {{ .Release.Name }}-grafana
-              port: 3000
+              port: 80
         - matches:
             - path:
                 type: PathPrefix
