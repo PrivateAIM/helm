@@ -1219,24 +1219,7 @@ seaweedfs:
       - name: data1
         type: "custom"
         maxVolumes: 7000
-  filer:
-    enabled: false
-    podSecurityContext:
-      enabled: true
-      runAsUser: 1000
-      runAsGroup: 1000
-      fsGroup: 1000
-      runAsNonRoot: true
-      seccompProfile:
-        type: RuntimeDefault
-    containerSecurityContext:
-      enabled: true
-      runAsUser: 1000
-      runAsGroup: 1000
-      runAsNonRoot: true
-      allowPrivilegeEscalation: false
-      capabilities:
-        drop: ["ALL"]
+  filer: { enabled: false }
 
   s3:
     ## Use the all-in-one S3 gateway rather than a standalone S3 deployment.
