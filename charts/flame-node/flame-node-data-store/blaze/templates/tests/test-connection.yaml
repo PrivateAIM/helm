@@ -7,6 +7,9 @@ metadata:
   annotations:
     "helm.sh/hook": test
 spec:
+  securityContext:
+    seccompProfile:
+      type: RuntimeDefault
   containers:
     - name: wget
       image: busybox
