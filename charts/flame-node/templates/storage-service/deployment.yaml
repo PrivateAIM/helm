@@ -22,6 +22,7 @@ spec:
   template:
     metadata:
       annotations:
+        privateaim.net/credentials-checksum: {{ include "flame-node.credentialsChecksum" . }}
         {{- with .Values.storageService.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
@@ -42,6 +43,48 @@ spec:
       {{- end }}
       securityContext:
         {{- toYaml .Values.storageService.podSecurityContext | nindent 8 }}
+      {{- if .Values.storageService.bucketInit.enabled }}
+      initContainers:
+        - name: ensure-bucket
+          image: {{ .Values.storageService.bucketInit.image | quote }}
+          imagePullPolicy: {{ .Values.storageService.bucketInit.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.storageService.bucketInit.securityContext | nindent 12 }}
+          env:
+            - name: WEED_CLUSTER_DEFAULT
+              value: "sw"
+            - name: WEED_CLUSTER_SW_MASTER
+              value: {{ include "seaweedfs.master.endpoint" . | quote }}
+            - name: WEED_CLUSTER_SW_FILER
+              value: {{ include "seaweedfs.filer.endpoint" . | quote }}
+            - name: S3__BUCKET
+              value: {{ required "MinIO bucket must be set." .Values.storageService.env.MINIO_BUCKET | quote }}
+            # Allows non-root user to write temp files
+            - name: HOME
+              value: /tmp
+          command:
+            - /bin/sh
+            - -ec
+            - |
+              set -o pipefail
+              until wget -q --spider "http://$WEED_CLUSTER_SW_MASTER/cluster/status"; do
+                echo "Waiting for SeaweedFS master at $WEED_CLUSTER_SW_MASTER..."
+                sleep 5
+              done
+              until wget -q --spider "http://$WEED_CLUSTER_SW_FILER/"; do
+                echo "Waiting for SeaweedFS filer at $WEED_CLUSTER_SW_FILER..."
+                sleep 5
+              done
+              bucket_list=$(/bin/echo 's3.bucket.list' | /usr/bin/weed shell) || { echo "Error listing s3 buckets"; exit 1; }
+              if echo "$bucket_list" | awk '{print $1}' | grep -Fxq "$S3__BUCKET"; then
+                echo "Bucket '$S3__BUCKET' already exists, skipping creation."
+              else
+                echo "Creating bucket '$S3__BUCKET'..."
+                /bin/echo "s3.bucket.create --name $S3__BUCKET" | /usr/bin/weed shell
+              fi
+          resources:
+            {{- toYaml .Values.storageService.bucketInit.resources | nindent 12 }}
+      {{- end }}
       containers:
         - name: storage-service
           securityContext:

@@ -299,10 +299,24 @@ Return the name of the Secret containing the nuxtAuthSecret
 
 {{/*Storage Service helpers*/}}
 {{/*
-Return the endpoint (host:port) of the SeaweedFS S3 gateway.
+Return the endpoint of the SeaweedFS S3 gateway.
 */}}
 {{- define "seaweedfs.s3.endpoint" -}}
 {{- printf "%s-seaweedfs-all-in-one:8333" .Release.Name -}}
+{{- end -}}
+
+{{/*
+Return of the SeaweedFS master endpoint
+*/}}
+{{- define "seaweedfs.master.endpoint" -}}
+{{- printf "%s-seaweedfs-all-in-one.%s:9333" .Release.Name .Release.Namespace -}}
+{{- end -}}
+
+{{/*
+Return the SeaweedFS filer endpoint
+*/}}
+{{- define "seaweedfs.filer.endpoint" -}}
+{{- printf "%s-seaweedfs-all-in-one.%s:8888" .Release.Name .Release.Namespace -}}
 {{- end -}}
 
 {{/*
@@ -322,6 +336,17 @@ Return the secret containing private key
 {{- else -}}
     {{- printf "%s-ecdh-private-key-secret" .Release.Name -}}
 {{- end -}}
+{{- end -}}
+
+{{/*
+Return a checksum of externally provisioned node credentials. These Secrets are
+updated outside Helm, so hashing the rendered values alone would not trigger a
+rollout when credentials rotate.
+*/}}
+{{- define "flame-node.credentialsChecksum" -}}
+{{- $clientSecret := lookup "v1" "Secret" .Release.Namespace (include "hub.secretName" .) -}}
+{{- $privateKeySecret := lookup "v1" "Secret" .Release.Namespace (include "hub.crypto.privateKeySecretName" .) -}}
+{{- printf "%s|%s" (toJson (default (dict) $clientSecret.data)) (toJson (default (dict) $privateKeySecret.data)) | sha256sum -}}
 {{- end -}}
 
 

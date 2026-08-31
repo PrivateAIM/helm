@@ -8,18 +8,12 @@ dependencies:
   - name: common
     version: 2.31.4
     repository: oci://registry-1.docker.io/bitnamicharts
-  - name: redis
-    version: 22.0.6
-    repository: oci://registry-1.docker.io/bitnamicharts
-  - name: rabbitmq
-    version: 16.0.14
-    repository: oci://registry-1.docker.io/bitnamicharts
   - name: seaweedfs
     version: 4.39.0
     repository: https://seaweedfs.github.io/seaweedfs/helm
   - name: grafana
-    version: 12.1.8
-    repository: oci://registry-1.docker.io/bitnamicharts
+    version: 10.5.15
+    repository: https://grafana.github.io/helm-charts
   - name: victoria-logs-cluster
     version: 0.0.24
     repository: https://victoriametrics.github.io/helm-charts/
@@ -30,6 +24,7 @@ dependencies:
     name: harbor
     version: 1.19.1
     repository: https://helm.goharbor.io
+  # Upstream chart: https://github.com/authup/helm
   - name: authup
-    repository: file://../third-party/authup
-    version: 0.2.1
+    version: 0.3.0
+    repository: https://helm.authup.org

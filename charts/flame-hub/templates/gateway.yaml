@@ -1,22 +1,30 @@
 {{- $globalEnabled := .Values.global.flameHub.gatewayApi.enabled -}}
 {{- $harborEnabled := and .Values.harbor.enabled (not .Values.externalHarbor.enabled) (or $globalEnabled .Values.harbor.gatewayApi.enabled) -}}
 {{- $globalHostname := .Values.global.flameHub.gatewayApi.hostname -}}
+{{/* First entry of authup.server.route.hostnames, rendered here (it is a tpl value). */}}
+{{- $authupHostname := "" -}}
+{{- with .Values.authup.server.route.hostnames -}}
+{{- $authupHostname = tpl (index . 0 | toString) $ -}}
+{{- end -}}
 
-{{/* Collect unique hostnames from enabled services */}}
+{{- $authupEnabled := include "flameHub.authup.routeEnabled" . -}}
+
+{{/* Collect unique hostnames from enabled services. */}}
 {{- $seen := dict -}}
 {{- $listeners := list -}}
 {{- range $svc := list
-    (dict "name" "client-ui"         "enabled" (or $globalEnabled $.Values.clientUI.gatewayApi.enabled)         "hostname" $.Values.clientUI.gatewayApi.hostname)
-    (dict "name" "server-core"       "enabled" (or $globalEnabled $.Values.serverCore.gatewayApi.enabled)       "hostname" $.Values.serverCore.gatewayApi.hostname)
-    (dict "name" "server-messenger"  "enabled" (or $globalEnabled $.Values.serverMessenger.gatewayApi.enabled)  "hostname" $.Values.serverMessenger.gatewayApi.hostname)
-    (dict "name" "server-storage"    "enabled" (or $globalEnabled $.Values.serverStorage.gatewayApi.enabled)    "hostname" $.Values.serverStorage.gatewayApi.hostname)
-    (dict "name" "server-telemetry"  "enabled" (or $globalEnabled $.Values.serverTelemetry.gatewayApi.enabled)  "hostname" $.Values.serverTelemetry.gatewayApi.hostname)
-    (dict "name" "authup"            "enabled" (or $globalEnabled $.Values.authup.gatewayApi.enabled)            "hostname" $.Values.authup.gatewayApi.hostname)
+    (dict "name" "client-ui"         "enabled" (or $globalEnabled $.Values.clientUI.gatewayApi.enabled)         "hostname" $.Values.clientUI.gatewayApi.hostname         "key" "clientUI.gatewayApi.hostname")
+    (dict "name" "server-core"       "enabled" (or $globalEnabled $.Values.serverCore.gatewayApi.enabled)       "hostname" $.Values.serverCore.gatewayApi.hostname       "key" "serverCore.gatewayApi.hostname")
+    (dict "name" "server-messenger"  "enabled" (or $globalEnabled $.Values.serverMessenger.gatewayApi.enabled)  "hostname" $.Values.serverMessenger.gatewayApi.hostname  "key" "serverMessenger.gatewayApi.hostname")
+    (dict "name" "server-storage"    "enabled" (or $globalEnabled $.Values.serverStorage.gatewayApi.enabled)    "hostname" $.Values.serverStorage.gatewayApi.hostname    "key" "serverStorage.gatewayApi.hostname")
+    (dict "name" "server-telemetry"  "enabled" (or $globalEnabled $.Values.serverTelemetry.gatewayApi.enabled)  "hostname" $.Values.serverTelemetry.gatewayApi.hostname  "key" "serverTelemetry.gatewayApi.hostname")
+    (dict "name" "authup"            "enabled" $authupEnabled                                                             "hostname" $authupHostname                              "key" "authup.server.route.hostnames[0]")
 -}}
 {{- if $svc.enabled -}}
 {{- $h := $svc.hostname | default $globalHostname -}}
 {{- if not $h -}}
-{{- fail (printf "%s.gatewayApi.hostname or global.flameHub.gatewayApi.hostname is required when %s.gatewayApi.enabled=true" $svc.name $svc.name) -}}
+{{/* "key" carries the real values path: the listener names are kebab-case, the values keys are not. */}}
+{{- fail (printf "%s or global.flameHub.gatewayApi.hostname is required when the %q route is enabled" $svc.key $svc.name) -}}
 {{- end -}}
 {{- if not (hasKey $seen $h) -}}
 {{- $_ := set $seen $h true -}}

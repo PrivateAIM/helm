@@ -171,6 +171,31 @@ kong:
           name: postgres-kong-credentials-secret
           key: kongDbPassword
 
+# Kong chart only waits for db if its own postgres is enabled.
+# The FLAME Node uses a separate postgres, so we need a wait-for-postgres init container to ensure the database is ready before starting Kong.
+# Otherwise Kong migrations will fail and the pod will crashloop.
+  deployment:
+    initContainers:
+      - name: wait-for-kong-postgresql
+        image: busybox:1.38
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 65534
+          runAsGroup: 65534
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop: ["ALL"]
+        command:
+          - sh
+          - -ec
+          - |
+            until nc -z -w 2 flame-node-kong-postgresql 5432; do
+              echo "Waiting for Kong PostgreSQL..."
+              sleep 2
+            done
+
   admin:
     enabled: true
     type: ClusterIP
@@ -218,6 +243,21 @@ storageService:
     OIDC_CERTS_URL:
     OIDC_CLIENT_ID_CLAIM_NAME: azp
 
+  ## An init container that waits for SeaweedFS and creates bucket for storage service if it does not exist
+  bucketInit:
+    enabled: true
+    image: chrislusf/seaweedfs:4.37
+    pullPolicy: IfNotPresent
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 1000
+      runAsGroup: 1000
+      privileged: false
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: [ALL]
+    resources: {}
+
   # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
   replicaCount: 1
 
@@ -239,7 +279,9 @@ storageService:
   # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
   podLabels: {}
 
-  podSecurityContext: {}
+  podSecurityContext:
+    seccompProfile:
+      type: RuntimeDefault
   # fsGroup: 2000
 
   securityContext:
@@ -313,6 +355,18 @@ keycloakx:
 
   nameOverride: keycloak # Otherwise uses "keycloakx", this keeps it backwards compatible
 
+  podSecurityContext:
+    fsGroup: 1000
+    seccompProfile:
+      type: RuntimeDefault
+
+  securityContext:
+    runAsUser: 1000
+    runAsNonRoot: true
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: ["ALL"]
+
   http:
     relativePath: /keycloak
 
@@ -326,6 +380,13 @@ keycloakx:
 
   dbchecker:
     enabled: true
+    securityContext:
+      allowPrivilegeEscalation: false
+      runAsUser: 1000
+      runAsGroup: 1000
+      runAsNonRoot: true
+      capabilities:
+        drop: ["ALL"]
 
   database:
     vendor: postgres
@@ -418,7 +479,9 @@ hubAdapter:
   # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
   podLabels: {}
 
-  podSecurityContext: {}
+  podSecurityContext:
+    seccompProfile:
+      type: RuntimeDefault
     # fsGroup: 2000
 
   securityContext:
@@ -510,7 +573,7 @@ podOrchestrator:
   image:
     repository: ghcr.io/privateaim/node-pod-orchestration
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.6.2
+    tag: 0.6.3
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -524,7 +587,9 @@ podOrchestrator:
   # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
   podLabels: {}
 
-  podSecurityContext: {}
+  podSecurityContext:
+    seccompProfile:
+      type: RuntimeDefault
     # fsGroup: 2000
 
   securityContext:
@@ -638,7 +703,9 @@ messageBroker:
   # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
   podLabels: {}
 
-  podSecurityContext: {}
+  podSecurityContext:
+    seccompProfile:
+      type: RuntimeDefault
   # fsGroup: 2000
 
   securityContext:
@@ -741,7 +808,9 @@ ui:
   # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
   podLabels: {}
 
-  podSecurityContext: {}
+  podSecurityContext:
+    seccompProfile:
+      type: RuntimeDefault
     # fsGroup: 2000
 
   securityContext:
@@ -838,7 +907,12 @@ dataStore:
   seaweedfs:
     ## Run everything (master, volume, filer, S3) in a single pod.
     master: { enabled: false }
-    volume: { enabled: false }
+    volume:
+      enabled: false
+      dataDirs:
+        - name: data1
+          type: "custom"
+          maxVolumes: 1000
     filer: { enabled: false }
 
     s3:
@@ -847,14 +921,16 @@ dataStore:
 
     allInOne:
       enabled: true
+      extraEnvironmentVars:
+        WEED_MASTER_VOLUME_GROWTH_COPY_1: "1"
       s3:
         enabled: true
         enableAuth: false
-      ## Built-in filer web UI is served on port 8888 of the
-      ## node-datastore-seaweedfs-all-in-one Service (port-forward to access).
+
       data:
         type: persistentVolumeClaim
         size: 5Gi
+      
       podSecurityContext:
         enabled: true
         runAsUser: 1000
@@ -942,6 +1018,13 @@ postgresql:
   nameOverride:
   fullnameOverride:
 
+  podSecurityContext:
+    fsGroup: 999
+    supplementalGroups:
+      - 999
+    seccompProfile:
+      type: RuntimeDefault
+
   resources: {}
 
   service:
@@ -1016,6 +1099,13 @@ kong-postgresql:
   nameOverride:
   fullnameOverride: flame-node-kong-postgresql
 
+  podSecurityContext:
+    fsGroup: 999
+    supplementalGroups:
+      - 999
+    seccompProfile:
+      type: RuntimeDefault
+
   resources: {}
 
   service:
@@ -1064,6 +1154,13 @@ kong-postgresql:
 keycloak-postgresql:
   nameOverride:
   fullnameOverride: flame-node-keycloak-postgresql # Required so keycloak can enable database checker
+
+  podSecurityContext:
+    fsGroup: 999
+    supplementalGroups:
+      - 999
+    seccompProfile:
+      type: RuntimeDefault
 
   resources: {}
 
@@ -1116,7 +1213,12 @@ keycloak-postgresql:
 seaweedfs:
   ## Run everything in a single pod and disable the standalone components.
   master: { enabled: false }
-  volume: { enabled: false }
+  volume:
+    enabled: false
+    dataDirs:
+      - name: data1
+        type: "custom"
+        maxVolumes: 7000
   filer: { enabled: false }
 
   s3:
@@ -1135,9 +1237,8 @@ seaweedfs:
     s3:
       enabled: true
       enableAuth: true
-      ## Default bucket the storage service reads from / writes to.
-      createBuckets:
-        - name: flame
+      ## Leave empty so the subchart does not render its post-install/post-upgrade bucket, storage handles it
+      createBuckets: []
     data:
       type: persistentVolumeClaim
       size: 10Gi
@@ -1163,6 +1264,13 @@ mongodb:
   imagePullSecrets: []
   nameOverride: ""
   fullnameOverride: ""
+
+  podSecurityContext:
+    fsGroup: 999
+    supplementalGroups:
+      - 999
+    seccompProfile:
+      type: RuntimeDefault
 
   ## Optional service account
   serviceAccount:
@@ -1218,8 +1326,19 @@ victorialogs:
       enabled: true
       size: 20Gi
       storageClassName: ""
+    podSecurityContext:
+      enabled: true
+      fsGroup: 2000
+      runAsNonRoot: true
+      runAsUser: 1000
+      seccompProfile:
+        type: RuntimeDefault
 
   vector:
+    ## @param victorialogs.vector.enabled Deploy the Vector agent that ships pod logs into Victoria Logs.
+    ##
+    ## NOTE FOR RESTRICTED CLUSTERS: Vector runs as a DaemonSet and reads the node's container logs via hostPath mounts
+    ## If vector cannot be deployed in a DaemonSet, you can disable it here and deploy your own log shipping solution to Victoria Logs instead.
     enabled: true
     ## @param victoria-logs.vector.logLevelFilter Minimum log level to ingest. Logs below this level are dropped by Vector.
     ## Valid values: DEBUG, INFO, WARNING, ERROR, CRITICAL (case-insensitive). Empty string disables filtering. 

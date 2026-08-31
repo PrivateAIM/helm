@@ -4,7 +4,7 @@ You can choose if you want to use the chart's harbor, or you external harbor ins
 
 
 ## Storage
-The chart will use whichever storage class is the default in your cluster, unless you specify otherwise in the values. See `/charts/third-party/openebs` for instructions how to setup Mayastor Storage Replication. This requires 3+ nodes in your cluster and will replicate persistant volumes accross them.
+The chart will use whichever storage class is the default in your cluster, unless you specify otherwise in the values.
 
 
 ## Ingress
@@ -22,7 +22,7 @@ Set `global.flameHub.gatewayApi.enabled: true` along with required values or set
 
 ### Key Differences from Ingress
 
-- While `global.flameHub.gatewayApi.enabled` enables gatewayApi for all services, the per-service configuration (domain, path) is still done in each service's values section.
+- While `global.flameHub.gatewayApi.enabled` enables gatewayApi for all services, the per-service configuration (domain, path) is still done in each service's values section — authup being the exception, which is configured through `authup.server.route` in the upstream chart's own vocabulary.
 - If you are using NGF and have `nginxGatewayFabric.snippets` enabled in the `global.flameHub` section, the correct proxy parameters will be set. Otherwise, please use the annotations field to achieve the same configuration, or else the Hub will not be usable.
 - Unlike ingress-nginx, Gateway Controllers usually expose a LoadBalancer Service. If you want to expose your cluster directly, extra steps are necessary.
 
@@ -75,8 +75,8 @@ You must give each release its own value for:
 | `harbor.database.external.existingSecret` | `flame-hub-pg` | Harbor's DB secret — **must match** the effective PostgreSQL secret |
 | `auth.secretName` | `flame-hub-auth` | central chart secret for other service credentials |
 | `authup.auth.existingSecret` | `flame-hub-auth` | subchart reference — **must match** `auth.secretName` |
+| `authup.externalRedis.existingSecret` | `flame-hub-auth` | subchart reference (reads `redis-connection-string`) — **must match** `auth.secretName` |
 | `rabbitmq.auth.existingPasswordSecret` | `flame-hub-auth` | subchart reference — **must match** `auth.secretName` |
-| `redis.auth.existingSecret` | `flame-hub-auth` | subchart reference — **must match** `auth.secretName` |
 | `grafana.admin.existingSecret` | `flame-hub-auth` | subchart reference — **must match** `auth.secretName` |
 | `harbor.secretName` | `flame-hub-harbor` | Harbor's own credentials Secret (admin password, core `secretKey`, connection string) |
 | `harbor.existingSecretAdminPassword` | `flame-hub-harbor` | goharbor reference — **must match** the effective Harbor secret (`harbor.existingSecret` when set, otherwise `harbor.secretName`) |
@@ -114,8 +114,6 @@ cd helm
 cd charts/flame-hub
 ```
 Create your custom values file or copy the suggested minimal example.
-> **Storage Replication (optional)** see the comments regarding mayastor in `values.yaml` on how to configure your values file for storage replication
-
 ```bash
 cp values_min.yaml <my-custom-values-file>
 ```

@@ -70,7 +70,6 @@
 * replace loki with victorialogs ([#89](https://github.com/PrivateAIM/helm/issues/89)) ([ff37fb6](https://github.com/PrivateAIM/helm/commit/ff37fb64181e8ced3f93385b07473fa1fe024fbf))
 * replace mysql vs postgresql ([#109](https://github.com/PrivateAIM/helm/issues/109)) ([26a74b4](https://github.com/PrivateAIM/helm/commit/26a74b4bf1a17f207a567cb5264e7431fdac11a5))
 * replace robot with client authentication/authroization ([#111](https://github.com/PrivateAIM/helm/issues/111)) ([29b2f5a](https://github.com/PrivateAIM/helm/commit/29b2f5a6924167df910d6205c212444d605bd88f))
-* storage replication with mayastor ([#100](https://github.com/PrivateAIM/helm/issues/100)) ([b2fa83d](https://github.com/PrivateAIM/helm/commit/b2fa83d0bc25fb213945efc5d5f6fcfd7291ccd9))
 
 
 ### Bug Fixes

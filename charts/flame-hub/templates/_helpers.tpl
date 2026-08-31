@@ -85,6 +85,21 @@ Create the name of the service account to use
 {{- end -}}
 
 
+{{/*
+Name/host of the chart-managed Redis Service. Read from global.flameHub.redis so the value also resolves inside
+subcharts (Helm shares only `global`); the authup subchart reaches it through this helper.
+*/}}
+{{- define "flameHub.redis.host" -}}
+{{- $redis := (((.Values.global).flameHub).redis) | default dict -}}
+{{- $redis.host | default (printf "%s-redis" .Release.Name) -}}
+{{- end -}}
+
+{{- define "flameHub.redis.port" -}}
+{{- $redis := (((.Values.global).flameHub).redis) | default dict -}}
+{{- $redis.port | default 6379 -}}
+{{- end -}}
+
+
 {{- define "flameHub.harbor.secretName" -}}
 {{- .Values.harbor.existingSecret | default (required "harbor.secretName is required" .Values.harbor.secretName) -}}
 {{- end -}}
@@ -143,10 +158,24 @@ Validate ingress mode: global path-based ingress and individual service ingresse
     .Values.serverMessenger.ingress.enabled
     .Values.serverStorage.ingress.enabled
     .Values.serverTelemetry.ingress.enabled
-    .Values.authup.ingress.enabled
+    .Values.authup.server.ingress.enabled
 -}}
 {{- if and $globalIngressEnabled $individualIngressEnabled -}}
 {{- fail "Ingress configuration is mutually exclusive: disable global.flameHub.ingress.enabled or disable individual service ingress settings (clientUI, serverCore, serverMessenger, serverStorage, serverTelemetry, authup)." -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+authup.server.route.enabled, resolved the way the authup subchart resolves it.
+The value is a tpl string (it defaults to global.flameHub.gatewayApi.enabled), so a plain
+`if` would read a rendered "false" as a non-empty, and therefore truthy, string. Going
+through the subchart's own strict helper keeps what this chart renders around the route -
+the Gateway listener and the NGF SnippetsFilter - in agreement with the HTTPRoute the
+subchart renders. Yields "true" or "", so it drops straight into an `if`.
+*/}}
+{{- define "flameHub.authup.routeEnabled" -}}
+{{- if .Values.authup.server.enabled -}}
+{{- include "authup.flag" (dict "value" .Values.authup.server.route.enabled "context" . "key" "authup.server.route.enabled") -}}
 {{- end -}}
 {{- end -}}
 

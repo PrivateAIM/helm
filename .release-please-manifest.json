@@ -1,6 +1,5 @@
 {
   ".": "0.2.1",
   "charts/flame-hub": "0.2.1",
-  "charts/flame-node": "0.2.1",
-  "charts/third-party/authup": "0.2.1"
+  "charts/flame-node": "0.2.1"
 }

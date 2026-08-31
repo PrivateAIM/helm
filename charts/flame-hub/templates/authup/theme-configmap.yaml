@@ -1,10 +1,10 @@
-{{- if .Values.authup.theme.enabled }}
+{{- if .Values.authup.server.theme.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: "{{ .Release.Name }}-authup-theme"
   labels:
-    app: "{{ .Release.Name }}-authup-server-core"
+    app: "{{ .Release.Name }}-authup-server"
 data:
   # Authup console theme - carries the FLAME Hub design onto the surfaces authup
   # serves itself (the auth/login pages and the account console at /account), so

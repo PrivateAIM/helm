@@ -19,32 +19,36 @@ spec:
             restartPolicy: Always
             initContainers:
                 - name: wait-for-db
-                  image: busybox
+                  image: busybox:1.38
+                  imagePullPolicy: IfNotPresent
                   command: [
                       'sh',
                       '-c',
                       'until nc -z -v -w30 {{ include "flameHub.postgresql.host" . }} 5432; do echo "Waiting for db..."; sleep 5; done'
                     ]
                 -   name: wait-for-redis
-                    image: busybox
+                    image: busybox:1.38
+                    imagePullPolicy: IfNotPresent
                     command: [
                         'sh',
                         '-c',
-                        'until nc -z -v -w30 {{ .Release.Name }}-redis-master 6379; do echo "Waiting for redis..."; sleep 5; done'
+                        'until nc -z -v -w30 {{ include "flameHub.redis.host" . }} {{ include "flameHub.redis.port" . }}; do echo "Waiting for redis..."; sleep 5; done'
                     ]
                 -   name: wait-for-rabbitmq
-                    image: busybox
+                    image: busybox:1.38
+                    imagePullPolicy: IfNotPresent
                     command: [
                       'sh',
                       '-c',
                       'until nc -z -v -w30 {{ .Release.Name }}-rabbitmq 5672; do echo "Waiting for rabbitmq..."; sleep 5; done'
                     ]
                 -   name: wait-for-authup
-                    image: busybox
+                    image: busybox:1.38
+                    imagePullPolicy: IfNotPresent
                     command: [
                         'sh',
                         '-c',
-                        'until nc -z -v -w30 {{ .Release.Name }}-authup-server-core 3000; do echo "Waiting for authup..."; sleep 5; done'
+                        'until nc -z -v -w30 {{ .Release.Name }}-authup-server 3000; do echo "Waiting for authup..."; sleep 5; done'
                     ]
             containers:
                 -   name: "{{ .Release.Name }}-flame-hub-server-messenger"
@@ -66,7 +70,7 @@ spec:
                                     name: {{ include "flameHub.effectiveSecretName" .  }}
                                     key: rabbitmq-connection-string
                         -   name: AUTHUP_URL
-                            value: "http://{{ .Release.Name }}-authup-server-core:3000/"
+                            value: "http://{{ .Release.Name }}-authup-server:3000/"
                         -   name: DB_TYPE
                             value: "postgres"
                         -   name: DB_HOST

@@ -1,4 +1,4 @@
-{{- if and .Values.global.flameHub.gatewayApi.nginxGatewayFabric.snippets (or .Values.global.flameHub.gatewayApi.enabled .Values.authup.gatewayApi.enabled) -}}
+{{- if and .Values.global.flameHub.gatewayApi.nginxGatewayFabric.snippets (include "flameHub.authup.routeEnabled" .) -}}
 apiVersion: gateway.nginx.org/v1alpha1
 kind: SnippetsFilter
 metadata:
