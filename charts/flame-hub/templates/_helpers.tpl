@@ -210,6 +210,32 @@ flame-hub PostgreSQL and Harbor names.
 {{- end -}}
 
 {{/*
+Refuse a clientUI.cookieDomain that reaches authup's own origin.
+
+The Hub UI and authup's hosted consoles both persist their session under the
+SAME cookie names. They stay apart only while their (name, domain, path) keys
+differ: authup scopes its records to the sub-path it is served under, and the
+UI writes host-only records at the root. Naming a domain opts the UI out of
+host-only - the browser then delivers its records to every subdomain, so a
+value covering authup's host puts two writers back on one key. Reads take the
+FIRST record of a name, which is the older one, so each side can end up
+driving on - and cleanup-revoking - the other's tokens.
+
+Empty (the default) is host-only and always safe. A value is only for sharing
+the session with a sibling host that must read the cookie itself; authup is
+never such a host.
+*/}}
+{{- define "flameHub.validateCookieDomain" -}}
+{{- $domain := .Values.clientUI.cookieDomain | default "" | toString | trim | trimPrefix "." -}}
+{{- if $domain -}}
+{{- $authupHost := (urlParse (include "flameHub.authup.publicURL" .)).host | splitList ":" | first -}}
+{{- if or (eq $authupHost $domain) (hasSuffix (printf ".%s" $domain) $authupHost) -}}
+{{- fail (printf "clientUI.cookieDomain (%q) covers the authup host (%q), so the Hub UI session cookies are delivered into authup's own origin and collide with the console's records under the same names. Leave clientUI.cookieDomain empty (host-only cookies), or move authup to a host outside that domain." $domain $authupHost) -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Generate a pair of HTTP (+ optional HTTPS) gateway listeners for a given name and hostname.
 Expects a dict with keys: name, hostname, tls (the global TLS config dict).
 */}}
