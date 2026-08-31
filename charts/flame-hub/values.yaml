@@ -79,13 +79,34 @@ global:
 image:
     registry: ghcr.io
     repository: privateaim/hub
-    tag: 0.13.2
+    tag: 0.15.0
     pullPolicy: Always
 
 # internal services
 clientUI:
     replicaCount: 3
     publicHttps: false # global.flameHub.publicHttps also enables this
+    # Domain attribute for the UI's session cookies. LEAVE EMPTY unless a
+    # sibling host genuinely has to read them.
+    #
+    # Empty means host-only: the browser hands the cookies back to the UI host
+    # and nowhere else. That is what keeps them apart from authup's own session
+    # records, which use the SAME cookie names - authup scopes its records to
+    # the sub-path it is served under, the UI keeps the root path, and neither
+    # can see the other.
+    #
+    # A value opts out of host-only: the cookies are then delivered to every
+    # SUBDOMAIN of it as well. If that covers authup's host (e.g. cookieDomain
+    # "example.com" with authup on "auth.example.com", or authup sharing the UI
+    # host), two writers land on one cookie key. A read takes the first record
+    # of a name - the older one - so each side can drive on, rotate and
+    # cleanup-revoke the other's tokens, which surfaces as being logged out on
+    # the next page load. The render refuses that combination; see
+    # flameHub.validateCookieDomain.
+    #
+    # It buys the Hub nothing by default: the services read the bearer token
+    # from the Authorization header, and their cookie fallback only ever sees
+    # same-origin requests under the shared hostname.
     cookieDomain: ""
     # service specific ingress configuration. If you use this, you will need a separate domain for each service
     ingress:
