@@ -1,0 +1,32 @@
+{{- if ne .Values.mode "project" }}{{- else }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    {{- include "flame-provisioner.hookAnnotations" . | nindent 4 }}
+  labels:
+    {{- include "flame-provisioner.labels" . | nindent 4 }}
+spec:
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        {{- include "flame-provisioner.labels" . | nindent 8 }}
+    spec:
+      initContainers:
+        {{- include "flame-provisioner.waitForHub" . | nindent 8 }}
+      containers:
+        - name: seed-project
+          image: {{ printf "%s:%s" (required "image.repository is required" .Values.image.repository) .Chart.AppVersion | quote }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args: [seed-project]
+          env:
+            - name: PROJECT_NAME
+              value: {{ required "project.name is required for project mode" .Values.project.name | quote }}
+            - name: PROJECT_DISPLAY_NAME
+              value: {{ default (required "project.name is required for project mode" .Values.project.name) .Values.project.displayName | quote }}
+            {{- include "flame-provisioner.seederEnv" . | nindent 12 }}
+      restartPolicy: OnFailure
+{{- end }}
