@@ -14,6 +14,11 @@
       "component": "flame-node",
       "release-type": "helm",
       "skip-github-release": true
+    },
+    "internal/flame-provisioner": {
+      "component": "flame-provisioner",
+      "release-type": "helm",
+      "skip-github-release": true
     }
   },
   "plugins": [
@@ -23,7 +28,8 @@
       "components": [
         "root",
         "flame-hub",
-        "flame-node"
+        "flame-node",
+        "flame-provisioner"
       ]
     }
   ],

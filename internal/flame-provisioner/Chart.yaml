@@ -2,5 +2,5 @@ apiVersion: v2
 name: flame-provisioner
 description: Internal FLAME preview and benchmark provisioning jobs
 type: application
-version: 0.1.0
-appVersion: "2.1.2"
+version: 0.2.1
+appVersion: "2.2.0"

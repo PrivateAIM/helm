@@ -29,3 +29,5 @@ node:
   outputDir: /output
   destinationNamespace: ""
   serviceAccountName: ""
+  # replace the node's key pair and Authup client secret
+  rotateCredentials: false

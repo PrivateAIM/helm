@@ -5,8 +5,8 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 app.kubernetes.io/component: provisioning
 helm.sh/chart: {{ printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" }}
-flame.privateaim.dev/chart-version: {{ .Chart.Version | quote }}
-flame.privateaim.dev/seeder-version: {{ .Chart.AppVersion | quote }}
+flame.privateaim.dev/chart-version: {{ .Chart.Version | replace "+" "_" | quote }}
+flame.privateaim.dev/seeder-version: {{ .Chart.AppVersion | replace "+" "_" | quote }}
 flame.privateaim.dev/provisioning-mode: {{ .Values.mode | quote }}
 {{- end }}
 
