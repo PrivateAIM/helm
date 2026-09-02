@@ -1,0 +1,73 @@
+{{- if eq .Values.mode "node" }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    {{- include "flame-provisioner.hookAnnotations" . | nindent 4 }}
+  labels:
+    {{- include "flame-provisioner.labels" . | nindent 4 }}
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 3600
+  template:
+    metadata:
+      labels:
+        {{- include "flame-provisioner.labels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ required "node.serviceAccountName is required for node mode" .Values.node.serviceAccountName | quote }}
+      volumes:
+        - name: output
+          emptyDir: {}
+      initContainers:
+        {{- include "flame-provisioner.waitForHub" . | nindent 8 }}
+        - name: seed-node
+          image: {{ printf "%s:%s" (required "image.repository is required" .Values.image.repository) .Chart.AppVersion | quote }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args: [seed-node]
+          env:
+            - name: NODE_NAME
+              value: {{ required "node.name is required for node mode" .Values.node.name | quote }}
+            - name: OUTPUT_DIR
+              value: {{ required "node.outputDir is required for node mode" .Values.node.outputDir | quote }}
+            - name: PROJECT_NAME
+              value: {{ required "project.name is required for node mode" .Values.project.name | quote }}
+            - name: NODE_TYPE
+              value: {{ required "node.type is required for node mode" .Values.node.type | quote }}
+            - name: NODE_URL
+              value: {{ required "node.url is required for node mode" .Values.node.url | quote }}
+            - name: ROTATE_CREDENTIALS
+              value: {{ .Values.node.rotateCredentials | quote }}
+            {{- include "flame-provisioner.seederEnv" . | nindent 12 }}
+          volumeMounts:
+            - name: output
+              mountPath: {{ .Values.node.outputDir | quote }}
+      containers:
+        - name: create-secrets
+          image: alpine/kubectl:1.36.4
+          command: ["sh", "-c"]
+          args:
+            - |
+              set -e
+              NAMESPACE={{ required "node.destinationNamespace is required for node mode" .Values.node.destinationNamespace | quote }}
+              echo "=== Creating secrets in ${NAMESPACE} ==="
+              kubectl create secret generic flame-node-secrets --namespace "${NAMESPACE}" --from-file=values.yaml={{ .Values.node.outputDir }}/values.yaml --dry-run=client -o yaml | kubectl apply -f -
+              kubectl create secret generic flame-node-client-secret --namespace "${NAMESPACE}" --from-file={{ .Values.node.outputDir }}/clientSecret --dry-run=client -o yaml | kubectl apply -f -
+              if [ -f {{ .Values.node.outputDir }}/private_key.pem ]; then
+                kubectl create secret generic flame-node-private-key --namespace "${NAMESPACE}" --from-file={{ .Values.node.outputDir }}/private_key.pem --dry-run=client -o yaml | kubectl apply -f -
+              elif kubectl get secret flame-node-private-key --namespace "${NAMESPACE}" >/dev/null 2>&1; then
+                echo "Node key pair unchanged; keeping the existing flame-node-private-key secret."
+              else
+                echo "ERROR: the seeder kept the existing node key pair, but no flame-node-private-key secret exists in ${NAMESPACE}." >&2
+                echo "       Re-run the provisioner with node.rotateCredentials=true to issue a new key pair." >&2
+                exit 1
+              fi
+              echo "=== Node credentials provisioned successfully ==="
+          volumeMounts:
+            - name: output
+              mountPath: {{ .Values.node.outputDir | quote }}
+      restartPolicy: OnFailure
+{{- else if ne .Values.mode "project" }}
+{{- fail "mode must be exactly project or node" }}
+{{- end }}
