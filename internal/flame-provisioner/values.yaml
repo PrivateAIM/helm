@@ -1,0 +1,31 @@
+# Select exactly one provisioning hook: project or node.
+mode: project
+
+image:
+  repository: ghcr.io/privateaim/hub-seeder
+  pullPolicy: IfNotPresent
+
+waitForHub:
+  image: curlimages/curl:8.21.0
+
+hub:
+  url: ""
+  authupUrl: ""
+  auth:
+    clientId: system
+    clientSecret:
+      name: flame-hub-auth
+      key: authup-client-secret
+  realm: master
+
+project:
+  name: ""
+  displayName: ""
+
+node:
+  name: ""
+  type: default
+  url: ""
+  outputDir: /output
+  destinationNamespace: ""
+  serviceAccountName: ""
