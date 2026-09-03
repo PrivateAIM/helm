@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.0.0](https://github.com/PrivateAIM/helm/compare/flame-node-0.2.1...flame-node-1.0.0) (2026-09-03)
+
+
+### Features
+
+* mege develop in master ([8bf6d63](https://github.com/PrivateAIM/helm/commit/8bf6d634933407d76bb3d8f68c8223f248510735))
+* mege develop in master ([8bf6d63](https://github.com/PrivateAIM/helm/commit/8bf6d634933407d76bb3d8f68c8223f248510735))
+
+
+### Bug Fixes
+
+* **security:** add missing non root security contexts to node components ([d59b5af](https://github.com/PrivateAIM/helm/commit/d59b5afa6e6cd60d74a91e90e055d63e68f689f7))
+* **security:** add missing security contexts and seccompProfiles to node components ([45ed80d](https://github.com/PrivateAIM/helm/commit/45ed80d1cc8a6f2d99b4b6a6140e71f99c441516))
+
+
+### Reverts
+
+* **seaweedfs:** remove security context for filer since no create bucket ([45e7998](https://github.com/PrivateAIM/helm/commit/45e799867eb824a8b3642b3c4e9d4bd273a80a94))
+
 ## [0.2.1](https://github.com/PrivateAIM/helm/compare/flame-node-0.2.0...flame-node-0.2.1) (2026-08-19)
 
 

@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.0.0](https://github.com/PrivateAIM/helm/compare/flame-hub-0.2.1...flame-hub-1.0.0) (2026-09-03)
+
+
+### Features
+
+* **hub:** replace Bitnami grafana subchart with upstream grafana/grafana chart ([#179](https://github.com/PrivateAIM/helm/issues/179)) ([07cf2c6](https://github.com/PrivateAIM/helm/commit/07cf2c6b1f3e2e157bba1a38239065f791e70859))
+* mege develop in master ([8bf6d63](https://github.com/PrivateAIM/helm/commit/8bf6d634933407d76bb3d8f68c8223f248510735))
+* mege develop in master ([8bf6d63](https://github.com/PrivateAIM/helm/commit/8bf6d634933407d76bb3d8f68c8223f248510735))
+
 ## [0.2.1](https://github.com/PrivateAIM/helm/compare/flame-hub-0.2.0...flame-hub-0.2.1) (2026-08-19)
 
 
