@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.0.0](https://github.com/PrivateAIM/helm/compare/root-0.2.1...root-1.0.0) (2026-09-03)
+
+
+### Features
+
+* **hub:** replace Bitnami grafana subchart with upstream grafana/grafana chart ([#179](https://github.com/PrivateAIM/helm/issues/179)) ([07cf2c6](https://github.com/PrivateAIM/helm/commit/07cf2c6b1f3e2e157bba1a38239065f791e70859))
+* mege develop in master ([8bf6d63](https://github.com/PrivateAIM/helm/commit/8bf6d634933407d76bb3d8f68c8223f248510735))
+* mege develop in master ([8bf6d63](https://github.com/PrivateAIM/helm/commit/8bf6d634933407d76bb3d8f68c8223f248510735))
+* v1.0.0 release ([8eeacd8](https://github.com/PrivateAIM/helm/commit/8eeacd8b9fdbc1c28c447e61eaf45ad438c31a31))
+
+
+### Bug Fixes
+
+* **security:** add missing non root security contexts to node components ([d59b5af](https://github.com/PrivateAIM/helm/commit/d59b5afa6e6cd60d74a91e90e055d63e68f689f7))
+* **security:** add missing security contexts and seccompProfiles to node components ([45ed80d](https://github.com/PrivateAIM/helm/commit/45ed80d1cc8a6f2d99b4b6a6140e71f99c441516))
+
+
+### Reverts
+
+* **seaweedfs:** remove security context for filer since no create bucket ([45e7998](https://github.com/PrivateAIM/helm/commit/45e799867eb824a8b3642b3c4e9d4bd273a80a94))
+
 ## [0.2.1](https://github.com/PrivateAIM/helm/compare/root-0.2.0...root-0.2.1) (2026-08-19)
 
 
