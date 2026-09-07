@@ -508,9 +508,9 @@ podOrchestrator:
 
   # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
   image:
-    repository: ghcr.io/privateaim/node-pod-orchestration
+    repository: ghcr.io/pbrassel/node-pod-orchestration
     # Overrides the image tag whose default is the chart appVersion.
-    tag: sha-f3c72fc
+    tag: sha-0803d53
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
