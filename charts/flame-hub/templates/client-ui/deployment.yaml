@@ -48,6 +48,12 @@ spec:
                   value: "http://{{ .Release.Name }}-authup-server:3000/"
               -   name: NUXT_PUBLIC_AUTHUP_URL
                   value: {{ include "flameHub.authup.publicURL" . | trim | quote }}
+              # authup serves the self-service account console at
+              # <publicUrl>/console/account as of chart 0.4.0 / beta.64 (it was
+              # /account before). Set explicitly, because the UI's own fallback
+              # is still the old <authupUrl>/account and would 404.
+              -   name: NUXT_PUBLIC_ACCOUNT_URL
+                  value: {{ printf "%sconsole/account" (include "flameHub.authup.publicURL" .) | quote }}
           resources:
               requests:
                   memory: "512Mi"
