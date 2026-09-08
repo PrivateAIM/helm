@@ -27,8 +27,8 @@ expose:
       ## @param expose.gateway.parentRef.sectionName Listener name on the external Gateway to attach to (optional)
       sectionName: ""
     nginxGatewayFabric:
-      ## @param expose.gateway.nginxGatewayFabric.enabled Set to true when the node Gateway's GatewayClass is NGINX Gateway Fabric, to attach a ClientSettingsPolicy 
-      ## to the node Gateway. NGINX Gateway Fabric defaults to nginx's client_max_body_size of 1m, which is too small for data store uploads. The policy raises it 
+      ## @param expose.gateway.nginxGatewayFabric.enabled Set to true when the node Gateway's GatewayClass is NGINX Gateway Fabric, to attach a ClientSettingsPolicy
+      ## to the node Gateway. NGINX Gateway Fabric defaults to nginx's client_max_body_size of 1m, which is too small for data store uploads. The policy raises it
       ## for every HTTPRoute attached to the Gateway. No effect on other GatewayClasses.
       enabled: false
       ## @param expose.gateway.nginxGatewayFabric.maxBodySize Value for the ClientSettingsPolicy's body.maxSize
@@ -465,7 +465,7 @@ hubAdapter:
   image:
     repository: ghcr.io/privateaim/node-hub-api-adapter
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.8.1
+    tag: 0.8.3
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -794,7 +794,7 @@ ui:
   image:
     repository: ghcr.io/privateaim/node-ui
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.8.1
+    tag: 0.8.2
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -930,7 +930,7 @@ dataStore:
       data:
         type: persistentVolumeClaim
         size: 5Gi
-      
+
       podSecurityContext:
         enabled: true
         runAsUser: 1000
@@ -1309,17 +1309,17 @@ mongodb:
     className:
 
 victorialogs:
-  ## @param victorialogs.enabled Enable Victoria Logs for log collection and analysis in the Flame Node. 
+  ## @param victorialogs.enabled Enable Victoria Logs for log collection and analysis in the Flame Node.
   ## This will deploy a Victoria Logs instance and a Vector agent configured to send logs to it.
   ## If disabled, the event viewer in the UI will also no longer function, as it relies on Victoria Logs for log storage and querying.
   enabled: true
   ## @param victorialogs.ingress.enabled Enable ingress for Victoria Logs. Only relevant if victorialogs.enabled is true.
-  ## WARNING: Enabling this will expose Victoria Logs to the network, which may have security implications as auth is not required to access the UI. 
+  ## WARNING: Enabling this will expose Victoria Logs to the network, which may have security implications as auth is not required to access the UI.
   ## Make sure to secure it properly if you enable this.
   ingress:
     enabled: false
   server:
-    ## Data retention period. Possible units character: h(ours), d(ays), w(eeks), y(ears), if no unit character specified - month. 
+    ## Data retention period. Possible units character: h(ours), d(ays), w(eeks), y(ears), if no unit character specified - month.
     ## The minimum retention period is 24h. See these [docs](https://docs.victoriametrics.com/victorialogs/#retention)
     retentionPeriod: 1y
     persistentVolume:
@@ -1341,7 +1341,7 @@ victorialogs:
     ## If vector cannot be deployed in a DaemonSet, you can disable it here and deploy your own log shipping solution to Victoria Logs instead.
     enabled: true
     ## @param victoria-logs.vector.logLevelFilter Minimum log level to ingest. Logs below this level are dropped by Vector.
-    ## Valid values: DEBUG, INFO, WARNING, ERROR, CRITICAL (case-insensitive). Empty string disables filtering. 
+    ## Valid values: DEBUG, INFO, WARNING, ERROR, CRITICAL (case-insensitive). Empty string disables filtering.
     logLevelFilter: "INFO"
     customConfig:
       data_dir: /vector-data-dir
