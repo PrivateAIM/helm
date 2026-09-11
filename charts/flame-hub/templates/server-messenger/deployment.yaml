@@ -71,6 +71,11 @@ spec:
                                     key: rabbitmq-connection-string
                         -   name: AUTHUP_URL
                             value: "http://{{ .Release.Name }}-authup-server:3000/"
+                        # Must match clientUI.cookiePrefix - see values.yaml. Namespaces
+                        # the authup cookie-fallback lookup apart from authup's own
+                        # hosted pages, the same way the UI's cookies are namespaced.
+                        -   name: COOKIE_PREFIX
+                            value: {{ .Values.clientUI.cookiePrefix | default "" | trim | quote }}
                         -   name: DB_TYPE
                             value: "postgres"
                         -   name: DB_HOST
