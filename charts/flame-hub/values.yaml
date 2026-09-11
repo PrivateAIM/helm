@@ -79,7 +79,7 @@ global:
 image:
     registry: ghcr.io
     repository: privateaim/hub
-    tag: 0.15.0
+    tag: 0.16.1
     pullPolicy: Always
 
 # internal services
@@ -87,7 +87,9 @@ clientUI:
     replicaCount: 3
     publicHttps: false # global.flameHub.publicHttps also enables this
     # Domain attribute for the UI's session cookies. LEAVE EMPTY unless a
-    # sibling host genuinely has to read them.
+    # sibling host genuinely has to read them (e.g. a storage/stream download
+    # reached by a top-level navigation, which can't carry an Authorization
+    # header).
     #
     # Empty means host-only: the browser hands the cookies back to the UI host
     # and nowhere else. That is what keeps them apart from authup's own session
@@ -98,16 +100,29 @@ clientUI:
     # A value opts out of host-only: the cookies are then delivered to every
     # SUBDOMAIN of it as well. If that covers authup's host (e.g. cookieDomain
     # "example.com" with authup on "auth.example.com", or authup sharing the UI
-    # host), two writers land on one cookie key. A read takes the first record
-    # of a name - the older one - so each side can drive on, rotate and
-    # cleanup-revoke the other's tokens, which surfaces as being logged out on
-    # the next page load. The render refuses that combination; see
-    # flameHub.validateCookieDomain.
-    #
-    # It buys the Hub nothing by default: the services read the bearer token
-    # from the Authorization header, and their cookie fallback only ever sees
-    # same-origin requests under the shared hostname.
+    # host), two writers land on one cookie key unless cookiePrefix (below)
+    # namespaces the UI's own cookies apart from authup's. The render refuses
+    # a widened domain with no prefix; see flameHub.validateCookieDomain.
     cookieDomain: ""
+    # Prefix for every session cookie name (access_token -> <prefix>access_token).
+    # On by default: a fixed prefix costs nothing on a plain single-domain
+    # deployment (client-ui writes it, serverCore/serverStorage/serverMessenger/
+    # serverTelemetry's COOKIE_PREFIX reads it back - same convention either
+    # way), and it's what stops the UI's cookies from colliding with authup's
+    # own hosted pages' cookies once cookieDomain (above) is ever widened to
+    # cover authup's host - the render refuses that combination if this is
+    # empty; see flameHub.validateCookieDomain. Needs authup >= 1.0.0-beta.64
+    # and hub image >= 0.16.1 (0.16.0 shipped clientUI's half only -
+    # server-http-kit's cookie fallback still read the bare name; fixed in
+    # 0.16.1). Cookie name characters only: letters, digits, "_", "-", ".".
+    #
+    # Changing this value (including from empty to non-empty, or back) signs
+    # every currently-logged-in user out: the un-prefixed and prefixed cookies
+    # are never read or swept as the same session, so a returning user's
+    # browser holds a stale record under the old name until they sign out (or
+    # clear cookies) once. Harmless on a brand new install; plan a rollout
+    # window for an existing one.
+    cookiePrefix: "flame_"
     # service specific ingress configuration. If you use this, you will need a separate domain for each service
     ingress:
         enabled: false

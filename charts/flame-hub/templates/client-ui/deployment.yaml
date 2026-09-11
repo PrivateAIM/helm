@@ -32,6 +32,11 @@ spec:
               # the image baked at build time rather than leaving it in place.
               -   name: NUXT_PUBLIC_COOKIE_DOMAIN
                   value: {{ .Values.clientUI.cookieDomain | default "" | trim | quote }}
+              # Namespaces the session cookie names apart from authup's own -
+              # see clientUI.cookiePrefix in values.yaml. Required whenever
+              # cookieDomain is widened to cover authup's host.
+              -   name: NUXT_PUBLIC_AUTHUP_COOKIE_PREFIX
+                  value: {{ .Values.clientUI.cookiePrefix | default "" | trim | quote }}
               -   name: NUXT_CORE_URL
                   value: "http://{{ .Release.Name }}-flame-hub-server-core:3000/"
               -   name: NUXT_PUBLIC_CORE_URL
