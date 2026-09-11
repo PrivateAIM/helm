@@ -13,3 +13,4 @@ Chart.lock
 docs/
 .claude
 node*.yaml
+!node-job.yaml
