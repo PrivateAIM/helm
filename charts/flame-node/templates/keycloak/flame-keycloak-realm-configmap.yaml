@@ -11,26 +11,6 @@ data:
       "accessTokenLifespan" : 7200,
       "enabled" : true,
       "requiredCredentials" : [ "password" ],
-      "roles" : {
-        "client" : {
-          "node-ui" : [ {
-            "name" : {{ .Values.rbac.adminRole | default "admin" | quote }},
-            "description" : "Has full access to UI and its functions.",
-            "composite" : false,
-            "clientRole" : true
-          }, {
-            "name" : {{ .Values.rbac.stewardRole | default "steward" | quote }},
-            "description" : "Can create and modify data stores, but not modify analyses.",
-            "composite" : false,
-            "clientRole" : true
-          }, {
-            "name" : {{ .Values.rbac.researcherRole | default "researcher" | quote }},
-            "description" : "Can modify and view analyses, but not modify data stores.",
-            "composite" : false,
-            "clientRole" : true
-          } ]
-        }
-      },
       "users" : [ {
         "username" : "service-account-service1",
         "emailVerified" : false,
@@ -66,28 +46,6 @@ data:
         "clientAuthenticatorType" : "client-secret",
         "secret" : "${hubAdapterClientSecret}",
         "redirectUris" : [ "/*" ],
-        "webOrigins" : [ "/*" ],
-        "notBefore" : 0,
-        "bearerOnly" : false,
-        "consentRequired" : false,
-        "standardFlowEnabled" : true,
-        "implicitFlowEnabled" : false,
-        "directAccessGrantsEnabled" : true,
-        "serviceAccountsEnabled" : true,
-        "publicClient" : false
-      }, {
-        "clientId" : "node-ui",
-        "name" : "Node UI",
-        "description" : "",
-        "rootUrl" : "",
-        "adminUrl" : "",
-        "baseUrl" : "",
-        "surrogateAuthRequired" : false,
-        "enabled" : true,
-        "alwaysDisplayInConsole" : false,
-        "clientAuthenticatorType" : "client-secret",
-        "secret" : "${nodeUiClientSecret}",
-        "redirectUris" : {{ include "ui.keycloak.redirectUris" . }},
         "webOrigins" : [ "/*" ],
         "notBefore" : 0,
         "bearerOnly" : false,
