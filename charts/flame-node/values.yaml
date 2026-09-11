@@ -34,19 +34,16 @@ expose:
       ## @param expose.gateway.nginxGatewayFabric.maxBodySize Value for the ClientSettingsPolicy's body.maxSize
       maxBodySize: 500m
 
-## Secrets for the Keycloak realm clients (hub-adapter, node-ui, service1/pod-orchestrator).
+## Secrets for the Keycloak realm clients (hub-adapter, service1/pod-orchestrator).
 ## Under Argo CD, `helm template` cannot look up the previously generated value, so for GitOps/production set explicit values here (ideally via sealed-secrets / external-secrets).
 keycloakClientSecrets:
   ## @param keycloakClientSecrets.create Whether the chart generates/manages the "<release>-keycloak-client-secrets" Secret.
   ## Set to false to supply your own Secret with that exact name (e.g. via sealed-secrets / external-secrets) instead of
-  ## putting values in this file. It must contain the keys: hubAdapterClientSecret, nodeUiClientSecret, podOrcClientSecret.
-  ## When false, the hubAdapter/nodeUi/podOrc values below are ignored.
+  ## putting values in this file. It must contain the keys: hubAdapterClientSecret, podOrcClientSecret.
+  ## When false, the hubAdapter/podOrc values below are ignored.
   create: true
   ## @param keycloakClientSecrets.hubAdapter Secret for the "hub-adapter" Keycloak client. Generated if empty.
   hubAdapter: ""
-  ## @param keycloakClientSecrets.nodeUi Secret for the "node-ui" Keycloak client. Generated if empty.
-  ## Ignored when ui.idp.clientSecret is set (that value is used for both the UI and Keycloak).
-  nodeUi: ""
   ## @param keycloakClientSecrets.podOrc Secret for the "service1"/pod-orchestrator Keycloak client. Generated if empty.
   podOrc: ""
 
@@ -770,22 +767,6 @@ ui:
   ## @param nuxtAuthExistingSecret Name of an existing Secret containing the nuxtAuthSecret under the key "nuxtAuthSecret".
   ## When set, the chart does not create or manage the nuxtAuthSecret and nuxtAuthSecret above is ignored.
   nuxtAuthExistingSecret: ""
-
-  ## IDP related information
-  idp:
-    ## @param idp.debug If true, the clientId and clientSecret will use pre-defined values
-    ## The clientSecret will be defined using the "static" k8s secret key
-    debug: false
-    ## @param idp.clientId IDP's client ID for this service
-    clientId: node-ui
-    ## @param idp.clientSecret IDP client secret. Ignored if `idp.existingSecret` is provided
-    ## If not defined and no existingSecret provided, a random string is generated
-    clientSecret: ""
-    ## @param idp.existingSecret Existing k8s secret containing IDP secret for this client
-    ## idp.existingSecretKey should also be defined for custom k8s secret. Defaults to nodeUiClientSecret
-    existingSecret: ""
-    ## @param idp.existingSecretKey Key where the client secret is being stored inside the existing k8s secret
-    existingSecretKey: ""
 
   # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
   replicaCount: 1

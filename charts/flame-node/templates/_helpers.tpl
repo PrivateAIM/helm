@@ -134,22 +134,6 @@ Return the internal Keycloak JWKS endpoint
 {{- end -}}
 
 {{/*
-Return the user IDP hostname
-*/}}
-{{- define "userIdp.hostname" -}}
-{{- $hostname := include "node.hostname" . -}}
-{{- if .Values.userIdp.hostname -}}
-    {{- if hasPrefix "http" .Values.userIdp.hostname -}}
-        {{- print .Values.userIdp.hostname -}}
-    {{- else -}}
-        {{- printf "http://%s" .Values.userIdp.hostname -}}
-    {{- end -}}
-{{- else if and $hostname (ne .Values.expose.type "none") (not (contains "localhost" $hostname)) -}}
-    {{- printf "%s%s/realms/flame" $hostname (include "keycloak.relativePath.normalized" .) -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
 Return the secret containing the postgres user database secrets
 */}}
 {{- define "postgresql.user.secretName" -}}
@@ -185,34 +169,6 @@ Return the secret containing the postgres admin credentials
 
 {{/*UI helpers*/}}
 {{/*
-Return the endpoint for user authentication
-*/}}
-{{- define "ui.userIdp.endpoint" -}}
-{{- if (include "userIdp.hostname" .) -}}
-    {{- print (include "userIdp.hostname" .) -}}
-{{- else -}}
-    {{- printf "http://localhost:8080%s/realms/flame" (include "keycloak.relativePath.normalized" .) -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Return whether to enable internal routing to Keycloak for the UI
-If offline is true - true, else if external IDP hostname is provided - false, else if expose.type is none or localhost used - true, else false
-*/}}
-{{- define "ui.auth.internal" -}}
-{{- $exposeDisabled := eq .Values.expose.type "none" -}}
-{{- if .Values.offline -}}
-    true
-{{- else if .Values.userIdp.hostname -}}
-    false
-{{- else if or (contains "localhost" (include "ui.userIdp.endpoint" .)) $exposeDisabled -}}
-    true
-{{- else -}}
-    false
-{{- end -}}
-{{- end -}}
-
-{{/*
 Return the hub adapter endpoint
 */}}
 {{- define "ui.adapter.endpoint" -}}
@@ -221,44 +177,6 @@ Return the hub adapter endpoint
 {{- else -}}
     {{- print "http://localhost:5000" -}}
 {{- end -}}
-{{- end -}}
-
-{{/*
-Return the secret containing the Keycloak client secret
-*/}}
-{{- define "ui.keycloak.secretName" -}}
-{{- if .Values.ui.idp.clientSecret -}}
-    {{- printf "%s-node-ui-idp-secret" .Release.Name -}}
-{{- else -}}
-{{- $secretName := .Values.ui.idp.existingSecret -}}
-{{- if and $secretName ( not .Values.ui.idp.debug ) -}}
-    {{- printf "%s" (tpl $secretName $) -}}
-{{- else -}}
-    {{- printf "%s-keycloak-client-secrets" .Release.Name -}}
-{{- end -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Return the secret key that contains the Keycloak client secret
-*/}}
-{{- define "ui.keycloak.secretKey" -}}
-{{- if or .Values.ui.idp.clientSecret .Values.ui.idp.debug -}}
-    {{- print "nodeUiClientSecret" -}}
-{{- else if and .Values.ui.idp.existingSecret .Values.ui.idp.existingSecretKey -}}
-    {{- printf "%s" .Values.ui.idp.existingSecretKey -}}
-{{- else -}}
-    {{- print "nodeUiClientSecret" -}}
-{{- end -}}
-{{- end -}}
-
-
-{{/*
-Create valid redirect URIs for keycloak i.e. http & https
-*/}}
-{{- define "ui.keycloak.redirectUris" -}}
-{{- $hostnameStripped := regexReplaceAll "^https?://(.*)" (include "node.hostname" .) "${1}" -}}
-{{- printf "[ \"https://%s/*\", \"http://%s/*\" ]" $hostnameStripped $hostnameStripped -}}
 {{- end -}}
 
 {{/*Hub Adapter helpers*/}}
