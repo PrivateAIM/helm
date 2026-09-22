@@ -74,7 +74,7 @@ proxy:
   httpProxy:
   ## @param proxy.httpsProxy Full proxy URL. Ignored when existingSecret is set.
   httpsProxy:
-  ## @param proxy.noProxy List of domains to exclude from proxying.
+  ## @param proxy.noProxy List of domains to exclude from proxying, used by the UI and hub adapter
   noProxy:
   ## @param proxy.existingSecret Name of an existing K8s Secret containing proxy credentials.
   ## When set, all proxy env vars (HTTP_PROXY, HTTPS_PROXY, PROXY_URL) are sourced from this
@@ -262,7 +262,7 @@ storageService:
   image:
     repository: ghcr.io/privateaim/node-storage-service
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.2.2
+    tag: 1.0.0
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -462,7 +462,7 @@ hubAdapter:
   image:
     repository: ghcr.io/privateaim/node-hub-api-adapter
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.8.3
+    tag: 1.0.0
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -570,7 +570,7 @@ podOrchestrator:
   image:
     repository: ghcr.io/privateaim/node-pod-orchestration
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.6.3
+    tag: 1.0.0
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -686,7 +686,7 @@ messageBroker:
   image:
     repository: ghcr.io/privateaim/node-message-broker
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.7.0
+    tag: 1.0.1
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -775,7 +775,7 @@ ui:
   image:
     repository: ghcr.io/privateaim/node-ui
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.8.2
+    tag: 1.0.0
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
