@@ -79,7 +79,7 @@ global:
 image:
     registry: ghcr.io
     repository: privateaim/hub
-    tag: 0.16.1
+    tag: 0.17.0
     pullPolicy: Always
 
 # internal services
@@ -241,6 +241,9 @@ auth:
 # chart's own server.ingress / server.route rather than Hub-specific keys.
 # The image is no longer pinned here: the chart's appVersion tracks the authup
 # release, so bumping authup means bumping the dependency version in Chart.yaml.
+# Chart 0.5.0 ships authup 1.0.0-beta.68, which hub image >= 0.17.0 requires (the
+# Hub services read authup's authorization catalog as the built-in system client,
+# which already holds the permission_read reach this needs).
 authup:
     # The Hub brings its own PostgreSQL and Redis; the chart's bundled PostgreSQL and
     # Valkey stay off (valkey is off by default).
@@ -298,7 +301,11 @@ authup:
         # Read the DB user from the same Secret as the password. externalDatabase.user
         # is a plain value, but an env entry outranks the chart's env ConfigMap, so this
         # avoids duplicating postgresql.auth.username as a second source of truth.
-        extraEnvVars:
+        # Anchored: authup.worker below reuses both lists, since the subchart does
+        # not pass server.extraEnvVars / server.initContainers on to it. Anchors
+        # only resolve inside this file - an override of either list in your own
+        # values must be repeated under authup.worker.
+        extraEnvVars: &authupDbUsernameEnv
             -   name: DB_USERNAME
                 valueFrom:
                     secretKeyRef:
@@ -306,7 +313,7 @@ authup:
                         key: username
         # Wait for the backing services, like every other Hub workload (tpl-rendered
         # in the authup subchart context).
-        initContainers:
+        initContainers: &authupWaitForBackends
             -   name: wait-for-db
                 image: busybox
                 command: ['sh', '-c', 'until nc -z -v -w30 {{ include "flameHub.postgresql.host" . }} 5432; do echo "Waiting for db..."; sleep 5; done']
@@ -389,6 +396,17 @@ authup:
     # The Hub ships its own UI; authup's bundled admin console is not deployed.
     adminConsole:
         enabled: false
+    # Dedicated background worker (on by default since authup chart 0.5.0 /
+    # beta.68): it takes the scheduled sweeps off the server and reports their
+    # health on worker.containerPorts.http, probed for readiness only. It runs no
+    # migrations, so on a fresh install it restarts until the server has created
+    # the schema. It shares the server's env ConfigMap and DB/Redis secrets, but
+    # not server.extraEnvVars / initContainers - hence the anchors above.
+    # Set enabled: false to keep the sweeps inside the server as before.
+    worker:
+        enabled: true
+        extraEnvVars: *authupDbUsernameEnv
+        initContainers: *authupWaitForBackends
 
 rabbitmq:
     # Single-node RabbitMQ. The client Service is "<release>-rabbitmq:5672".
