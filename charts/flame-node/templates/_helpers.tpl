@@ -71,12 +71,19 @@ Return the hub IDP issuer URL, combining hub.endpoints.auth with hub.auth.userRe
 {{- end -}}
 
 {{/*
-Return the Authup JWKS endpoint. Authup serves a flat /jwks that publishes the signing keys of
-every realm (a realm-scoped /realms/<id>/jwks only lists that realm's keys, but analysis clients
-live in the analysis' realm, which may differ from hub.auth.userRealm).
+Return the Authup JWKS endpoint, scoped to hub.auth.userRealm, e.g.
+"https://auth.privateaim.dev/realms/master/jwks". Authup's /realms/<id-or-name>/jwks only
+publishes the signing keys of that one realm.
+Assumption: the Hub creates each analysis's Authup client in the analysis's realm (= its
+project's realm), and Authup signs the analysis token with that realm's key. Verifying against
+this endpoint is therefore only correct if every project whose analyses run on this node lives
+in hub.auth.userRealm. An analysis from a project in another realm would be rejected
+(unknown kid) by message-broker, storage-service and pod-orchestrator's /stream_logs.
+If analyses ever live in other realms, switch to Authup's flat <hub.endpoints.auth>/jwks,
+which publishes the signing keys of every realm.
 */}}
 {{- define "hub.auth.jwksEndpoint" -}}
-{{- printf "%s/jwks" (.Values.hub.endpoints.auth | trimSuffix "/") -}}
+{{- printf "%s/jwks" (include "hub.auth.issuerUrl" .) -}}
 {{- end -}}
 
 {{/*
