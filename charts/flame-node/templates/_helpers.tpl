@@ -70,6 +70,14 @@ Return the hub IDP issuer URL, combining hub.endpoints.auth with hub.auth.userRe
 {{- printf "%s/realms/%s" (.Values.hub.endpoints.auth | trimSuffix "/") $realm -}}
 {{- end -}}
 
+{{- define "hub.auth.jwksEndpoint" -}}
+{{- printf "%s/jwks" (include "hub.auth.issuerUrl" .) -}}
+{{- end -}}
+
+{{- define "hub.auth.tokenEndpoint" -}}
+{{- printf "%s/token" (include "hub.auth.issuerUrl" .) -}}
+{{- end -}}
+
 {{/*
 Return the secret containing the hub robot secret
 */}}
