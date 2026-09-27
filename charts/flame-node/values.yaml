@@ -238,7 +238,7 @@ storageService:
     MINIO_USE_SSL: false
     MINIO_BUCKET: flame
     OIDC_CERTS_URL:
-    OIDC_CLIENT_ID_CLAIM_NAME: azp
+    OIDC_CLIENT_ID_CLAIM_NAME: client_id
 
   ## An init container that waits for SeaweedFS and creates bucket for storage service if it does not exist
   bucketInit:
