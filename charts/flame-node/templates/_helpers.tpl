@@ -70,12 +70,21 @@ Return the hub IDP issuer URL, combining hub.endpoints.auth with hub.auth.userRe
 {{- printf "%s/realms/%s" (.Values.hub.endpoints.auth | trimSuffix "/") $realm -}}
 {{- end -}}
 
+{{/*
+Return the Authup JWKS endpoint. Authup serves a flat /jwks that publishes the signing keys of
+every realm (a realm-scoped /realms/<id>/jwks only lists that realm's keys, but analysis clients
+live in the analysis' realm, which may differ from hub.auth.userRealm).
+*/}}
 {{- define "hub.auth.jwksEndpoint" -}}
-{{- printf "%s/jwks" (include "hub.auth.issuerUrl" .) -}}
+{{- printf "%s/jwks" (.Values.hub.endpoints.auth | trimSuffix "/") -}}
 {{- end -}}
 
+{{/*
+Return the Authup token endpoint. Authup mounts its token controller at the flat /token path
+(there is no /realms/<realm>/token route), matching the token_endpoint in its OIDC discovery.
+*/}}
 {{- define "hub.auth.tokenEndpoint" -}}
-{{- printf "%s/token" (include "hub.auth.issuerUrl" .) -}}
+{{- printf "%s/token" (.Values.hub.endpoints.auth | trimSuffix "/") -}}
 {{- end -}}
 
 {{/*
