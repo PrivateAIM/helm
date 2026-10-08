@@ -98,7 +98,7 @@ spec:
                 secretKeyRef:
                   name: {{ include "ui.nuxtAuth.secretName" . }}
                   key: nuxtAuthSecret
-            {{- if and (eq .Values.victorialogs.enabled true) (eq .Values.victorialogs.ingress.enabled true) }}
+            {{- if include "flame-node.victorialogs.exposed" . }}
             - name: NUXT_PUBLIC_VICTORIA_LOGS_URL
               value: {{ printf "%s/logs/select/vmui" (include "node.hostname" .) }}
             {{- end }}

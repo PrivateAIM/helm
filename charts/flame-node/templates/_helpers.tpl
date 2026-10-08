@@ -276,6 +276,16 @@ Strip scheme from expose.hostname for Gateway API hostnames (HTTPRoute.spec.host
 {{- end -}}
 
 {{/*
+Return "true" when VictoriaLogs is exposed at /logs (Ingress or HTTPRoute, plus the UI link).
+victorialogs.ingress.enabled is the deprecated name of victorialogs.expose.enabled and still applies to both.
+*/}}
+{{- define "flame-node.victorialogs.exposed" -}}
+{{- if and .Values.victorialogs.enabled (or .Values.victorialogs.expose.enabled .Values.victorialogs.ingress.enabled) -}}
+true
+{{- end -}}
+{{- end -}}
+
+{{/*
 Strip scheme from the data-store SeaweedFS admin panel hostname for Gateway API.
 */}}
 {{- define "flame-node.dataStore.seaweedfs.admin.routeHostname" -}}

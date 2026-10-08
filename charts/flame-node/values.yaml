@@ -27,12 +27,24 @@ expose:
       ## @param expose.gateway.parentRef.sectionName Listener name on the external Gateway to attach to (optional)
       sectionName: ""
     nginxGatewayFabric:
-      ## @param expose.gateway.nginxGatewayFabric.enabled Set to true when the node Gateway's GatewayClass is NGINX Gateway Fabric, to attach a ClientSettingsPolicy
-      ## to the node Gateway. NGINX Gateway Fabric defaults to nginx's client_max_body_size of 1m, which is too small for data store uploads. The policy raises it
-      ## for every HTTPRoute attached to the Gateway. No effect on other GatewayClasses.
+      ## @param expose.gateway.nginxGatewayFabric.enabled Set to true when the node Gateway's GatewayClass is NGINX Gateway Fabric, to attach the NGINX Gateway
+      ## Fabric policies the node needs: a ClientSettingsPolicy raising the SeaweedFS admin route's upload size limit to maxBodySize (nginx defaults to 1m; the
+      ## other routes keep it, as with the Ingresses), plus the policies enabled by proxySettings and snippets below. The install fails if their CRDs are missing.
+      ## With any other Gateway implementation leave this false and configure the equivalents on that Gateway: 500m upload size and 900s timeouts for the
+      ## SeaweedFS admin route, 128k proxy buffers for the UI route, and request header buffers large enough for the session cookies (e.g. 8 x 32k).
+      ## Without them, large uploads and requests carrying the large session cookies fail.
       enabled: false
       ## @param expose.gateway.nginxGatewayFabric.maxBodySize Value for the ClientSettingsPolicy's body.maxSize
       maxBodySize: 500m
+      ## @param expose.gateway.nginxGatewayFabric.proxySettings Only with enabled=true. Attach ProxySettingsPolicies to the routes that need nginx proxy
+      ## settings beyond the defaults: UI proxy buffers of 128k (for the large cookies the UI sets, as the UI Ingress annotation) and SeaweedFS admin upload
+      ## timeouts of 900s. Requires NGINX Gateway Fabric >= 2.6 with its ProxySettingsPolicy CRD installed.
+      proxySettings: true
+      ## @param expose.gateway.nginxGatewayFabric.snippets Only with enabled=true and a chart-managed Gateway (external=false). Attach a SnippetsPolicy
+      ## raising request header limits (large_client_header_buffers 8 32k) for the large session cookies browsers send; no NGINX Gateway Fabric policy
+      ## covers it. Requires snippets to be enabled in the NGINX Gateway Fabric install (nginxGateway.snippets.enable), otherwise the policy is ignored.
+      ## An external Gateway has to set large_client_header_buffers itself, e.g. with its own SnippetsPolicy.
+      snippets: true
 
 ## Secrets for the Keycloak realm clients (hub-adapter, service1/pod-orchestrator).
 ## Under Argo CD, `helm template` cannot look up the previously generated value, so for GitOps/production set explicit values here (ideally via sealed-secrets / external-secrets).
@@ -1294,9 +1306,13 @@ victorialogs:
   ## This will deploy a Victoria Logs instance and a Vector agent configured to send logs to it.
   ## If disabled, the event viewer in the UI will also no longer function, as it relies on Victoria Logs for log storage and querying.
   enabled: true
-  ## @param victorialogs.ingress.enabled Enable ingress for Victoria Logs. Only relevant if victorialogs.enabled is true.
+  ## @param victorialogs.expose.enabled Expose Victoria Logs at <expose.hostname>/logs through the node Ingress or Gateway (whichever expose.type
+  ## selects) and link it from the UI. Only relevant if victorialogs.enabled is true.
   ## WARNING: Enabling this will expose Victoria Logs to the network, which may have security implications as auth is not required to access the UI.
   ## Make sure to secure it properly if you enable this.
+  expose:
+    enabled: false
+  ## @param victorialogs.ingress.enabled DEPRECATED alias of victorialogs.expose.enabled, still honoured (for both Ingress and Gateway API).
   ingress:
     enabled: false
   server:
