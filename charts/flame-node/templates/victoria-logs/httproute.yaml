@@ -1,4 +1,4 @@
-{{- if and (eq .Values.expose.type "gateway") (include "flame-node.victorialogs.exposed" .) -}}
+{{- if and (eq .Values.expose.type "gateway") .Values.victorialogs.enabled .Values.victorialogs.ingress.enabled -}}
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
