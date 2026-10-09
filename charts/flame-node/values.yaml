@@ -1294,9 +1294,13 @@ victorialogs:
   ## This will deploy a Victoria Logs instance and a Vector agent configured to send logs to it.
   ## If disabled, the event viewer in the UI will also no longer function, as it relies on Victoria Logs for log storage and querying.
   enabled: true
-  ## @param victorialogs.ingress.enabled Enable ingress for Victoria Logs. Only relevant if victorialogs.enabled is true.
+  ## @param victorialogs.expose.enabled Expose Victoria Logs at <expose.hostname>/logs through the node Ingress or Gateway (whichever expose.type
+  ## selects) and link it from the UI. Only relevant if victorialogs.enabled is true.
   ## WARNING: Enabling this will expose Victoria Logs to the network, which may have security implications as auth is not required to access the UI.
   ## Make sure to secure it properly if you enable this.
+  expose:
+    enabled: false
+  ## @param victorialogs.ingress.enabled DEPRECATED alias of victorialogs.expose.enabled, still honoured (for both Ingress and Gateway API).
   ingress:
     enabled: false
   server:
