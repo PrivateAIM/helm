@@ -34,4 +34,42 @@ spec:
     backendRefs:
     - name: node-datastore-seaweedfs-admin
       port: 23646
+{{- /* The NGINX Gateway Fabric upload size limit is raised on this route only, the one taking uploads (as with the Ingresses).
+A route policy also works on an external Gateway, which the chart does not own. */}}
+{{- if .Values.expose.gateway.nginxGatewayFabric.enabled }}
+---
+apiVersion: gateway.nginx.org/v1alpha1
+kind: ClientSettingsPolicy
+metadata:
+  name: {{ .Release.Name }}-seaweedfs-admin-route-client-settings
+  labels:
+    app.kubernetes.io/part-of: flame-node
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: {{ .Release.Name }}-seaweedfs-admin-route
+  body:
+    maxSize: {{ .Values.expose.gateway.nginxGatewayFabric.maxBodySize | quote }}
+{{- end }}
+{{- /* Upstream timeouts for large uploads through the admin panel. */}}
+{{- if and .Values.expose.gateway.nginxGatewayFabric.enabled .Values.expose.gateway.nginxGatewayFabric.proxySettings }}
+---
+apiVersion: gateway.nginx.org/v1alpha1
+kind: ProxySettingsPolicy
+metadata:
+  name: {{ .Release.Name }}-seaweedfs-admin-route-proxy-settings
+  labels:
+    app.kubernetes.io/part-of: flame-node
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: {{ .Release.Name }}-seaweedfs-admin-route
+  timeout:
+    send: 900s
+    read: 900s
+{{- end }}
 {{- end }}
