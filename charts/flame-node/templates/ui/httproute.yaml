@@ -22,4 +22,27 @@ spec:
     backendRefs:
     - name: {{ .Release.Name }}-node-ui-service
       port: 3000
+{{- /* Same buffers as the UI Ingress proxy-buffer-size annotation (ingress-nginx renders proxy_buffer_size and proxy_buffers 4 <size>),
+for the large cookies the UI sets. proxy_busy_buffers_size is left to the nginx default of two buffers: NGF rejects a busyBuffersSize
+that is not larger than bufferSize. */}}
+{{- if and .Values.expose.gateway.nginxGatewayFabric.enabled .Values.expose.gateway.nginxGatewayFabric.proxySettings }}
+---
+apiVersion: gateway.nginx.org/v1alpha1
+kind: ProxySettingsPolicy
+metadata:
+  name: {{ .Release.Name }}-node-ui-route-proxy-settings
+  labels:
+    app.kubernetes.io/part-of: flame-node
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: {{ .Release.Name }}-node-ui-route
+  buffering:
+    bufferSize: 128k
+    buffers:
+      number: 4
+      size: 128k
+{{- end }}
 {{- end }}
