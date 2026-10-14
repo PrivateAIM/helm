@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/PrivateAIM/helm/compare/flame-node-1.0.0...flame-node-1.1.0) (2026-10-14)
+
+
+### Features
+
+* **node:** Gateway API exposure parity with Ingress ([#200](https://github.com/PrivateAIM/helm/issues/200)) ([70b33d1](https://github.com/PrivateAIM/helm/commit/70b33d1095b0d077bfad24f8282e6080736c2521))
+
 ## [1.0.0](https://github.com/PrivateAIM/helm/compare/flame-node-0.2.1...flame-node-1.0.0) (2026-09-03)
 
 
