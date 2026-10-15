@@ -1,5 +1,6 @@
 {
   ".": "1.0.0",
   "charts/flame-hub": "1.0.0",
-  "charts/flame-node": "1.0.0"
+  "charts/flame-node": "1.0.0",
+  "internal/flame-provisioner": "0.2.1"
 }
