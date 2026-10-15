@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.1.0](https://github.com/PrivateAIM/helm/compare/flame-hub-1.0.0...flame-hub-1.1.0) (2026-10-14)
+
+
+### Features
+
+* bump hub to v0.15.0 ([#188](https://github.com/PrivateAIM/helm/issues/188)) ([3004060](https://github.com/PrivateAIM/helm/commit/30040609aa1e28658e2e4e9dccb9a442f719ef37))
+* **flame-hub:** track authup chart 0.5.0 (beta.68) and hub 0.17.0 ([c7e73ea](https://github.com/PrivateAIM/helm/commit/c7e73eae09be1c465e7473d68d047d1acee74a8c))
+* **hub:** track authup chart 0.4.0 (beta.64) ([33654fa](https://github.com/PrivateAIM/helm/commit/33654fa93e4837672c9414ff592863247cff7a1b))
+
+
+### Bug Fixes
+
+* **flame-hub:** namespace session cookies so a widened cookieDomain doesn't collide with authup ([e56c23c](https://github.com/PrivateAIM/helm/commit/e56c23c593a1993c052d3e6937f1f57b4b734b88))
+
 ## [1.0.0](https://github.com/PrivateAIM/helm/compare/flame-hub-0.2.1...flame-hub-1.0.0) (2026-09-03)
 
 
