@@ -13,7 +13,7 @@ Certificate authority config map name
 {{- end -}}
 
 {{/*
-Return whether there are any certificates provided either via config map or files. 
+Return whether there are any certificates provided either via config map or files.
 Returns either "true" or empty string
 */}}
 {{- define "tls.hasCerts" -}}
@@ -245,6 +245,58 @@ Return the name of the Secret that holds the SeaweedFS S3 admin credentials.
 {{- end -}}
 
 {{/*
+Return "true" when the storage service uses an external S3 instance instead of the bundled SeaweedFS.
+*/}}
+{{- define "storageService.s3.external" -}}
+{{- if .Values.storageService.s3.endpoint -}}
+true
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return the S3 endpoint (host:port) used by the storage service.
+*/}}
+{{- define "storageService.s3.endpoint" -}}
+{{- if include "storageService.s3.external" . -}}
+{{- $endpoint := .Values.storageService.s3.endpoint -}}
+{{- if regexMatch "^[a-zA-Z][a-zA-Z0-9+.-]*://" $endpoint -}}
+{{- fail (printf "storageService.s3.endpoint must be host:port without a scheme (got %q). Use storageService.s3.tls.enabled to select HTTPS." $endpoint) -}}
+{{- end -}}
+{{- $endpoint -}}
+{{- else if .Values.seaweedfs.enabled -}}
+{{- include "seaweedfs.s3.endpoint" . -}}
+{{- else -}}
+{{- fail "storageService.s3.endpoint must be set when seaweedfs.enabled=false: the storage service needs an S3 instance." -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return the name of the Secret that holds the S3 credentials used by the storage service.
+*/}}
+{{- define "storageService.s3.secretName" -}}
+{{- if include "storageService.s3.external" . -}}
+{{- if .Values.storageService.s3.existingSecret -}}
+{{- tpl .Values.storageService.s3.existingSecret $ -}}
+{{- else -}}
+{{- printf "%s-storage-s3-secret" .Release.Name -}}
+{{- end -}}
+{{- else -}}
+{{- include "seaweedfs.s3.secretName" . -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return the Secret keys holding the S3 access and secret key, as a dict with "accessKey" and "secretKey".
+*/}}
+{{- define "storageService.s3.secretKeys" -}}
+{{- if include "storageService.s3.external" . -}}
+{{- dict "accessKey" "accessKey" "secretKey" "secretKey" | toJson -}}
+{{- else -}}
+{{- dict "accessKey" "admin_access_key_id" "secretKey" "admin_secret_access_key" | toJson -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Return the secret containing private key
 */}}
 {{- define "hub.crypto.privateKeySecretName" -}}
@@ -265,6 +317,14 @@ rollout when credentials rotate.
 {{- $clientSecret := lookup "v1" "Secret" .Release.Namespace (include "hub.secretName" .) -}}
 {{- $privateKeySecret := lookup "v1" "Secret" .Release.Namespace (include "hub.crypto.privateKeySecretName" .) -}}
 {{- printf "%s|%s" (toJson (default (dict) $clientSecret.data)) (toJson (default (dict) $privateKeySecret.data)) | sha256sum -}}
+{{- end -}}
+
+{{/*
+Return a checksum of the S3 credentials used by the storage service, so it rolls out when they rotate.
+*/}}
+{{- define "storageService.s3.credentialsChecksum" -}}
+{{- $s3Secret := lookup "v1" "Secret" .Release.Namespace (include "storageService.s3.secretName" .) -}}
+{{- toJson (default (dict) $s3Secret.data) | sha256sum -}}
 {{- end -}}
 
 
