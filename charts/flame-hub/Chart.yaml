@@ -9,7 +9,7 @@ dependencies:
     version: 2.41.0
     repository: oci://registry-1.docker.io/bitnamicharts
   - name: seaweedfs
-    version: 4.39.0
+    version: 4.48.0
     repository: https://seaweedfs.github.io/seaweedfs/helm
   - name: grafana
     version: 10.5.15
