@@ -22,7 +22,7 @@ dependencies:
     repository: oci://registry-1.docker.io/bitnamicharts
   - condition: harbor.enabled
     name: harbor
-    version: 1.19.1
+    version: 1.19.4
     repository: https://helm.goharbor.io
   # Upstream chart: https://github.com/authup/helm
   - name: authup
