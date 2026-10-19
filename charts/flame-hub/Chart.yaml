@@ -12,8 +12,8 @@ dependencies:
     version: 4.48.0
     repository: https://seaweedfs.github.io/seaweedfs/helm
   - name: grafana
-    version: 10.5.15
-    repository: https://grafana.github.io/helm-charts
+    version: 14.0.1
+    repository: https://grafana-community.github.io/helm-charts
   - name: victoria-logs-cluster
     version: 0.2.9
     repository: https://victoriametrics.github.io/helm-charts/
