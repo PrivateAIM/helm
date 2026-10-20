@@ -80,6 +80,8 @@ data:
       - attributes:
           name: analysis_result_read
       - attributes:
+          name: analysis_node_log_create
+      - attributes:
           name: analysis_self_message_broker_use
       - attributes:
           name: analysis_self_storage_use
@@ -136,6 +138,7 @@ data:
         relations:
           globalPermissionsRealmScope: own
           globalPermissions:
+            - analysis_read
             - client_read
             - client_update
             - node_create

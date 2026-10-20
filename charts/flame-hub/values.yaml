@@ -79,7 +79,7 @@ global:
 image:
     registry: ghcr.io
     repository: privateaim/hub
-    tag: 0.18.0
+    tag: 0.19.0
     pullPolicy: Always
 
 # internal services
@@ -241,9 +241,9 @@ auth:
 # chart's own server.ingress / server.route rather than Hub-specific keys.
 # The image is no longer pinned here: the chart's appVersion tracks the authup
 # release, so bumping authup means bumping the dependency version in Chart.yaml.
-# Chart 0.5.1 ships authup 1.0.0-beta.69, which hub image >= 0.18.0 requires. After
-# upgrading from beta.68 with this chart's Redis, flush the cached token claims once,
-# so tokens verified before the upgrade stop bypassing the new realm binding:
+# Chart 0.5.2 ships authup 1.0.0-beta.70, which hub image >= 0.19.0 requires. After
+# upgrading from beta.68 or older with this chart's Redis, flush the cached token
+# claims once, so tokens verified before beta.69 stop bypassing the realm binding:
 #   redis-cli --scan --pattern 'oauth2_token_claims*' | xargs -r redis-cli del
 # The subchart already pins server.trustProxy to one hop (the ingress / gateway).
 authup:
