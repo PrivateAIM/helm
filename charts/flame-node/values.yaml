@@ -1379,12 +1379,12 @@ victorialogs:
         parser:
           type: remap
           inputs: [pod_filter]
-          # "log.level" for Spring (message broker) and "parsed.level" for Python components
+          # log.level (nested since Spring Boot 3.5, flat before) for Spring (message broker) and "parsed.level" for Python components
           source: |
             parsed, err = parse_json(.message)
             if err == null {
               .log = parsed
-              .level = upcase(string(parsed."log.level") ?? string(parsed.level) ?? "UNKNOWN")
+              .level = upcase(string(parsed.log.level) ?? string(parsed."log.level") ?? string(parsed.level) ?? "UNKNOWN")
             } else {
               .log = .message
               .level = "UNKNOWN"
