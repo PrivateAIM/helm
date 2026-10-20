@@ -430,6 +430,9 @@ rabbitmq:
     consumerTimeout: 7200000
     podSecurityContext:
         fsGroup: 999
+        # With "Always", kubelet makes every file group-writable on each mount, which breaks the
+        # Erlang cookie (must be owner-only) and keeps RabbitMQ from starting after a reschedule.
+        fsGroupChangePolicy: "OnRootMismatch"
     resources: {}
 # Single-node Redis (no replication). Rendered from templates/redis.
 # The password lives in the shared flame-hub-auth Secret under
@@ -549,6 +552,10 @@ grafana:
         passwordKey: "grafana-admin-password"
     persistence:
         enabled: true
+    # The PVC is ReadWriteOnce: a rolling update starts the new pod before the old one releases
+    # the volume, so on a different node it never attaches and the release stalls.
+    deploymentStrategy:
+        type: Recreate
     # Not exactly sure why, but the init-chown container always crashes
     # on the second boot of the pod.
     initChownData:
