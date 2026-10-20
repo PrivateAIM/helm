@@ -20,6 +20,20 @@ spec:
             {{- with .Values.rabbitmq.podSecurityContext }}
             securityContext: {{- toYaml . | nindent 16 }}
             {{- end }}
+            {{- if .Values.rabbitmq.persistence.enabled }}
+            initContainers:
+                # Repairs a cookie that an earlier mount made group-readable (fsGroupChangePolicy "Always").
+                -   name: fix-cookie-permissions
+                    image: "{{ .Values.rabbitmq.image.repository }}:{{ .Values.rabbitmq.image.tag }}"
+                    imagePullPolicy: {{ .Values.rabbitmq.image.pullPolicy }}
+                    command: ["sh", "-c", "if [ -f /var/lib/rabbitmq/.erlang.cookie ]; then chmod 400 /var/lib/rabbitmq/.erlang.cookie; fi"]
+                    securityContext:
+                        runAsUser: 999
+                        runAsGroup: 999
+                    volumeMounts:
+                        -   name: data
+                            mountPath: /var/lib/rabbitmq
+            {{- end }}
             containers:
                 -   name: rabbitmq
                     image: "{{ .Values.rabbitmq.image.repository }}:{{ .Values.rabbitmq.image.tag }}"
