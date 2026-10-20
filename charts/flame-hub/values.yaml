@@ -79,7 +79,7 @@ global:
 image:
     registry: ghcr.io
     repository: privateaim/hub
-    tag: 0.17.0
+    tag: 0.19.1
     pullPolicy: Always
 
 # internal services
@@ -241,9 +241,11 @@ auth:
 # chart's own server.ingress / server.route rather than Hub-specific keys.
 # The image is no longer pinned here: the chart's appVersion tracks the authup
 # release, so bumping authup means bumping the dependency version in Chart.yaml.
-# Chart 0.5.0 ships authup 1.0.0-beta.68, which hub image >= 0.17.0 requires (the
-# Hub services read authup's authorization catalog as the built-in system client,
-# which already holds the permission_read reach this needs).
+# Chart 0.5.3 ships authup 1.0.0-beta.71, which hub image >= 0.19.1 requires. After
+# upgrading from beta.68 or older with this chart's Redis, flush the cached token
+# claims once, so tokens verified before beta.69 stop bypassing the realm binding:
+#   redis-cli --scan --pattern 'oauth2_token_claims*' | xargs -r redis-cli del
+# The subchart already pins server.trustProxy to one hop (the ingress / gateway).
 authup:
     # The Hub brings its own PostgreSQL and Redis; the chart's bundled PostgreSQL and
     # Valkey stay off (valkey is off by default).
@@ -421,6 +423,11 @@ rabbitmq:
     persistence:
         enabled: true
         size: 8Gi
+    # RabbitMQ consumer_timeout in milliseconds (RabbitMQ's default: 30 minutes).
+    # Since hub 0.18.0 a command is acknowledged only once its handler finishes, so
+    # this must outlast the longest analysis / master-image build, or RabbitMQ closes
+    # the channel and the command is redelivered. Empty keeps RabbitMQ's default.
+    consumerTimeout: 7200000
     podSecurityContext:
         fsGroup: 999
     resources: {}

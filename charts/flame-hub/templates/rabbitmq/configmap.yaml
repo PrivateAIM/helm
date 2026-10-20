@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: "{{ .Release.Name }}-rabbitmq-config"
+    labels:
+        app: "{{ .Release.Name }}-rabbitmq"
+data:
+    # Loaded by the official image next to its own conf.d/10-defaults.conf.
+    90-flame-hub.conf: |
+        {{- with .Values.rabbitmq.consumerTimeout }}
+        consumer_timeout = {{ . | int64 }}
+        {{- end }}
