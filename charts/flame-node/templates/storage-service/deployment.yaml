@@ -1,4 +1,6 @@
 {{- $hasCerts := include "tls.hasCerts" . -}}
+{{- $s3External := include "storageService.s3.external" . -}}
+{{- $s3SecretKeys := include "storageService.s3.secretKeys" . | fromJson -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -23,6 +25,9 @@ spec:
     metadata:
       annotations:
         privateaim.net/credentials-checksum: {{ include "flame-node.credentialsChecksum" . }}
+        {{- if $s3External }}
+        privateaim.net/s3-credentials-checksum: {{ include "storageService.s3.credentialsChecksum" . }}
+        {{- end }}
         {{- with .Values.storageService.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
@@ -43,7 +48,7 @@ spec:
       {{- end }}
       securityContext:
         {{- toYaml .Values.storageService.podSecurityContext | nindent 8 }}
-      {{- if .Values.storageService.bucketInit.enabled }}
+      {{- if and .Values.storageService.bucketInit.enabled (not $s3External) }}
       initContainers:
         - name: ensure-bucket
           image: {{ .Values.storageService.bucketInit.image | quote }}
@@ -58,7 +63,7 @@ spec:
             - name: WEED_CLUSTER_SW_FILER
               value: {{ include "seaweedfs.filer.endpoint" . | quote }}
             - name: S3__BUCKET
-              value: {{ required "MinIO bucket must be set." .Values.storageService.env.MINIO_BUCKET | quote }}
+              value: {{ required "MinIO bucket must be set." .Values.storageService.s3.bucket | quote }}
             # Allows non-root user to write temp files
             - name: HOME
               value: /tmp
@@ -143,21 +148,21 @@ spec:
               {{- end }}
           {{- end }}
             - name: S3__ENDPOINT
-              value: {{ include "seaweedfs.s3.endpoint" . }}
+              value: {{ include "storageService.s3.endpoint" . | quote }}
             - name: S3__ACCESS_KEY
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "seaweedfs.s3.secretName" . }}
-                  key: admin_access_key_id
+                  name: {{ include "storageService.s3.secretName" . }}
+                  key: {{ $s3SecretKeys.accessKey }}
             - name: S3__SECRET_KEY
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "seaweedfs.s3.secretName" . }}
-                  key: admin_secret_access_key
+                  name: {{ include "storageService.s3.secretName" . }}
+                  key: {{ $s3SecretKeys.secretKey }}
             - name: S3__USE_SSL
-              value: {{ .Values.storageService.env.MINIO_USE_SSL | default false | quote }}
+              value: {{ .Values.storageService.s3.tls.enabled | default false | quote }}
             - name: S3__BUCKET
-              value: {{ required "MinIO bucket must be set." .Values.storageService.env.MINIO_BUCKET | quote }}
+              value: {{ required "MinIO bucket must be set." .Values.storageService.s3.bucket | quote }}
             - name: HUB__AUTH__FLOW
               value: "client"
             - name: HUB__AUTH__ID

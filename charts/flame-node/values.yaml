@@ -247,12 +247,32 @@ kong:
 
 storageService:
   env:
-    MINIO_USE_SSL: false
-    MINIO_BUCKET: flame
     OIDC_CERTS_URL:
     OIDC_CLIENT_ID_CLAIM_NAME: azp
 
-  ## An init container that waits for SeaweedFS and creates bucket for storage service if it does not exist
+  ## S3 instance used by the storage service. By default, the storage service uses the bundled SeaweedFS instance
+  ## To use your own S3-compatible instance, set storageService.s3.endpoint along with its credentials, and set seaweedfs.enabled=false.
+  s3:
+    ## @param storageService.s3.endpoint host(:port) of an external S3 instance (without http/s in front)
+    ## Use storageService.s3.tls.enabled to select HTTPS. Leave empty to use the bundled SeaweedFS instance.
+    endpoint: ""
+    ## @param storageService.s3.accessKey Access key for the external S3 instance. Ignored when existingSecret is set.
+    accessKey: ""
+    ## @param storageService.s3.secretKey Secret key for the external S3 instance. Ignored when existingSecret is set.
+    secretKey: ""
+    ## @param storageService.s3.existingSecret Existing secret with the external S3 credentials stored using "accessKey" and "secretKey"
+    ## Create it with:
+    ##       kubectl create secret generic SECRET_NAME --from-literal=accessKey=... --from-literal=secretKey=...
+    existingSecret: ""
+    ## @param storageService.s3.bucket Bucket used by the storage service. When using an external S3 instance
+    ## (storageService.s3.endpoint), this bucket must already exist and be writable with the provided credentials.
+    bucket: flame
+    ## @param storageService.s3.tls.enabled Connect to the S3 endpoint over HTTPS
+    tls:
+      enabled: false
+
+  ## An init container that waits for the bundled SeaweedFS and creates a bucket for the storage service if it does not exist yet
+  ## Only runs when the bundled SeaweedFS instance is used, an external S3 bucket must be created beforehand.
   bucketInit:
     enabled: true
     image: chrislusf/seaweedfs:4.37
@@ -1204,6 +1224,8 @@ keycloak-postgresql:
 ## All possible values can be found at https://github.com/seaweedfs/seaweedfs/blob/master/k8s/charts/seaweedfs/values.yaml
 ## It runs in all-in-one mode (master, volume, filer and S3 gateway in a single pod) and autogenerates its S3 admin credentials
 seaweedfs:
+  ## @param seaweedfs.enabled Deploy the bundled SeaweedFS instance. Set to false when storageService.s3.endpoint points to your own S3 instance.
+  enabled: true
   ## Run everything in a single pod and disable the standalone components.
   master: { enabled: false }
   volume:
@@ -1357,12 +1379,12 @@ victorialogs:
         parser:
           type: remap
           inputs: [pod_filter]
-          # "log.level" for Spring (message broker) and "parsed.level" for Python components
+          # log.level (nested since Spring Boot 3.5, flat before) for Spring (message broker) and "parsed.level" for Python components
           source: |
             parsed, err = parse_json(.message)
             if err == null {
               .log = parsed
-              .level = upcase(string(parsed."log.level") ?? string(parsed.level) ?? "UNKNOWN")
+              .level = upcase(string(parsed.log.level) ?? string(parsed."log.level") ?? string(parsed.level) ?? "UNKNOWN")
             } else {
               .log = .message
               .level = "UNKNOWN"
