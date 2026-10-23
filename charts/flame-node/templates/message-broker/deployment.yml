@@ -59,7 +59,7 @@ spec:
             - name: TZ
               value: {{ .Values.timezone | default "Europe/Berlin" }}
             - name: AUTH_JWKS_URL
-              value: {{ required "A valid JWKS URL for Keycloak is required." (include "keycloak.jwks.endpoint" .) }}
+              value: {{ required "A valid JWKS URL for Authup is required." (include "hub.auth.jwksEndpoint" .) }}
             - name: HUB_AUTH_BASE_URL
               value: {{ required "A valid HUB Auth base URL is required." .Values.hub.endpoints.auth | default "https://auth.privateaim.net/" | quote }}
             - name: HUB_AUTH_CLIENT_ID
