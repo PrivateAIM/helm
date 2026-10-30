@@ -340,7 +340,7 @@ Return "true" when VictoriaLogs is exposed at /logs (Ingress or HTTPRoute, plus 
 victorialogs.ingress.enabled is the deprecated name of victorialogs.expose.enabled and still applies to both.
 */}}
 {{- define "flame-node.victorialogs.exposed" -}}
-{{- if and .Values.victorialogs.enabled (or .Values.victorialogs.expose.enabled .Values.victorialogs.ingress.enabled) -}}
+{{- if and .Values.victorialogs.enabled (or .Values.victorialogs.expose.enabled .Values.victorialogs.ingress.enabled) (or (eq .Values.expose.type "ingress") (eq .Values.expose.type "gateway")) -}}
 true
 {{- end -}}
 {{- end -}}
