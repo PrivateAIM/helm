@@ -1,4 +1,4 @@
-{{- if and (eq .Values.expose.type "ingress") .Values.victorialogs.enabled .Values.victorialogs.ingress.enabled -}}
+{{- if and (eq .Values.expose.type "ingress") (include "flame-node.victorialogs.exposed" .) -}}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:

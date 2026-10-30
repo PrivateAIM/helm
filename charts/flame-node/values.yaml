@@ -247,12 +247,32 @@ kong:
 
 storageService:
   env:
-    MINIO_USE_SSL: false
-    MINIO_BUCKET: flame
     OIDC_CERTS_URL:
     OIDC_CLIENT_ID_CLAIM_NAME: azp
 
-  ## An init container that waits for SeaweedFS and creates bucket for storage service if it does not exist
+  ## S3 instance used by the storage service. By default, the storage service uses the bundled SeaweedFS instance
+  ## To use your own S3-compatible instance, set storageService.s3.endpoint along with its credentials, and set seaweedfs.enabled=false.
+  s3:
+    ## @param storageService.s3.endpoint host(:port) of an external S3 instance (without http/s in front)
+    ## Use storageService.s3.tls.enabled to select HTTPS. Leave empty to use the bundled SeaweedFS instance.
+    endpoint: ""
+    ## @param storageService.s3.accessKey Access key for the external S3 instance. Ignored when existingSecret is set.
+    accessKey: ""
+    ## @param storageService.s3.secretKey Secret key for the external S3 instance. Ignored when existingSecret is set.
+    secretKey: ""
+    ## @param storageService.s3.existingSecret Existing secret with the external S3 credentials stored using "accessKey" and "secretKey"
+    ## Create it with:
+    ##       kubectl create secret generic SECRET_NAME --from-literal=accessKey=... --from-literal=secretKey=...
+    existingSecret: ""
+    ## @param storageService.s3.bucket Bucket used by the storage service. When using an external S3 instance
+    ## (storageService.s3.endpoint), this bucket must already exist and be writable with the provided credentials.
+    bucket: flame
+    ## @param storageService.s3.tls.enabled Connect to the S3 endpoint over HTTPS
+    tls:
+      enabled: false
+
+  ## An init container that waits for the bundled SeaweedFS and creates a bucket for the storage service if it does not exist yet
+  ## Only runs when the bundled SeaweedFS instance is used, an external S3 bucket must be created beforehand.
   bucketInit:
     enabled: true
     image: chrislusf/seaweedfs:4.37
@@ -274,7 +294,7 @@ storageService:
   image:
     repository: ghcr.io/privateaim/node-storage-service
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 1.0.0
+    tag: 1.1.1
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -474,7 +494,7 @@ hubAdapter:
   image:
     repository: ghcr.io/privateaim/node-hub-api-adapter
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 1.0.1
+    tag: 1.2.2
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -582,7 +602,7 @@ podOrchestrator:
   image:
     repository: ghcr.io/privateaim/node-pod-orchestration
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 1.0.0
+    tag: 1.1.0
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -787,7 +807,7 @@ ui:
   image:
     repository: ghcr.io/privateaim/node-ui
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 1.0.0
+    tag: 1.2.1
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -1204,6 +1224,8 @@ keycloak-postgresql:
 ## All possible values can be found at https://github.com/seaweedfs/seaweedfs/blob/master/k8s/charts/seaweedfs/values.yaml
 ## It runs in all-in-one mode (master, volume, filer and S3 gateway in a single pod) and autogenerates its S3 admin credentials
 seaweedfs:
+  ## @param seaweedfs.enabled Deploy the bundled SeaweedFS instance. Set to false when storageService.s3.endpoint points to your own S3 instance.
+  enabled: true
   ## Run everything in a single pod and disable the standalone components.
   master: { enabled: false }
   volume:
@@ -1306,9 +1328,13 @@ victorialogs:
   ## This will deploy a Victoria Logs instance and a Vector agent configured to send logs to it.
   ## If disabled, the event viewer in the UI will also no longer function, as it relies on Victoria Logs for log storage and querying.
   enabled: true
-  ## @param victorialogs.ingress.enabled Enable ingress for Victoria Logs. Only relevant if victorialogs.enabled is true.
+  ## @param victorialogs.expose.enabled Expose Victoria Logs at <expose.hostname>/logs through the node Ingress or Gateway (whichever expose.type
+  ## selects) and link it from the UI. Only relevant if victorialogs.enabled is true.
   ## WARNING: Enabling this will expose Victoria Logs to the network, which may have security implications as auth is not required to access the UI.
   ## Make sure to secure it properly if you enable this.
+  expose:
+    enabled: false
+  ## @param victorialogs.ingress.enabled DEPRECATED alias of victorialogs.expose.enabled, still honoured (for both Ingress and Gateway API).
   ingress:
     enabled: false
   server:
@@ -1357,12 +1383,12 @@ victorialogs:
         parser:
           type: remap
           inputs: [pod_filter]
-          # "log.level" for Spring (message broker) and "parsed.level" for Python components
+          # log.level (nested since Spring Boot 3.5, flat before) for Spring (message broker) and "parsed.level" for Python components
           source: |
             parsed, err = parse_json(.message)
             if err == null {
               .log = parsed
-              .level = upcase(string(parsed."log.level") ?? string(parsed.level) ?? "UNKNOWN")
+              .level = upcase(string(parsed.log.level) ?? string(parsed."log.level") ?? string(parsed.level) ?? "UNKNOWN")
             } else {
               .log = .message
               .level = "UNKNOWN"

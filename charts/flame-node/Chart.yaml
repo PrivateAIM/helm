@@ -50,6 +50,7 @@ dependencies:
   - name: seaweedfs
     version: 4.37.0
     repository: https://seaweedfs.github.io/seaweedfs/helm
+    condition: seaweedfs.enabled
   - name: mongodb
     version: 0.7.1
     repository: https://groundhog2k.github.io/helm-charts
