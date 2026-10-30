@@ -14,9 +14,25 @@ spec:
         metadata:
             labels:
                 app: "{{ .Release.Name }}-rabbitmq"
+            annotations:
+                checksum/config: {{ include (print $.Template.BasePath "/rabbitmq/configmap.yaml") . | sha256sum }}
         spec:
             {{- with .Values.rabbitmq.podSecurityContext }}
             securityContext: {{- toYaml . | nindent 16 }}
+            {{- end }}
+            {{- if .Values.rabbitmq.persistence.enabled }}
+            initContainers:
+                # Repairs a cookie that an earlier mount made group-readable (fsGroupChangePolicy "Always").
+                -   name: fix-cookie-permissions
+                    image: "{{ .Values.rabbitmq.image.repository }}:{{ .Values.rabbitmq.image.tag }}"
+                    imagePullPolicy: {{ .Values.rabbitmq.image.pullPolicy }}
+                    command: ["sh", "-c", "if [ -f /var/lib/rabbitmq/.erlang.cookie ]; then chmod 400 /var/lib/rabbitmq/.erlang.cookie; fi"]
+                    securityContext:
+                        runAsUser: 999
+                        runAsGroup: 999
+                    volumeMounts:
+                        -   name: data
+                            mountPath: /var/lib/rabbitmq
             {{- end }}
             containers:
                 -   name: rabbitmq
@@ -58,8 +74,15 @@ spec:
                     volumeMounts:
                         -   name: data
                             mountPath: /var/lib/rabbitmq
-            {{- if not .Values.rabbitmq.persistence.enabled }}
+                        # subPath keeps the image's own conf.d/10-defaults.conf in place.
+                        -   name: config
+                            mountPath: /etc/rabbitmq/conf.d/90-flame-hub.conf
+                            subPath: 90-flame-hub.conf
             volumes:
+                -   name: config
+                    configMap:
+                        name: "{{ .Release.Name }}-rabbitmq-config"
+            {{- if not .Values.rabbitmq.persistence.enabled }}
                 -   name: data
                     emptyDir: {}
             {{- end }}
