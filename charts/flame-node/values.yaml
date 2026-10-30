@@ -248,7 +248,7 @@ kong:
 storageService:
   env:
     OIDC_CERTS_URL:
-    OIDC_CLIENT_ID_CLAIM_NAME: azp
+    OIDC_CLIENT_ID_CLAIM_NAME: client_id
 
   ## S3 instance used by the storage service. By default, the storage service uses the bundled SeaweedFS instance
   ## To use your own S3-compatible instance, set storageService.s3.endpoint along with its credentials, and set seaweedfs.enabled=false.
