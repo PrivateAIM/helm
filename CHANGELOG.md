@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.2.0](https://github.com/PrivateAIM/helm/compare/root-1.1.0...root-1.2.0) (2026-10-30)
+
+
+### Features
+
+* **flame-hub:** track hub 0.19.1 and authup chart 0.5.3 (beta.71) ([#207](https://github.com/PrivateAIM/helm/issues/207)) ([71d5269](https://github.com/PrivateAIM/helm/commit/71d526977fb01903c323262ebfad4cc7a054ad31))
+* **flame-hub:** track hub 0.19.2 and authup chart 0.5.4 (beta.72) ([313f870](https://github.com/PrivateAIM/helm/commit/313f870bf4946ce8e7e13ce8a15139c5d17da9de))
+* **flame-node:** allow storage service to use other s3 instances ([55cadac](https://github.com/PrivateAIM/helm/commit/55cadacf9456727af6c3d43c15f563f6de96e6f0))
+* **flame-node:** allow storage service to use other s3 instances ([badcb73](https://github.com/PrivateAIM/helm/commit/badcb7341ea04e652bbbf6a978d6bba9dfac5cc5))
+* **node:** bump node pod orchestartor to v1.1.0 ([b027bf1](https://github.com/PrivateAIM/helm/commit/b027bf1c1ef907b33e1c6cde32e350224b8972db))
+* **node:** bump node services to latest version ([#212](https://github.com/PrivateAIM/helm/issues/212)) ([34e8767](https://github.com/PrivateAIM/helm/commit/34e8767e031ab000a4c68d6cd3abbba0dd8af0d8))
+* **node:** victorialogs.expose.enabled for Ingress and Gateway API ([a378637](https://github.com/PrivateAIM/helm/commit/a378637f4f5f3f660fcf32aa17ef3e4c86f98cd0))
+* restrict access to victoria logs within the cluster ([#208](https://github.com/PrivateAIM/helm/issues/208)) ([abe0208](https://github.com/PrivateAIM/helm/commit/abe020817bce0b8a18b4db6ea22c89ca8eeb0098))
+* version bump to v1.2.0 ([4d753a4](https://github.com/PrivateAIM/helm/commit/4d753a465d30c1c408745629e29416df1cf6b3c3))
+
+
+### Bug Fixes
+
+* **flame-hub:** keep rabbitmq and grafana working across reschedules ([#211](https://github.com/PrivateAIM/helm/issues/211)) ([3ed6c15](https://github.com/PrivateAIM/helm/commit/3ed6c150d35ac592b7e2c55a0a87b86c32798d3b))
+* **flame-node:** bump UI and HA versions ([e81b9c8](https://github.com/PrivateAIM/helm/commit/e81b9c852f9678673901135a1bdd2a830f5dbe09))
+* **flame-node:** guard against linking to vl when expose type is none ([950a361](https://github.com/PrivateAIM/helm/commit/950a36127bf1b164da32e06154304e7f93256c42))
+* **node:** bump storage service to v1.1.1 ([6038dfb](https://github.com/PrivateAIM/helm/commit/6038dfb76fcd0bc962cfdaa59d90196fea37e851))
+* **vector:** parse springboot 3.5+ logs properly ([2dea308](https://github.com/PrivateAIM/helm/commit/2dea30885ec9647524dac7bf6b2567230c971c92))
+
 ## [1.1.0](https://github.com/PrivateAIM/helm/compare/root-1.0.0...root-1.1.0) (2026-10-14)
 
 
