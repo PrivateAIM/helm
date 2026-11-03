@@ -106,57 +106,6 @@ Return the secret containing the hub robot secret
 {{- end -}}
 {{- end -}}
 
-{{- define "keycloak.relativePath.normalized" -}}
-{{- $path := .Values.keycloakx.http.relativePath | default "/" -}}
-{{- if eq $path "/" -}}
-{{- print "" -}}
-{{- else -}}
-{{- printf "/%s" (trimAll "/" $path) -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Return the name of the Secret containing Keycloak bootstrap admin credentials.
-When keycloakx.auth.existingSecret is set, that Secret is used and the chart does not create one.
-The Secret must contain keys KC_BOOTSTRAP_ADMIN_USERNAME and KC_BOOTSTRAP_ADMIN_PASSWORD.
-*/}}
-{{- define "keycloak.credentials.secretName" -}}
-{{- if .Values.keycloakx.auth.existingSecret -}}
-    {{- printf "%s" (tpl .Values.keycloakx.auth.existingSecret $) -}}
-{{- else -}}
-    {{- print "flame-keycloak-credentials-secret" -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Return the service route for the internal keycloak instance"
-*/}}
-{{- define "keycloak.svc.route" -}}
-{{- printf "%s-keycloak-http.%s.svc.cluster.local" .Release.Name .Release.Namespace -}}
-{{- end -}}
-
-
-{{/*
-Return the endpoint for the internal keycloak instance with the (cleaned) relative path e.g. "/keycloak"
-*/}}
-{{- define "keycloak.base.endpoint" -}}
-{{- printf "http://%s:80%s" (include "keycloak.svc.route" .) (include "keycloak.relativePath.normalized" .) -}}
-{{- end -}}
-
-{{/*
-Return the internal Keycloak service endpoint with the realm
-*/}}
-{{- define "keycloak.service.endpoint" -}}
-{{- printf "%s/realms/flame" (include "keycloak.base.endpoint" .) -}}
-{{- end -}}
-
-{{/*
-Return the internal Keycloak JWKS endpoint
-*/}}
-{{- define "keycloak.jwks.endpoint" -}}
-{{- printf "%s/protocol/openid-connect/certs" (include "keycloak.service.endpoint" .) -}}
-{{- end -}}
-
 {{/*
 Return the secret containing the postgres user database secrets
 */}}
@@ -219,9 +168,7 @@ Set the API's root path. If expose is configured (not none), defaults to "/api" 
 Return the JWKS endpoint for user and client authentication which overrides what is fetched by the API.
 */}}
 {{- define "adapter.jwks.endpoint" -}}
-{{- if .Values.offline -}}
-    {{- print (include "keycloak.jwks.endpoint" .) -}}
-{{- else if .Values.hubAdapter.idp.jwks -}}
+{{- if .Values.hubAdapter.idp.jwks -}}
     {{- print .Values.hubAdapter.idp.jwks -}}
 {{- else -}}
     {{- print "" -}}
