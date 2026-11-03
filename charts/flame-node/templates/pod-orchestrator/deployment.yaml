@@ -135,6 +135,10 @@ spec:
                 secretKeyRef:
                   name: {{ include "hub.secretName" . }}
                   key: clientSecret
+            - name: AUTHUP_TOKEN_URL
+              value: {{ include "hub.auth.tokenEndpoint" . }}
+            - name: AUTHUP_JWKS_URL
+              value: {{ include "hub.auth.jwksEndpoint" . }}
             - name: HUB_LOGGING
               value:  {{ .Values.podOrchestrator.enableHubLogging | toString | default "true" | quote }}
             - name: STATUS_LOOP_INTERVAL
