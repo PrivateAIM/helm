@@ -24,9 +24,6 @@ version: 1.2.0
 appVersion: "0.2.2"
 
 dependencies:
-  - name: keycloakx
-    repository: oci://ghcr.io/codecentric/helm-charts
-    version: 7.1.9
   - name: flame-node-data-store
     repository: file://./flame-node-data-store
     version: 0.2.0
@@ -43,10 +40,6 @@ dependencies:
     repository: https://groundhog2k.github.io/helm-charts
     version: 1.5.8
     alias: kong-postgresql
-  - name: postgres
-    repository: https://groundhog2k.github.io/helm-charts
-    version: 1.5.8
-    alias: keycloak-postgresql
   - name: seaweedfs
     version: 4.37.0
     repository: https://seaweedfs.github.io/seaweedfs/helm
