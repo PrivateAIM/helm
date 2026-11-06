@@ -1,7 +1,7 @@
 ## @param expose.type Routing mode. One of 'ingress' (Kubernetes Ingress API), 'gateway' (Kubernetes Gateway API), or 'none' (no external routing)
 expose:
   type: none
-  ## @param expose.hostname Hostname for all node components (UI, Hub Adapter, Keycloak). Include scheme if desired (e.g. https://node.example.com)
+  ## @param expose.hostname Hostname for all node components (UI, Hub Adapter). Include scheme if desired (e.g. https://node.example.com)
   hostname: ""
   tls:
     ## @param expose.tls.secretName Name of the TLS secret (applies when expose.type is 'ingress' or 'gateway')
@@ -46,24 +46,6 @@ expose:
       ## An external Gateway has to set large_client_header_buffers itself, e.g. with its own SnippetsPolicy.
       snippets: true
 
-## Secrets for the Keycloak realm clients (hub-adapter, service1/pod-orchestrator).
-## Under Argo CD, `helm template` cannot look up the previously generated value, so for GitOps/production set explicit values here (ideally via sealed-secrets / external-secrets).
-keycloakClientSecrets:
-  ## @param keycloakClientSecrets.create Whether the chart generates/manages the "<release>-keycloak-client-secrets" Secret.
-  ## Set to false to supply your own Secret with that exact name (e.g. via sealed-secrets / external-secrets) instead of
-  ## putting values in this file. It must contain the keys: hubAdapterClientSecret, podOrcClientSecret.
-  ## When false, the hubAdapter/podOrc values below are ignored.
-  create: true
-  ## @param keycloakClientSecrets.hubAdapter Secret for the "hub-adapter" Keycloak client. Generated if empty.
-  hubAdapter: ""
-  ## @param keycloakClientSecrets.podOrc Secret for the "service1"/pod-orchestrator Keycloak client. Generated if empty.
-  podOrc: ""
-
-## @param offline Forces the UI and hub adapter to use the internal service endpoint for authentication
-## this is useful for when you are using a locally resolveable domain i.e. localhost or similar as defined in /etc/hosts
-## Overrides hubAdapter.idp.jwks and enables NUXT_PUBLIC_INTERNAL_KEYCLOAK_URL for the UI
-offline: false
-
 ## @param timezone Set the timezone for all components in the FLAME Node, use "TZ identifier" from https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
 timezone: Europe/Berlin
 
@@ -71,7 +53,6 @@ timezone: Europe/Berlin
 rbac:
   ## @param rbac.roleClaimName A period "." separated list of keys leading to the claim in the OIDC token that contains the user's roles
   ## If left blank, RBAC will be disabled and all authenticated users will have full access.
-  ## The default value is for the bundled Keycloak instance
   roleClaimName: "global_access.roles"
   ## @param rbac.adminRole Role name for users who have full access and control as defined in the IDP
   adminRole: "admin"
@@ -248,7 +229,7 @@ kong:
 storageService:
   env:
     OIDC_CERTS_URL:
-    OIDC_CLIENT_ID_CLAIM_NAME: azp
+    OIDC_CLIENT_ID_CLAIM_NAME: client_id
 
   ## S3 instance used by the storage service. By default, the storage service uses the bundled SeaweedFS instance
   ## To use your own S3-compatible instance, set storageService.s3.endpoint along with its credentials, and set seaweedfs.enabled=false.
@@ -370,103 +351,6 @@ storageService:
   tolerations: []
   affinity: {}
 
-# keycloakx values
-keycloakx:
-  auth:
-    ## @param keycloakx.auth.adminUsername Bootstrap admin username for Keycloak. Ignored when existingSecret is set.
-    adminUsername: ""
-    ## @param keycloakx.auth.adminPassword Bootstrap admin password for Keycloak. Ignored when existingSecret is set.
-    adminPassword: ""
-    ## @param keycloakx.auth.existingSecret Name of an existing Secret containing Keycloak bootstrap credentials.
-    ## When set, the chart does not create the credentials Secret and keycloakx.auth.adminUsername/adminPassword are ignored.
-    ## The Secret must contain the keys KC_BOOTSTRAP_ADMIN_USERNAME and KC_BOOTSTRAP_ADMIN_PASSWORD.
-    existingSecret: ""
-
-  nameOverride: keycloak # Otherwise uses "keycloakx", this keeps it backwards compatible
-
-  podSecurityContext:
-    fsGroup: 1000
-    seccompProfile:
-      type: RuntimeDefault
-
-  securityContext:
-    runAsUser: 1000
-    runAsNonRoot: true
-    allowPrivilegeEscalation: false
-    capabilities:
-      drop: ["ALL"]
-
-  http:
-    relativePath: /keycloak
-
-  command:
-    - "/opt/keycloak/bin/kc.sh"
-    - "start"
-    - "--import-realm"
-
-  cache:
-    stack: "custom" # Current default (kubernetes) is deprecated, setting to 'custom' leaves it unset and will go to 'jdbc-ping'
-
-  dbchecker:
-    enabled: true
-    securityContext:
-      allowPrivilegeEscalation: false
-      runAsUser: 1000
-      runAsGroup: 1000
-      runAsNonRoot: true
-      capabilities:
-        drop: ["ALL"]
-
-  database:
-    vendor: postgres
-    hostname: flame-node-keycloak-postgresql
-    port: 5432
-
-  # Additional environment variables for Keycloak
-  extraEnv: |
-    - name: JAVA_OPTS_APPEND
-      value: >-
-        -Djgroups.dns.query={{ include "keycloak.fullname" . }}-headless
-        -Dkeycloak.migration.replacePlaceholders=true
-    - name: KC_DB_URL_DATABASE
-      valueFrom:
-        secretKeyRef:
-          name: postgres-keycloak-credentials-secret
-          key: keycloakDbName
-    - name: KC_DB_USERNAME
-      valueFrom:
-        secretKeyRef:
-          name: postgres-keycloak-credentials-secret
-          key: keycloakDbUser
-    - name: KC_DB_PASSWORD
-      valueFrom:
-        secretKeyRef:
-          name: postgres-keycloak-credentials-secret
-          key: keycloakDbPassword
-
-  extraVolumes: |
-    - name: flame-realm-json
-      configMap:
-        name: flame-default-realm
-
-  extraVolumeMounts: |
-    - name: flame-realm-json
-      mountPath: "/opt/keycloak/data/import"
-      readOnly: true
-
-  extraEnvFrom: |
-    - secretRef:
-        name: {{ if .Values.auth.existingSecret }}{{ .Values.auth.existingSecret }}{{ else }}flame-keycloak-credentials-secret{{ end }}
-    - configMapRef:
-        name: {{ .Release.Name }}-keycloak-env
-    - secretRef:
-        name: {{ .Release.Name }}-keycloak-client-secrets
-
-  ingress:
-    enabled: false
-    console:
-      enabled: false
-
 # hub-api-adapter Values
 hubAdapter:
   ## For defining ingress specific metadata
@@ -481,7 +365,7 @@ hubAdapter:
     ##
     hostname:
 
-  ## Keycloak related information
+  ## Identity provider overrides
   idp:
     ## @param idp.jwks JWKS URI to override the endpoints fetched from the IDP issuer
     ## Meant for local testing where either no FQDN provided or using localhost and port-forwarding
@@ -602,7 +486,7 @@ podOrchestrator:
   image:
     repository: ghcr.io/privateaim/node-pod-orchestration
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 1.1.0
+    tag: 1.2.0
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -1163,62 +1047,6 @@ kong-postgresql:
   storage:
     volumeName: "postgres-data-kong"
     requestedSize: 2Gi
-
-keycloak-postgresql:
-  nameOverride:
-  fullnameOverride: flame-node-keycloak-postgresql # Required so keycloak can enable database checker
-
-  podSecurityContext:
-    fsGroup: 999
-    supplementalGroups:
-      - 999
-    seccompProfile:
-      type: RuntimeDefault
-
-  resources: {}
-
-  service:
-    type: ClusterIP
-    port: 5432
-
-  ## Credentials for the Keycloak PostgreSQL instance.
-  ## Passwords are auto-generated on first install and preserved across upgrades via lookup.
-  ## To use an external secret instead, change settings.existingSecret and userDatabase.existingSecret
-  ## to its name — the chart will skip creating its own secret when those are changed.
-  auth:
-    ## @param keycloak-postgresql.auth.superPassword Superuser password. Auto-generated on first install if blank.
-    superPassword: ""
-    ## @param keycloak-postgresql.auth.user Keycloak database username. Changing after initial install requires manual database migration.
-    user: "keycloakpguser"
-    ## @param keycloak-postgresql.auth.password Keycloak database password. Auto-generated on first install if blank.
-    password: ""
-    ## @param keycloak-postgresql.auth.database Keycloak database name.
-    database: "keycloak"
-
-  ## Database configuration
-  settings:
-    ## Optional existing secret for the Postgres superuser
-    existingSecret: postgres-keycloak-credentials-secret
-    ## @param keycloak-postgresql.settings.keepCredentialSecret Retain the generated credential secret on `helm uninstall`
-    ## so the auto-generated password stays in sync with the retained PostgreSQL data PVC on reinstall.
-    ## Set to false to let Helm delete the secret with the release (e.g. when you also wipe the data PVC).
-    keepCredentialSecret: true
-    superuser:
-    superuserPassword:
-      secretKey: superPassword
-
-  userDatabase:
-    existingSecret: postgres-keycloak-credentials-secret
-    name:
-      secretKey: keycloakDbName
-    user:
-      secretKey: keycloakDbUser
-    password:
-      secretKey: keycloakDbPassword
-
-  storage:
-    volumeName: "postgres-data-keycloak"
-    requestedSize: 8Gi
 
 ## seaweedfs is the S3 object store used by the storage service.
 ## All possible values can be found at https://github.com/seaweedfs/seaweedfs/blob/master/k8s/charts/seaweedfs/values.yaml

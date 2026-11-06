@@ -71,6 +71,30 @@ Return the hub IDP issuer URL, combining hub.endpoints.auth with hub.auth.userRe
 {{- end -}}
 
 {{/*
+Return the Authup JWKS endpoint, scoped to hub.auth.userRealm, e.g.
+"https://auth.privateaim.dev/realms/master/jwks". Authup's /realms/<id-or-name>/jwks only
+publishes the signing keys of that one realm.
+Assumption: the Hub creates each analysis's Authup client in the analysis's realm (= its
+project's realm), and Authup signs the analysis token with that realm's key. Verifying against
+this endpoint is therefore only correct if every project whose analyses run on this node lives
+in hub.auth.userRealm. An analysis from a project in another realm would be rejected
+(unknown kid) by message-broker, storage-service and pod-orchestrator's /stream_logs.
+If analyses ever live in other realms, switch to Authup's flat <hub.endpoints.auth>/jwks,
+which publishes the signing keys of every realm.
+*/}}
+{{- define "hub.auth.jwksEndpoint" -}}
+{{- printf "%s/jwks" (include "hub.auth.issuerUrl" .) -}}
+{{- end -}}
+
+{{/*
+Return the Authup token endpoint. Authup mounts its token controller at the flat /token path
+(there is no /realms/<realm>/token route), matching the token_endpoint in its OIDC discovery.
+*/}}
+{{- define "hub.auth.tokenEndpoint" -}}
+{{- printf "%s/token" (.Values.hub.endpoints.auth | trimSuffix "/") -}}
+{{- end -}}
+
+{{/*
 Return the secret containing the hub robot secret
 */}}
 {{- define "hub.secretName" -}}
@@ -80,57 +104,6 @@ Return the secret containing the hub robot secret
 {{- else -}}
     {{- printf "%s-hub-client-secret" .Release.Name -}}
 {{- end -}}
-{{- end -}}
-
-{{- define "keycloak.relativePath.normalized" -}}
-{{- $path := .Values.keycloakx.http.relativePath | default "/" -}}
-{{- if eq $path "/" -}}
-{{- print "" -}}
-{{- else -}}
-{{- printf "/%s" (trimAll "/" $path) -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Return the name of the Secret containing Keycloak bootstrap admin credentials.
-When keycloakx.auth.existingSecret is set, that Secret is used and the chart does not create one.
-The Secret must contain keys KC_BOOTSTRAP_ADMIN_USERNAME and KC_BOOTSTRAP_ADMIN_PASSWORD.
-*/}}
-{{- define "keycloak.credentials.secretName" -}}
-{{- if .Values.keycloakx.auth.existingSecret -}}
-    {{- printf "%s" (tpl .Values.keycloakx.auth.existingSecret $) -}}
-{{- else -}}
-    {{- print "flame-keycloak-credentials-secret" -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Return the service route for the internal keycloak instance"
-*/}}
-{{- define "keycloak.svc.route" -}}
-{{- printf "%s-keycloak-http.%s.svc.cluster.local" .Release.Name .Release.Namespace -}}
-{{- end -}}
-
-
-{{/*
-Return the endpoint for the internal keycloak instance with the (cleaned) relative path e.g. "/keycloak"
-*/}}
-{{- define "keycloak.base.endpoint" -}}
-{{- printf "http://%s:80%s" (include "keycloak.svc.route" .) (include "keycloak.relativePath.normalized" .) -}}
-{{- end -}}
-
-{{/*
-Return the internal Keycloak service endpoint with the realm
-*/}}
-{{- define "keycloak.service.endpoint" -}}
-{{- printf "%s/realms/flame" (include "keycloak.base.endpoint" .) -}}
-{{- end -}}
-
-{{/*
-Return the internal Keycloak JWKS endpoint
-*/}}
-{{- define "keycloak.jwks.endpoint" -}}
-{{- printf "%s/protocol/openid-connect/certs" (include "keycloak.service.endpoint" .) -}}
 {{- end -}}
 
 {{/*
@@ -195,9 +168,7 @@ Set the API's root path. If expose is configured (not none), defaults to "/api" 
 Return the JWKS endpoint for user and client authentication which overrides what is fetched by the API.
 */}}
 {{- define "adapter.jwks.endpoint" -}}
-{{- if .Values.offline -}}
-    {{- print (include "keycloak.jwks.endpoint" .) -}}
-{{- else if .Values.hubAdapter.idp.jwks -}}
+{{- if .Values.hubAdapter.idp.jwks -}}
     {{- print .Values.hubAdapter.idp.jwks -}}
 {{- else -}}
     {{- print "" -}}
