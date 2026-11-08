@@ -79,6 +79,11 @@ spec:
                                     key: rabbitmq-connection-string
                         -   name: AUTHUP_URL
                             value: "http://{{ .Release.Name }}-authup-server:3000/"
+                        # Must match clientUI.cookiePrefix - see values.yaml. Namespaces
+                        # the authup cookie-fallback lookup apart from authup's own
+                        # hosted pages, the same way the UI's cookies are namespaced.
+                        -   name: COOKIE_PREFIX
+                            value: {{ .Values.clientUI.cookiePrefix | default "" | trim | quote }}
                         -   name: VICTORIA_LOGS_INGESTOR_URL
                             value: "http://{{ .Release.Name }}-victoria-logs-vlinsert:9481/"
                         -   name: VICTORIA_LOGS_QUERIER_URL

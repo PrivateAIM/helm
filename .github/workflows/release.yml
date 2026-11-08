@@ -39,11 +39,16 @@ jobs:
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
 
-      - uses: tada5hi/hevi-action@v1.4
+      - uses: tada5hi/hevi@v2.0.2
         if: steps.release.outputs.releases_created == 'true'
         with:
           directory: charts
           versionize: true
-          versionize_version: ${{ steps.release.outputs['major'] }}.${{ steps.release.outputs['minor'] }}.${{ steps.release.outputs['patch'] }}
+          version: ${{ steps.release.outputs['major'] }}.${{ steps.release.outputs['minor'] }}.${{ steps.release.outputs['patch'] }}
           package: true
           release: true
+          push: true
+          push-host: ghcr.io/privateaim/charts
+          push-username: ${{ github.actor }}
+          push-password: ${{ secrets.GITHUB_TOKEN }}
+          push-skip-existing: true

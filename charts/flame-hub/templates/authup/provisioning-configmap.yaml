@@ -10,14 +10,21 @@ data:
     # Authup provisioning — FLAME Hub bootstrap: permission taxonomy, global roles
     # (researcher, steward) and the master-realm registry service client.
     #
-    # authup's FileProvisioningSource scans <WRITABLE_DIRECTORY_PATH>/provisioning/
-    # and loads each file via locter, which exposes the parsed content as the module
-    # default export — so yaml/yml/json work the same as js/ts/mjs. The ConfigMap key
-    # becomes the on-disk filename, so its extension selects locter's reader.
-    # createOnly strategy (non-destructive); reach = own.
+    # authup's FileProvisioningSource scans PROVISIONING_DIRECTORY_PATH (set and
+    # mounted by the authup subchart) and loads each file via locter, which exposes
+    # the parsed content as the module default export — so yaml/yml/json work the
+    # same as js/ts/mjs. The ConfigMap key becomes the on-disk filename, so its
+    # extension selects locter's reader.
+    #
+    # Permissions use the default createOnly strategy (missing names are created,
+    # existing rows are left alone). Every name Hub checks must be listed here, even
+    # if no role below holds it: the built-in admin role ("*") and the system client
+    # only expand over permissions that exist when provisioning runs.
     permissions:
       - attributes:
           name: event_create
+      - attributes:
+          name: event_read
       - attributes:
           name: event_delete
       - attributes:
@@ -41,15 +48,23 @@ data:
       - attributes:
           name: project_approve
       - attributes:
+          name: registry_read
+      - attributes:
           name: registry_manage
       - attributes:
+          name: registry_project_read
+      - attributes:
           name: registry_project_manage
+      - attributes:
+          name: node_read
       - attributes:
           name: node_create
       - attributes:
           name: node_delete
       - attributes:
           name: node_update
+      - attributes:
+          name: analysis_read
       - attributes:
           name: analysis_approve
       - attributes:
@@ -65,19 +80,33 @@ data:
       - attributes:
           name: analysis_result_read
       - attributes:
+          name: analysis_node_log_create
+      - attributes:
           name: analysis_self_message_broker_use
       - attributes:
           name: analysis_self_storage_use
       - attributes:
+          name: master_image_read
+      - attributes:
           name: master_image_manage
+      - attributes:
+          name: master_image_group_read
       - attributes:
           name: master_image_group_manage
       - attributes:
           name: service_manage
+    # Roles use a merge strategy that touches no attributes (attributes: []):
+    # since authup beta.69 createOnly binds relations only when it creates the
+    # row, so a permission added below would never reach the role on an existing
+    # install. Binding is additive - extra permissions granted by hand stay, but
+    # one listed here and removed by hand comes back on the next boot.
     roles:
       - attributes:
           name: researcher
-          display_name: Researcher
+          displayName: Researcher
+        strategy:
+          type: merge
+          attributes: []
         relations:
           globalPermissionsRealmScope: own
           globalPermissions:
@@ -86,11 +115,15 @@ data:
             - analysis_delete
             - analysis_execution_start
             - analysis_execution_stop
+            - analysis_read
             - analysis_result_read
             - analysis_self_message_broker_use
             - analysis_self_storage_use
             - analysis_update
             - bucket_update
+            - master_image_group_read
+            - master_image_read
+            - node_read
             - project_approve
             - project_create
             - project_delete
@@ -98,15 +131,20 @@ data:
             - user_self_manage
       - attributes:
           name: steward
-          display_name: Steward
+          displayName: Steward
+        strategy:
+          type: merge
+          attributes: []
         relations:
           globalPermissionsRealmScope: own
           globalPermissions:
+            - analysis_read
             - client_read
             - client_update
             - node_create
             - node_delete
             - node_update
+            - registry_read
     realms:
       - attributes:
           name: master
@@ -114,5 +152,6 @@ data:
           clients:
             - attributes:
                 name: registry
-                is_confidential: false
+                # public client (no secret at the token endpoint)
+                authMethod: none
 {{- end }}

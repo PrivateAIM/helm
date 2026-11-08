@@ -1,0 +1,104 @@
+{{- if .Values.victoriaLogs.networkPolicy.enabled }}
+{{- $vl := index .Values "victoria-logs-cluster" }}
+{{- $vlName := $vl.nameOverride | default "victoria-logs-cluster" }}
+{{- $telemetry := printf "%s-flame-hub-server-telemetry" .Release.Name }}
+{{- $grafanaName := .Values.grafana.nameOverride | default "grafana" }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    name: {{ .Release.Name }}-victoria-logs-vlinsert
+    labels:
+        {{- include "flame-hub.labels" . | nindent 8 }}
+spec:
+    podSelector:
+        matchLabels:
+            app.kubernetes.io/instance: {{ .Release.Name }}
+            app.kubernetes.io/name: {{ $vlName }}
+            app: vlinsert
+    policyTypes:
+        - Ingress
+    ingress:
+        -   from:
+                # Node analysis logs relayed by server-telemetry.
+                -   podSelector:
+                        matchLabels:
+                            app: {{ $telemetry }}
+                {{- if $vl.vmauth.enabled }}
+                -   podSelector:
+                        matchLabels:
+                            app.kubernetes.io/instance: {{ .Release.Name }}
+                            app.kubernetes.io/name: {{ $vlName }}
+                            app: vmauth
+                {{- end }}
+            ports:
+                -   port: http
+                    protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    name: {{ .Release.Name }}-victoria-logs-vlselect
+    labels:
+        {{- include "flame-hub.labels" . | nindent 8 }}
+spec:
+    podSelector:
+        matchLabels:
+            app.kubernetes.io/instance: {{ .Release.Name }}
+            app.kubernetes.io/name: {{ $vlName }}
+            app: vlselect
+    policyTypes:
+        - Ingress
+    ingress:
+        -   from:
+                -   podSelector:
+                        matchLabels:
+                            app: {{ $telemetry }}
+                # Grafana's VictoriaLogs datasources query from the Grafana pod.
+                -   podSelector:
+                        matchLabels:
+                            app.kubernetes.io/instance: {{ .Release.Name }}
+                            app.kubernetes.io/name: {{ $grafanaName }}
+                {{- if $vl.vmauth.enabled }}
+                -   podSelector:
+                        matchLabels:
+                            app.kubernetes.io/instance: {{ .Release.Name }}
+                            app.kubernetes.io/name: {{ $vlName }}
+                            app: vmauth
+                {{- end }}
+            ports:
+                -   port: http
+                    protocol: TCP
+---
+# vlstorage takes the internal insert and select requests of vlinsert and vlselect; a pod
+# reaching it directly would bypass the two policies above.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    name: {{ .Release.Name }}-victoria-logs-vlstorage
+    labels:
+        {{- include "flame-hub.labels" . | nindent 8 }}
+spec:
+    podSelector:
+        matchLabels:
+            app.kubernetes.io/instance: {{ .Release.Name }}
+            app.kubernetes.io/name: {{ $vlName }}
+            app: vlstorage
+    policyTypes:
+        - Ingress
+    ingress:
+        -   from:
+                -   podSelector:
+                        matchExpressions:
+                            -   key: app.kubernetes.io/instance
+                                operator: In
+                                values: [{{ .Release.Name | quote }}]
+                            -   key: app.kubernetes.io/name
+                                operator: In
+                                values: [{{ $vlName | quote }}]
+                            -   key: app
+                                operator: In
+                                values: [vlinsert, vlselect]
+            ports:
+                -   port: http
+                    protocol: TCP
+{{- end }}

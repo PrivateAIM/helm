@@ -79,7 +79,7 @@ global:
 image:
     registry: ghcr.io
     repository: privateaim/hub
-    tag: 0.15.0
+    tag: 0.19.2
     pullPolicy: Always
 
 # internal services
@@ -87,7 +87,9 @@ clientUI:
     replicaCount: 3
     publicHttps: false # global.flameHub.publicHttps also enables this
     # Domain attribute for the UI's session cookies. LEAVE EMPTY unless a
-    # sibling host genuinely has to read them.
+    # sibling host genuinely has to read them (e.g. a storage/stream download
+    # reached by a top-level navigation, which can't carry an Authorization
+    # header).
     #
     # Empty means host-only: the browser hands the cookies back to the UI host
     # and nowhere else. That is what keeps them apart from authup's own session
@@ -98,16 +100,29 @@ clientUI:
     # A value opts out of host-only: the cookies are then delivered to every
     # SUBDOMAIN of it as well. If that covers authup's host (e.g. cookieDomain
     # "example.com" with authup on "auth.example.com", or authup sharing the UI
-    # host), two writers land on one cookie key. A read takes the first record
-    # of a name - the older one - so each side can drive on, rotate and
-    # cleanup-revoke the other's tokens, which surfaces as being logged out on
-    # the next page load. The render refuses that combination; see
-    # flameHub.validateCookieDomain.
-    #
-    # It buys the Hub nothing by default: the services read the bearer token
-    # from the Authorization header, and their cookie fallback only ever sees
-    # same-origin requests under the shared hostname.
+    # host), two writers land on one cookie key unless cookiePrefix (below)
+    # namespaces the UI's own cookies apart from authup's. The render refuses
+    # a widened domain with no prefix; see flameHub.validateCookieDomain.
     cookieDomain: ""
+    # Prefix for every session cookie name (access_token -> <prefix>access_token).
+    # On by default: a fixed prefix costs nothing on a plain single-domain
+    # deployment (client-ui writes it, serverCore/serverStorage/serverMessenger/
+    # serverTelemetry's COOKIE_PREFIX reads it back - same convention either
+    # way), and it's what stops the UI's cookies from colliding with authup's
+    # own hosted pages' cookies once cookieDomain (above) is ever widened to
+    # cover authup's host - the render refuses that combination if this is
+    # empty; see flameHub.validateCookieDomain. Needs authup >= 1.0.0-beta.64
+    # and hub image >= 0.16.1 (0.16.0 shipped clientUI's half only -
+    # server-http-kit's cookie fallback still read the bare name; fixed in
+    # 0.16.1). Cookie name characters only: letters, digits, "_", "-", ".".
+    #
+    # Changing this value (including from empty to non-empty, or back) signs
+    # every currently-logged-in user out: the un-prefixed and prefixed cookies
+    # are never read or swept as the same session, so a returning user's
+    # browser holds a stale record under the old name until they sign out (or
+    # clear cookies) once. Harmless on a brand new install; plan a rollout
+    # window for an existing one.
+    cookiePrefix: "flame_"
     # service specific ingress configuration. If you use this, you will need a separate domain for each service
     ingress:
         enabled: false
@@ -226,6 +241,12 @@ auth:
 # chart's own server.ingress / server.route rather than Hub-specific keys.
 # The image is no longer pinned here: the chart's appVersion tracks the authup
 # release, so bumping authup means bumping the dependency version in Chart.yaml.
+# Chart 0.5.4 ships authup 1.0.0-beta.72, which hub image >= 0.19.2 requires (and vice
+# versa: roll both out together, a mixed pair denies every request). After
+# upgrading from beta.68 or older with this chart's Redis, flush the cached token
+# claims once, so tokens verified before beta.69 stop bypassing the realm binding:
+#   redis-cli --scan --pattern 'oauth2_token_claims*' | xargs -r redis-cli del
+# The subchart already pins server.trustProxy to one hop (the ingress / gateway).
 authup:
     # The Hub brings its own PostgreSQL and Redis; the chart's bundled PostgreSQL and
     # Valkey stay off (valkey is off by default).
@@ -283,7 +304,11 @@ authup:
         # Read the DB user from the same Secret as the password. externalDatabase.user
         # is a plain value, but an env entry outranks the chart's env ConfigMap, so this
         # avoids duplicating postgresql.auth.username as a second source of truth.
-        extraEnvVars:
+        # Anchored: authup.worker below reuses both lists, since the subchart does
+        # not pass server.extraEnvVars / server.initContainers on to it. Anchors
+        # only resolve inside this file - an override of either list in your own
+        # values must be repeated under authup.worker.
+        extraEnvVars: &authupDbUsernameEnv
             -   name: DB_USERNAME
                 valueFrom:
                     secretKeyRef:
@@ -291,7 +316,7 @@ authup:
                         key: username
         # Wait for the backing services, like every other Hub workload (tpl-rendered
         # in the authup subchart context).
-        initContainers:
+        initContainers: &authupWaitForBackends
             -   name: wait-for-db
                 image: busybox
                 command: ['sh', '-c', 'until nc -z -v -w30 {{ include "flameHub.postgresql.host" . }} 5432; do echo "Waiting for db..."; sleep 5; done']
@@ -305,7 +330,7 @@ authup:
             enabled: true
             existingConfigMap: '{{ .Release.Name }}-authup-provisioning'
         # Brand the consoles authup serves itself (auth/login + the account console
-        # at /account) with the FLAME Hub design, so leaving the Hub UI for a login
+        # at /console/account) with the FLAME Hub design, so leaving the Hub UI for a login
         # or a profile change does not change appearance mid-flow. The theme content
         # is rendered by templates/authup/theme-configmap.yaml and mounted by the
         # authup subchart.
@@ -374,6 +399,17 @@ authup:
     # The Hub ships its own UI; authup's bundled admin console is not deployed.
     adminConsole:
         enabled: false
+    # Dedicated background worker (on by default since authup chart 0.5.0 /
+    # beta.68): it takes the scheduled sweeps off the server and reports their
+    # health on worker.containerPorts.http, probed for readiness only. It runs no
+    # migrations, so on a fresh install it restarts until the server has created
+    # the schema. It shares the server's env ConfigMap and DB/Redis secrets, but
+    # not server.extraEnvVars / initContainers - hence the anchors above.
+    # Set enabled: false to keep the sweeps inside the server as before.
+    worker:
+        enabled: true
+        extraEnvVars: *authupDbUsernameEnv
+        initContainers: *authupWaitForBackends
 
 rabbitmq:
     # Single-node RabbitMQ. The client Service is "<release>-rabbitmq:5672".
@@ -388,8 +424,16 @@ rabbitmq:
     persistence:
         enabled: true
         size: 8Gi
+    # RabbitMQ consumer_timeout in milliseconds (RabbitMQ's default: 30 minutes).
+    # Since hub 0.18.0 a command is acknowledged only once its handler finishes, so
+    # this must outlast the longest analysis / master-image build, or RabbitMQ closes
+    # the channel and the command is redelivered. Empty keeps RabbitMQ's default.
+    consumerTimeout: 7200000
     podSecurityContext:
         fsGroup: 999
+        # With "Always", kubelet makes every file group-writable on each mount, which breaks the
+        # Erlang cookie (must be owner-only) and keeps RabbitMQ from starting after a reschedule.
+        fsGroupChangePolicy: "OnRootMismatch"
     resources: {}
 # Single-node Redis (no replication). Rendered from templates/redis.
 # The password lives in the shared flame-hub-auth Secret under
@@ -509,6 +553,17 @@ grafana:
         passwordKey: "grafana-admin-password"
     persistence:
         enabled: true
+    # The PVC is ReadWriteOnce: a rolling update starts the new pod before the old one releases
+    # the volume, so on a different node it never attaches and the release stalls.
+    #
+    # Upgrading from flame-hub <= 1.1.0 (RollingUpdate) fails once with "spec.strategy.rollingUpdate:
+    # Forbidden: may not be specified when strategy `type` is 'Recreate'": the patch keeps the
+    # defaulted rollingUpdate block, and values cannot null it out. Patch the Deployment once:
+    #   kubectl -n <ns> patch deploy <release>-grafana --type json -p '[
+    #     {"op":"remove","path":"/spec/strategy/rollingUpdate"},
+    #     {"op":"replace","path":"/spec/strategy/type","value":"Recreate"}]'
+    deploymentStrategy:
+        type: Recreate
     # Not exactly sure why, but the init-chown container always crashes
     # on the second boot of the pod.
     initChownData:
@@ -540,6 +595,12 @@ grafana:
                 - name: VL
                   type: victoriametrics-logs-datasource
                   url: http://{{ .Release.Name }}-victoria-logs-vlselect:9471
+
+victoriaLogs:
+    networkPolicy:
+        # Restrict VictoriaLogs ingress to server-telemetry and Grafana (and vmauth when
+        # enabled).
+        enabled: true
 
 victoria-logs-cluster:
     nameOverride: "victoria-logs"

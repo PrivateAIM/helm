@@ -15,7 +15,7 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 1.0.0
+version: 1.2.0
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
@@ -24,9 +24,6 @@ version: 1.0.0
 appVersion: "0.2.2"
 
 dependencies:
-  - name: keycloakx
-    repository: oci://ghcr.io/codecentric/helm-charts
-    version: 7.1.9
   - name: flame-node-data-store
     repository: file://./flame-node-data-store
     version: 0.2.0
@@ -43,13 +40,10 @@ dependencies:
     repository: https://groundhog2k.github.io/helm-charts
     version: 1.5.8
     alias: kong-postgresql
-  - name: postgres
-    repository: https://groundhog2k.github.io/helm-charts
-    version: 1.5.8
-    alias: keycloak-postgresql
   - name: seaweedfs
     version: 4.37.0
     repository: https://seaweedfs.github.io/seaweedfs/helm
+    condition: seaweedfs.enabled
   - name: mongodb
     version: 0.7.1
     repository: https://groundhog2k.github.io/helm-charts

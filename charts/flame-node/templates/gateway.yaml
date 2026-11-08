@@ -29,4 +29,23 @@ spec:
         from: Same
   {{- end }}
   {{- end }}
+{{- if and .Values.expose.gateway.nginxGatewayFabric.enabled .Values.expose.gateway.nginxGatewayFabric.snippets }}
+---
+apiVersion: gateway.nginx.org/v1alpha1
+kind: SnippetsPolicy
+metadata:
+  name: {{ .Release.Name }}-node-gateway-ngf-snippets
+  labels:
+    app.kubernetes.io/part-of: flame-node
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: {{ .Release.Name }}-node-gateway
+  snippets:
+  - context: http
+    value: |
+      large_client_header_buffers 8 32k;
+{{- end }}
 {{- end }}

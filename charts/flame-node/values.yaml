@@ -1,7 +1,7 @@
 ## @param expose.type Routing mode. One of 'ingress' (Kubernetes Ingress API), 'gateway' (Kubernetes Gateway API), or 'none' (no external routing)
 expose:
   type: none
-  ## @param expose.hostname Hostname for all node components (UI, Hub Adapter, Keycloak). Include scheme if desired (e.g. https://node.example.com)
+  ## @param expose.hostname Hostname for all node components (UI, Hub Adapter). Include scheme if desired (e.g. https://node.example.com)
   hostname: ""
   tls:
     ## @param expose.tls.secretName Name of the TLS secret (applies when expose.type is 'ingress' or 'gateway')
@@ -27,33 +27,24 @@ expose:
       ## @param expose.gateway.parentRef.sectionName Listener name on the external Gateway to attach to (optional)
       sectionName: ""
     nginxGatewayFabric:
-      ## @param expose.gateway.nginxGatewayFabric.enabled Set to true when the node Gateway's GatewayClass is NGINX Gateway Fabric, to attach a ClientSettingsPolicy 
-      ## to the node Gateway. NGINX Gateway Fabric defaults to nginx's client_max_body_size of 1m, which is too small for data store uploads. The policy raises it 
-      ## for every HTTPRoute attached to the Gateway. No effect on other GatewayClasses.
+      ## @param expose.gateway.nginxGatewayFabric.enabled Set to true when the node Gateway's GatewayClass is NGINX Gateway Fabric, to attach the NGINX Gateway
+      ## Fabric policies the node needs: a ClientSettingsPolicy raising the SeaweedFS admin route's upload size limit to maxBodySize (nginx defaults to 1m; the
+      ## other routes keep it, as with the Ingresses), plus the policies enabled by proxySettings and snippets below. The install fails if their CRDs are missing.
+      ## With any other Gateway implementation leave this false and configure the equivalents on that Gateway: 500m upload size and 900s timeouts for the
+      ## SeaweedFS admin route, 128k proxy buffers for the UI route, and request header buffers large enough for the session cookies (e.g. 8 x 32k).
+      ## Without them, large uploads and requests carrying the large session cookies fail.
       enabled: false
       ## @param expose.gateway.nginxGatewayFabric.maxBodySize Value for the ClientSettingsPolicy's body.maxSize
       maxBodySize: 500m
-
-## Secrets for the Keycloak realm clients (hub-adapter, node-ui, service1/pod-orchestrator).
-## Under Argo CD, `helm template` cannot look up the previously generated value, so for GitOps/production set explicit values here (ideally via sealed-secrets / external-secrets).
-keycloakClientSecrets:
-  ## @param keycloakClientSecrets.create Whether the chart generates/manages the "<release>-keycloak-client-secrets" Secret.
-  ## Set to false to supply your own Secret with that exact name (e.g. via sealed-secrets / external-secrets) instead of
-  ## putting values in this file. It must contain the keys: hubAdapterClientSecret, nodeUiClientSecret, podOrcClientSecret.
-  ## When false, the hubAdapter/nodeUi/podOrc values below are ignored.
-  create: true
-  ## @param keycloakClientSecrets.hubAdapter Secret for the "hub-adapter" Keycloak client. Generated if empty.
-  hubAdapter: ""
-  ## @param keycloakClientSecrets.nodeUi Secret for the "node-ui" Keycloak client. Generated if empty.
-  ## Ignored when ui.idp.clientSecret is set (that value is used for both the UI and Keycloak).
-  nodeUi: ""
-  ## @param keycloakClientSecrets.podOrc Secret for the "service1"/pod-orchestrator Keycloak client. Generated if empty.
-  podOrc: ""
-
-## @param offline Forces the UI and hub adapter to use the internal service endpoint for authentication
-## this is useful for when you are using a locally resolveable domain i.e. localhost or similar as defined in /etc/hosts
-## Overrides hubAdapter.idp.jwks and enables NUXT_PUBLIC_INTERNAL_KEYCLOAK_URL for the UI
-offline: false
+      ## @param expose.gateway.nginxGatewayFabric.proxySettings Only with enabled=true. Attach ProxySettingsPolicies to the routes that need nginx proxy
+      ## settings beyond the defaults: UI proxy buffers of 128k (for the large cookies the UI sets, as the UI Ingress annotation) and SeaweedFS admin upload
+      ## timeouts of 900s. Requires NGINX Gateway Fabric >= 2.6 with its ProxySettingsPolicy CRD installed.
+      proxySettings: true
+      ## @param expose.gateway.nginxGatewayFabric.snippets Only with enabled=true and a chart-managed Gateway (external=false). Attach a SnippetsPolicy
+      ## raising request header limits (large_client_header_buffers 8 32k) for the large session cookies browsers send; no NGINX Gateway Fabric policy
+      ## covers it. Requires snippets to be enabled in the NGINX Gateway Fabric install (nginxGateway.snippets.enable), otherwise the policy is ignored.
+      ## An external Gateway has to set large_client_header_buffers itself, e.g. with its own SnippetsPolicy.
+      snippets: true
 
 ## @param timezone Set the timezone for all components in the FLAME Node, use "TZ identifier" from https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
 timezone: Europe/Berlin
@@ -62,7 +53,6 @@ timezone: Europe/Berlin
 rbac:
   ## @param rbac.roleClaimName A period "." separated list of keys leading to the claim in the OIDC token that contains the user's roles
   ## If left blank, RBAC will be disabled and all authenticated users will have full access.
-  ## The default value is for the bundled Keycloak instance
   roleClaimName: "global_access.roles"
   ## @param rbac.adminRole Role name for users who have full access and control as defined in the IDP
   adminRole: "admin"
@@ -77,7 +67,7 @@ proxy:
   httpProxy:
   ## @param proxy.httpsProxy Full proxy URL. Ignored when existingSecret is set.
   httpsProxy:
-  ## @param proxy.noProxy List of domains to exclude from proxying.
+  ## @param proxy.noProxy List of domains to exclude from proxying, used by the UI and hub adapter
   noProxy:
   ## @param proxy.existingSecret Name of an existing K8s Secret containing proxy credentials.
   ## When set, all proxy env vars (HTTP_PROXY, HTTPS_PROXY, PROXY_URL) are sourced from this
@@ -238,12 +228,32 @@ kong:
 
 storageService:
   env:
-    MINIO_USE_SSL: false
-    MINIO_BUCKET: flame
     OIDC_CERTS_URL:
-    OIDC_CLIENT_ID_CLAIM_NAME: azp
+    OIDC_CLIENT_ID_CLAIM_NAME: client_id
 
-  ## An init container that waits for SeaweedFS and creates bucket for storage service if it does not exist
+  ## S3 instance used by the storage service. By default, the storage service uses the bundled SeaweedFS instance
+  ## To use your own S3-compatible instance, set storageService.s3.endpoint along with its credentials, and set seaweedfs.enabled=false.
+  s3:
+    ## @param storageService.s3.endpoint host(:port) of an external S3 instance (without http/s in front)
+    ## Use storageService.s3.tls.enabled to select HTTPS. Leave empty to use the bundled SeaweedFS instance.
+    endpoint: ""
+    ## @param storageService.s3.accessKey Access key for the external S3 instance. Ignored when existingSecret is set.
+    accessKey: ""
+    ## @param storageService.s3.secretKey Secret key for the external S3 instance. Ignored when existingSecret is set.
+    secretKey: ""
+    ## @param storageService.s3.existingSecret Existing secret with the external S3 credentials stored using "accessKey" and "secretKey"
+    ## Create it with:
+    ##       kubectl create secret generic SECRET_NAME --from-literal=accessKey=... --from-literal=secretKey=...
+    existingSecret: ""
+    ## @param storageService.s3.bucket Bucket used by the storage service. When using an external S3 instance
+    ## (storageService.s3.endpoint), this bucket must already exist and be writable with the provided credentials.
+    bucket: flame
+    ## @param storageService.s3.tls.enabled Connect to the S3 endpoint over HTTPS
+    tls:
+      enabled: false
+
+  ## An init container that waits for the bundled SeaweedFS and creates a bucket for the storage service if it does not exist yet
+  ## Only runs when the bundled SeaweedFS instance is used, an external S3 bucket must be created beforehand.
   bucketInit:
     enabled: true
     image: chrislusf/seaweedfs:4.37
@@ -265,7 +275,7 @@ storageService:
   image:
     repository: ghcr.io/privateaim/node-storage-service
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.2.1
+    tag: 1.1.1
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -341,103 +351,6 @@ storageService:
   tolerations: []
   affinity: {}
 
-# keycloakx values
-keycloakx:
-  auth:
-    ## @param keycloakx.auth.adminUsername Bootstrap admin username for Keycloak. Ignored when existingSecret is set.
-    adminUsername: ""
-    ## @param keycloakx.auth.adminPassword Bootstrap admin password for Keycloak. Ignored when existingSecret is set.
-    adminPassword: ""
-    ## @param keycloakx.auth.existingSecret Name of an existing Secret containing Keycloak bootstrap credentials.
-    ## When set, the chart does not create the credentials Secret and keycloakx.auth.adminUsername/adminPassword are ignored.
-    ## The Secret must contain the keys KC_BOOTSTRAP_ADMIN_USERNAME and KC_BOOTSTRAP_ADMIN_PASSWORD.
-    existingSecret: ""
-
-  nameOverride: keycloak # Otherwise uses "keycloakx", this keeps it backwards compatible
-
-  podSecurityContext:
-    fsGroup: 1000
-    seccompProfile:
-      type: RuntimeDefault
-
-  securityContext:
-    runAsUser: 1000
-    runAsNonRoot: true
-    allowPrivilegeEscalation: false
-    capabilities:
-      drop: ["ALL"]
-
-  http:
-    relativePath: /keycloak
-
-  command:
-    - "/opt/keycloak/bin/kc.sh"
-    - "start"
-    - "--import-realm"
-
-  cache:
-    stack: "custom" # Current default (kubernetes) is deprecated, setting to 'custom' leaves it unset and will go to 'jdbc-ping'
-
-  dbchecker:
-    enabled: true
-    securityContext:
-      allowPrivilegeEscalation: false
-      runAsUser: 1000
-      runAsGroup: 1000
-      runAsNonRoot: true
-      capabilities:
-        drop: ["ALL"]
-
-  database:
-    vendor: postgres
-    hostname: flame-node-keycloak-postgresql
-    port: 5432
-
-  # Additional environment variables for Keycloak
-  extraEnv: |
-    - name: JAVA_OPTS_APPEND
-      value: >-
-        -Djgroups.dns.query={{ include "keycloak.fullname" . }}-headless
-        -Dkeycloak.migration.replacePlaceholders=true
-    - name: KC_DB_URL_DATABASE
-      valueFrom:
-        secretKeyRef:
-          name: postgres-keycloak-credentials-secret
-          key: keycloakDbName
-    - name: KC_DB_USERNAME
-      valueFrom:
-        secretKeyRef:
-          name: postgres-keycloak-credentials-secret
-          key: keycloakDbUser
-    - name: KC_DB_PASSWORD
-      valueFrom:
-        secretKeyRef:
-          name: postgres-keycloak-credentials-secret
-          key: keycloakDbPassword
-
-  extraVolumes: |
-    - name: flame-realm-json
-      configMap:
-        name: flame-default-realm
-
-  extraVolumeMounts: |
-    - name: flame-realm-json
-      mountPath: "/opt/keycloak/data/import"
-      readOnly: true
-
-  extraEnvFrom: |
-    - secretRef:
-        name: {{ if .Values.auth.existingSecret }}{{ .Values.auth.existingSecret }}{{ else }}flame-keycloak-credentials-secret{{ end }}
-    - configMapRef:
-        name: {{ .Release.Name }}-keycloak-env
-    - secretRef:
-        name: {{ .Release.Name }}-keycloak-client-secrets
-
-  ingress:
-    enabled: false
-    console:
-      enabled: false
-
 # hub-api-adapter Values
 hubAdapter:
   ## For defining ingress specific metadata
@@ -452,7 +365,7 @@ hubAdapter:
     ##
     hostname:
 
-  ## Keycloak related information
+  ## Identity provider overrides
   idp:
     ## @param idp.jwks JWKS URI to override the endpoints fetched from the IDP issuer
     ## Meant for local testing where either no FQDN provided or using localhost and port-forwarding
@@ -465,7 +378,7 @@ hubAdapter:
   image:
     repository: ghcr.io/privateaim/node-hub-api-adapter
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.8.1
+    tag: 1.2.2
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -573,7 +486,7 @@ podOrchestrator:
   image:
     repository: ghcr.io/privateaim/node-pod-orchestration
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.6.3
+    tag: 1.2.0
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -689,7 +602,7 @@ messageBroker:
   image:
     repository: ghcr.io/privateaim/node-message-broker
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.7.0
+    tag: 1.0.1
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -771,22 +684,6 @@ ui:
   ## When set, the chart does not create or manage the nuxtAuthSecret and nuxtAuthSecret above is ignored.
   nuxtAuthExistingSecret: ""
 
-  ## IDP related information
-  idp:
-    ## @param idp.debug If true, the clientId and clientSecret will use pre-defined values
-    ## The clientSecret will be defined using the "static" k8s secret key
-    debug: false
-    ## @param idp.clientId IDP's client ID for this service
-    clientId: node-ui
-    ## @param idp.clientSecret IDP client secret. Ignored if `idp.existingSecret` is provided
-    ## If not defined and no existingSecret provided, a random string is generated
-    clientSecret: ""
-    ## @param idp.existingSecret Existing k8s secret containing IDP secret for this client
-    ## idp.existingSecretKey should also be defined for custom k8s secret. Defaults to nodeUiClientSecret
-    existingSecret: ""
-    ## @param idp.existingSecretKey Key where the client secret is being stored inside the existing k8s secret
-    existingSecretKey: ""
-
   # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
   replicaCount: 1
 
@@ -794,7 +691,7 @@ ui:
   image:
     repository: ghcr.io/privateaim/node-ui
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.8.1
+    tag: 1.2.1
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
 
@@ -930,7 +827,7 @@ dataStore:
       data:
         type: persistentVolumeClaim
         size: 5Gi
-      
+
       podSecurityContext:
         enabled: true
         runAsUser: 1000
@@ -1151,66 +1048,12 @@ kong-postgresql:
     volumeName: "postgres-data-kong"
     requestedSize: 2Gi
 
-keycloak-postgresql:
-  nameOverride:
-  fullnameOverride: flame-node-keycloak-postgresql # Required so keycloak can enable database checker
-
-  podSecurityContext:
-    fsGroup: 999
-    supplementalGroups:
-      - 999
-    seccompProfile:
-      type: RuntimeDefault
-
-  resources: {}
-
-  service:
-    type: ClusterIP
-    port: 5432
-
-  ## Credentials for the Keycloak PostgreSQL instance.
-  ## Passwords are auto-generated on first install and preserved across upgrades via lookup.
-  ## To use an external secret instead, change settings.existingSecret and userDatabase.existingSecret
-  ## to its name — the chart will skip creating its own secret when those are changed.
-  auth:
-    ## @param keycloak-postgresql.auth.superPassword Superuser password. Auto-generated on first install if blank.
-    superPassword: ""
-    ## @param keycloak-postgresql.auth.user Keycloak database username. Changing after initial install requires manual database migration.
-    user: "keycloakpguser"
-    ## @param keycloak-postgresql.auth.password Keycloak database password. Auto-generated on first install if blank.
-    password: ""
-    ## @param keycloak-postgresql.auth.database Keycloak database name.
-    database: "keycloak"
-
-  ## Database configuration
-  settings:
-    ## Optional existing secret for the Postgres superuser
-    existingSecret: postgres-keycloak-credentials-secret
-    ## @param keycloak-postgresql.settings.keepCredentialSecret Retain the generated credential secret on `helm uninstall`
-    ## so the auto-generated password stays in sync with the retained PostgreSQL data PVC on reinstall.
-    ## Set to false to let Helm delete the secret with the release (e.g. when you also wipe the data PVC).
-    keepCredentialSecret: true
-    superuser:
-    superuserPassword:
-      secretKey: superPassword
-
-  userDatabase:
-    existingSecret: postgres-keycloak-credentials-secret
-    name:
-      secretKey: keycloakDbName
-    user:
-      secretKey: keycloakDbUser
-    password:
-      secretKey: keycloakDbPassword
-
-  storage:
-    volumeName: "postgres-data-keycloak"
-    requestedSize: 8Gi
-
 ## seaweedfs is the S3 object store used by the storage service.
 ## All possible values can be found at https://github.com/seaweedfs/seaweedfs/blob/master/k8s/charts/seaweedfs/values.yaml
 ## It runs in all-in-one mode (master, volume, filer and S3 gateway in a single pod) and autogenerates its S3 admin credentials
 seaweedfs:
+  ## @param seaweedfs.enabled Deploy the bundled SeaweedFS instance. Set to false when storageService.s3.endpoint points to your own S3 instance.
+  enabled: true
   ## Run everything in a single pod and disable the standalone components.
   master: { enabled: false }
   volume:
@@ -1309,17 +1152,21 @@ mongodb:
     className:
 
 victorialogs:
-  ## @param victorialogs.enabled Enable Victoria Logs for log collection and analysis in the Flame Node. 
+  ## @param victorialogs.enabled Enable Victoria Logs for log collection and analysis in the Flame Node.
   ## This will deploy a Victoria Logs instance and a Vector agent configured to send logs to it.
   ## If disabled, the event viewer in the UI will also no longer function, as it relies on Victoria Logs for log storage and querying.
   enabled: true
-  ## @param victorialogs.ingress.enabled Enable ingress for Victoria Logs. Only relevant if victorialogs.enabled is true.
-  ## WARNING: Enabling this will expose Victoria Logs to the network, which may have security implications as auth is not required to access the UI. 
+  ## @param victorialogs.expose.enabled Expose Victoria Logs at <expose.hostname>/logs through the node Ingress or Gateway (whichever expose.type
+  ## selects) and link it from the UI. Only relevant if victorialogs.enabled is true.
+  ## WARNING: Enabling this will expose Victoria Logs to the network, which may have security implications as auth is not required to access the UI.
   ## Make sure to secure it properly if you enable this.
+  expose:
+    enabled: false
+  ## @param victorialogs.ingress.enabled DEPRECATED alias of victorialogs.expose.enabled, still honoured (for both Ingress and Gateway API).
   ingress:
     enabled: false
   server:
-    ## Data retention period. Possible units character: h(ours), d(ays), w(eeks), y(ears), if no unit character specified - month. 
+    ## Data retention period. Possible units character: h(ours), d(ays), w(eeks), y(ears), if no unit character specified - month.
     ## The minimum retention period is 24h. See these [docs](https://docs.victoriametrics.com/victorialogs/#retention)
     retentionPeriod: 1y
     persistentVolume:
@@ -1341,7 +1188,7 @@ victorialogs:
     ## If vector cannot be deployed in a DaemonSet, you can disable it here and deploy your own log shipping solution to Victoria Logs instead.
     enabled: true
     ## @param victoria-logs.vector.logLevelFilter Minimum log level to ingest. Logs below this level are dropped by Vector.
-    ## Valid values: DEBUG, INFO, WARNING, ERROR, CRITICAL (case-insensitive). Empty string disables filtering. 
+    ## Valid values: DEBUG, INFO, WARNING, ERROR, CRITICAL (case-insensitive). Empty string disables filtering.
     logLevelFilter: "INFO"
     customConfig:
       data_dir: /vector-data-dir
@@ -1364,12 +1211,12 @@ victorialogs:
         parser:
           type: remap
           inputs: [pod_filter]
-          # "log.level" for Spring (message broker) and "parsed.level" for Python components
+          # log.level (nested since Spring Boot 3.5, flat before) for Spring (message broker) and "parsed.level" for Python components
           source: |
             parsed, err = parse_json(.message)
             if err == null {
               .log = parsed
-              .level = upcase(string(parsed."log.level") ?? string(parsed.level) ?? "UNKNOWN")
+              .level = upcase(string(parsed.log.level) ?? string(parsed."log.level") ?? string(parsed.level) ?? "UNKNOWN")
             } else {
               .log = .message
               .level = "UNKNOWN"

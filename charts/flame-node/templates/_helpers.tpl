@@ -13,7 +13,7 @@ Certificate authority config map name
 {{- end -}}
 
 {{/*
-Return whether there are any certificates provided either via config map or files. 
+Return whether there are any certificates provided either via config map or files.
 Returns either "true" or empty string
 */}}
 {{- define "tls.hasCerts" -}}
@@ -71,6 +71,30 @@ Return the hub IDP issuer URL, combining hub.endpoints.auth with hub.auth.userRe
 {{- end -}}
 
 {{/*
+Return the Authup JWKS endpoint, scoped to hub.auth.userRealm, e.g.
+"https://auth.privateaim.dev/realms/master/jwks". Authup's /realms/<id-or-name>/jwks only
+publishes the signing keys of that one realm.
+Assumption: the Hub creates each analysis's Authup client in the analysis's realm (= its
+project's realm), and Authup signs the analysis token with that realm's key. Verifying against
+this endpoint is therefore only correct if every project whose analyses run on this node lives
+in hub.auth.userRealm. An analysis from a project in another realm would be rejected
+(unknown kid) by message-broker, storage-service and pod-orchestrator's /stream_logs.
+If analyses ever live in other realms, switch to Authup's flat <hub.endpoints.auth>/jwks,
+which publishes the signing keys of every realm.
+*/}}
+{{- define "hub.auth.jwksEndpoint" -}}
+{{- printf "%s/jwks" (include "hub.auth.issuerUrl" .) -}}
+{{- end -}}
+
+{{/*
+Return the Authup token endpoint. Authup mounts its token controller at the flat /token path
+(there is no /realms/<realm>/token route), matching the token_endpoint in its OIDC discovery.
+*/}}
+{{- define "hub.auth.tokenEndpoint" -}}
+{{- printf "%s/token" (.Values.hub.endpoints.auth | trimSuffix "/") -}}
+{{- end -}}
+
+{{/*
 Return the secret containing the hub robot secret
 */}}
 {{- define "hub.secretName" -}}
@@ -79,73 +103,6 @@ Return the secret containing the hub robot secret
     {{- printf "%s" (tpl $clientSecretName $) -}}
 {{- else -}}
     {{- printf "%s-hub-client-secret" .Release.Name -}}
-{{- end -}}
-{{- end -}}
-
-{{- define "keycloak.relativePath.normalized" -}}
-{{- $path := .Values.keycloakx.http.relativePath | default "/" -}}
-{{- if eq $path "/" -}}
-{{- print "" -}}
-{{- else -}}
-{{- printf "/%s" (trimAll "/" $path) -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Return the name of the Secret containing Keycloak bootstrap admin credentials.
-When keycloakx.auth.existingSecret is set, that Secret is used and the chart does not create one.
-The Secret must contain keys KC_BOOTSTRAP_ADMIN_USERNAME and KC_BOOTSTRAP_ADMIN_PASSWORD.
-*/}}
-{{- define "keycloak.credentials.secretName" -}}
-{{- if .Values.keycloakx.auth.existingSecret -}}
-    {{- printf "%s" (tpl .Values.keycloakx.auth.existingSecret $) -}}
-{{- else -}}
-    {{- print "flame-keycloak-credentials-secret" -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Return the service route for the internal keycloak instance"
-*/}}
-{{- define "keycloak.svc.route" -}}
-{{- printf "%s-keycloak-http.%s.svc.cluster.local" .Release.Name .Release.Namespace -}}
-{{- end -}}
-
-
-{{/*
-Return the endpoint for the internal keycloak instance with the (cleaned) relative path e.g. "/keycloak"
-*/}}
-{{- define "keycloak.base.endpoint" -}}
-{{- printf "http://%s:80%s" (include "keycloak.svc.route" .) (include "keycloak.relativePath.normalized" .) -}}
-{{- end -}}
-
-{{/*
-Return the internal Keycloak service endpoint with the realm
-*/}}
-{{- define "keycloak.service.endpoint" -}}
-{{- printf "%s/realms/flame" (include "keycloak.base.endpoint" .) -}}
-{{- end -}}
-
-{{/*
-Return the internal Keycloak JWKS endpoint
-*/}}
-{{- define "keycloak.jwks.endpoint" -}}
-{{- printf "%s/protocol/openid-connect/certs" (include "keycloak.service.endpoint" .) -}}
-{{- end -}}
-
-{{/*
-Return the user IDP hostname
-*/}}
-{{- define "userIdp.hostname" -}}
-{{- $hostname := include "node.hostname" . -}}
-{{- if .Values.userIdp.hostname -}}
-    {{- if hasPrefix "http" .Values.userIdp.hostname -}}
-        {{- print .Values.userIdp.hostname -}}
-    {{- else -}}
-        {{- printf "http://%s" .Values.userIdp.hostname -}}
-    {{- end -}}
-{{- else if and $hostname (ne .Values.expose.type "none") (not (contains "localhost" $hostname)) -}}
-    {{- printf "%s%s/realms/flame" $hostname (include "keycloak.relativePath.normalized" .) -}}
 {{- end -}}
 {{- end -}}
 
@@ -185,34 +142,6 @@ Return the secret containing the postgres admin credentials
 
 {{/*UI helpers*/}}
 {{/*
-Return the endpoint for user authentication
-*/}}
-{{- define "ui.userIdp.endpoint" -}}
-{{- if (include "userIdp.hostname" .) -}}
-    {{- print (include "userIdp.hostname" .) -}}
-{{- else -}}
-    {{- printf "http://localhost:8080%s/realms/flame" (include "keycloak.relativePath.normalized" .) -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Return whether to enable internal routing to Keycloak for the UI
-If offline is true - true, else if external IDP hostname is provided - false, else if expose.type is none or localhost used - true, else false
-*/}}
-{{- define "ui.auth.internal" -}}
-{{- $exposeDisabled := eq .Values.expose.type "none" -}}
-{{- if .Values.offline -}}
-    true
-{{- else if .Values.userIdp.hostname -}}
-    false
-{{- else if or (contains "localhost" (include "ui.userIdp.endpoint" .)) $exposeDisabled -}}
-    true
-{{- else -}}
-    false
-{{- end -}}
-{{- end -}}
-
-{{/*
 Return the hub adapter endpoint
 */}}
 {{- define "ui.adapter.endpoint" -}}
@@ -221,44 +150,6 @@ Return the hub adapter endpoint
 {{- else -}}
     {{- print "http://localhost:5000" -}}
 {{- end -}}
-{{- end -}}
-
-{{/*
-Return the secret containing the Keycloak client secret
-*/}}
-{{- define "ui.keycloak.secretName" -}}
-{{- if .Values.ui.idp.clientSecret -}}
-    {{- printf "%s-node-ui-idp-secret" .Release.Name -}}
-{{- else -}}
-{{- $secretName := .Values.ui.idp.existingSecret -}}
-{{- if and $secretName ( not .Values.ui.idp.debug ) -}}
-    {{- printf "%s" (tpl $secretName $) -}}
-{{- else -}}
-    {{- printf "%s-keycloak-client-secrets" .Release.Name -}}
-{{- end -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Return the secret key that contains the Keycloak client secret
-*/}}
-{{- define "ui.keycloak.secretKey" -}}
-{{- if or .Values.ui.idp.clientSecret .Values.ui.idp.debug -}}
-    {{- print "nodeUiClientSecret" -}}
-{{- else if and .Values.ui.idp.existingSecret .Values.ui.idp.existingSecretKey -}}
-    {{- printf "%s" .Values.ui.idp.existingSecretKey -}}
-{{- else -}}
-    {{- print "nodeUiClientSecret" -}}
-{{- end -}}
-{{- end -}}
-
-
-{{/*
-Create valid redirect URIs for keycloak i.e. http & https
-*/}}
-{{- define "ui.keycloak.redirectUris" -}}
-{{- $hostnameStripped := regexReplaceAll "^https?://(.*)" (include "node.hostname" .) "${1}" -}}
-{{- printf "[ \"https://%s/*\", \"http://%s/*\" ]" $hostnameStripped $hostnameStripped -}}
 {{- end -}}
 
 {{/*Hub Adapter helpers*/}}
@@ -277,9 +168,7 @@ Set the API's root path. If expose is configured (not none), defaults to "/api" 
 Return the JWKS endpoint for user and client authentication which overrides what is fetched by the API.
 */}}
 {{- define "adapter.jwks.endpoint" -}}
-{{- if .Values.offline -}}
-    {{- print (include "keycloak.jwks.endpoint" .) -}}
-{{- else if .Values.hubAdapter.idp.jwks -}}
+{{- if .Values.hubAdapter.idp.jwks -}}
     {{- print .Values.hubAdapter.idp.jwks -}}
 {{- else -}}
     {{- print "" -}}
@@ -327,6 +216,58 @@ Return the name of the Secret that holds the SeaweedFS S3 admin credentials.
 {{- end -}}
 
 {{/*
+Return "true" when the storage service uses an external S3 instance instead of the bundled SeaweedFS.
+*/}}
+{{- define "storageService.s3.external" -}}
+{{- if .Values.storageService.s3.endpoint -}}
+true
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return the S3 endpoint (host:port) used by the storage service.
+*/}}
+{{- define "storageService.s3.endpoint" -}}
+{{- if include "storageService.s3.external" . -}}
+{{- $endpoint := .Values.storageService.s3.endpoint -}}
+{{- if regexMatch "^[a-zA-Z][a-zA-Z0-9+.-]*://" $endpoint -}}
+{{- fail (printf "storageService.s3.endpoint must be host:port without a scheme (got %q). Use storageService.s3.tls.enabled to select HTTPS." $endpoint) -}}
+{{- end -}}
+{{- $endpoint -}}
+{{- else if .Values.seaweedfs.enabled -}}
+{{- include "seaweedfs.s3.endpoint" . -}}
+{{- else -}}
+{{- fail "storageService.s3.endpoint must be set when seaweedfs.enabled=false: the storage service needs an S3 instance." -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return the name of the Secret that holds the S3 credentials used by the storage service.
+*/}}
+{{- define "storageService.s3.secretName" -}}
+{{- if include "storageService.s3.external" . -}}
+{{- if .Values.storageService.s3.existingSecret -}}
+{{- tpl .Values.storageService.s3.existingSecret $ -}}
+{{- else -}}
+{{- printf "%s-storage-s3-secret" .Release.Name -}}
+{{- end -}}
+{{- else -}}
+{{- include "seaweedfs.s3.secretName" . -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return the Secret keys holding the S3 access and secret key, as a dict with "accessKey" and "secretKey".
+*/}}
+{{- define "storageService.s3.secretKeys" -}}
+{{- if include "storageService.s3.external" . -}}
+{{- dict "accessKey" "accessKey" "secretKey" "secretKey" | toJson -}}
+{{- else -}}
+{{- dict "accessKey" "admin_access_key_id" "secretKey" "admin_secret_access_key" | toJson -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Return the secret containing private key
 */}}
 {{- define "hub.crypto.privateKeySecretName" -}}
@@ -349,12 +290,30 @@ rollout when credentials rotate.
 {{- printf "%s|%s" (toJson (default (dict) $clientSecret.data)) (toJson (default (dict) $privateKeySecret.data)) | sha256sum -}}
 {{- end -}}
 
+{{/*
+Return a checksum of the S3 credentials used by the storage service, so it rolls out when they rotate.
+*/}}
+{{- define "storageService.s3.credentialsChecksum" -}}
+{{- $s3Secret := lookup "v1" "Secret" .Release.Namespace (include "storageService.s3.secretName" .) -}}
+{{- toJson (default (dict) $s3Secret.data) | sha256sum -}}
+{{- end -}}
+
 
 {{/*
 Strip scheme from expose.hostname for Gateway API hostnames (HTTPRoute.spec.hostnames, listener hostname).
 */}}
 {{- define "flame-node.gateway.routeHostname" -}}
 {{- regexReplaceAll "^https?://(.*)" .Values.expose.hostname "${1}" -}}
+{{- end -}}
+
+{{/*
+Return "true" when VictoriaLogs is exposed at /logs (Ingress or HTTPRoute, plus the UI link).
+victorialogs.ingress.enabled is the deprecated name of victorialogs.expose.enabled and still applies to both.
+*/}}
+{{- define "flame-node.victorialogs.exposed" -}}
+{{- if and .Values.victorialogs.enabled (or .Values.victorialogs.expose.enabled .Values.victorialogs.ingress.enabled) (or (eq .Values.expose.type "ingress") (eq .Values.expose.type "gateway")) -}}
+true
+{{- end -}}
 {{- end -}}
 
 {{/*
