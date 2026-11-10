@@ -1040,6 +1040,7 @@ postgresql:
 
   resources: {}
 
+  ## @param postgresql.args   for slow disks one can set args: ["-c", "synchronous_commit=off"]
   service:
     type: ClusterIP
     port: 5432
@@ -1121,6 +1122,9 @@ kong-postgresql:
 
   resources: {}
 
+  ## @param kong-postgresql.args for slow disks one can set args: ["-c", "synchronous_commit=off"]
+  args: []
+
   service:
     type: ClusterIP
     port: 5432
@@ -1176,6 +1180,9 @@ keycloak-postgresql:
       type: RuntimeDefault
 
   resources: {}
+
+  ## @param keycloak-postgresql.args for slow disks one can set args: ["-c", "synchronous_commit=off"]
+  args: []
 
   service:
     type: ClusterIP
@@ -1314,6 +1321,11 @@ mongodb:
     ## Name of the user database
     name: messagebroker
 
+  ## @param mongodb.customConfig for slow disks set commitIntervalMs to 500
+    storage:
+      journal:
+        commitIntervalMs: 100
+
   storage:
     ## Internal volume name and prefix of a created PVC
     volumeName: "mongodb-volume"
@@ -1341,6 +1353,9 @@ victorialogs:
     ## Data retention period. Possible units character: h(ours), d(ays), w(eeks), y(ears), if no unit character specified - month.
     ## The minimum retention period is 24h. See these [docs](https://docs.victoriametrics.com/victorialogs/#retention)
     retentionPeriod: 1y
+    ## @param victorialogs.server.extraArgs.inmemoryDataFlushInterval set to 30s or longer if disk is slow
+    extraArgs:
+      inmemoryDataFlushInterval: 5s
     persistentVolume:
       enabled: true
       size: 20Gi
