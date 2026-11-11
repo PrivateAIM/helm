@@ -1085,6 +1085,10 @@ seaweedfs:
     data:
       type: persistentVolumeClaim
       size: 10Gi
+      ## Keep the data PVC on `helm uninstall` so a reinstall reuses the stored objects.
+      ## Delete the PVC manually to wipe the data.
+      annotations:
+        helm.sh/resource-policy: keep
     podSecurityContext:
       enabled: true
       runAsUser: 1000
