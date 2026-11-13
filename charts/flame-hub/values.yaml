@@ -706,15 +706,24 @@ harbor:
         type: clusterIP
         tls:
             enabled: true
-            certSource: auto
+            # "secret", not "auto": auto mints a new CA on every render and restarts Harbor
+            # on every upgrade. templates/harbor/stable-secrets.yaml generates it once.
+            certSource: secret
+            secret:
+                secretName: "flame-hub-harbor-nginx-tls"
             auto:
-                commonName: harbor.local
+                commonName: harbor.local # CN of the generated cert
         clusterIP:
             # Literal service name (the subchart cannot template this).
             # Override to "<release>-harbor" per release.
             name: "harbor"
             ports:
                 httpsPort: 443
+    # CA for the core's ca-download endpoint; must equal expose.tls.secret.secretName.
+    caSecretName: "flame-hub-harbor-nginx-tls"
+    core:
+        # Token-signing cert, generated once by templates/harbor/stable-secrets.yaml.
+        secretName: "flame-hub-harbor-token"
     updateStrategy:
         type: Recreate
     persistence:
@@ -732,6 +741,10 @@ harbor:
                 existingClaim: ""
                 size: 5Gi
     registry:
+        # REGISTRY_PASSWD + REGISTRY_HTPASSWD, generated once by templates/harbor/stable-secrets.yaml
+        # (the subchart's htpasswd gets a new bcrypt salt on every render).
+        credentials:
+            existingSecret: "flame-hub-harbor-registry"
         relativeurls: true # Needed for server-core-worker because of TCP forwarding (see https://github.com/distribution/distribution/issues/970#issuecomment-284227065)
     # Use the shared cluster PostgreSQL, not Harbor's bundled database.
     database:
