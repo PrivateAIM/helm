@@ -43,26 +43,6 @@ spec:
       {{- end }}
       securityContext:
         {{- toYaml .Values.hubAdapter.podSecurityContext | nindent 8 }}
-      initContainers:
-        - name: wait-for-keycloak
-          image: curlimages/curl:8.20.0
-          imagePullPolicy: IfNotPresent
-          securityContext:
-            runAsNonRoot: true
-            runAsUser: 100
-            runAsGroup: 100
-            privileged: false
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop: ["ALL"]
-          command:
-            - sh
-            - -c
-            - |
-              until curl -sf {{ include "keycloak.svc.route" . }}:9000{{ (include "keycloak.relativePath.normalized" .) }}/health/ready; do
-                echo "Waiting for Keycloak..."
-                sleep 5
-              done
       containers:
         - name: hub-adapter
           securityContext:
@@ -78,20 +58,18 @@ spec:
             - name: API_ROOT_PATH
               value: {{ ( include "adapter.root.path" . ) | default "" }}
             - name: API_CLIENT_ID
-              value: hub-adapter
+              value: {{ required "A client ID for the Hub is required." .Values.hub.auth.clientId | quote }}
             - name: API_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-keycloak-client-secrets
-                  key: hubAdapterClientSecret
+                  name: {{ include "hub.secretName" . }}
+                  key: clientSecret
             - name: IDP_URL
               value: {{ include "hub.auth.issuerUrl" . | quote }}
             {{- if .Values.victorialogs.enabled }}
             - name: VICTORIA_LOGS_URL
               value: {{ printf "http://%s-victorialogs-server.%s.svc.cluster.local:9428" .Release.Name .Release.Namespace }}
             {{- end }}
-            - name: NODE_SVC_OIDC_URL
-              value: {{ include "keycloak.service.endpoint" . }}
             - name: OVERRIDE_JWKS
               value: {{ include "adapter.jwks.endpoint" . }}
             - name: HTTP_PROXY

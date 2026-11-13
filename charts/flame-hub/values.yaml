@@ -555,6 +555,13 @@ grafana:
         enabled: true
     # The PVC is ReadWriteOnce: a rolling update starts the new pod before the old one releases
     # the volume, so on a different node it never attaches and the release stalls.
+    #
+    # Upgrading from flame-hub <= 1.1.0 (RollingUpdate) fails once with "spec.strategy.rollingUpdate:
+    # Forbidden: may not be specified when strategy `type` is 'Recreate'": the patch keeps the
+    # defaulted rollingUpdate block, and values cannot null it out. Patch the Deployment once:
+    #   kubectl -n <ns> patch deploy <release>-grafana --type json -p '[
+    #     {"op":"remove","path":"/spec/strategy/rollingUpdate"},
+    #     {"op":"replace","path":"/spec/strategy/type","value":"Recreate"}]'
     deploymentStrategy:
         type: Recreate
     # Not exactly sure why, but the init-chown container always crashes
