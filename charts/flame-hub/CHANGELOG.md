@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.0](https://github.com/PrivateAIM/helm/compare/flame-hub-1.2.0...flame-hub-1.3.0) (2026-11-13)
+
+
+### Features
+
+* **flame-node:** route analysis auth through the global Authup instance ([fa7eaa8](https://github.com/PrivateAIM/helm/commit/fa7eaa87251553f08197a3de8820ff16ff2fd1b1))
+* **flame-node:** route analysis auth through the global Authup instance ([fa7eaa8](https://github.com/PrivateAIM/helm/commit/fa7eaa87251553f08197a3de8820ff16ff2fd1b1))
+
 ## [1.2.0](https://github.com/PrivateAIM/helm/compare/flame-hub-1.1.0...flame-hub-1.2.0) (2026-10-30)
 
 

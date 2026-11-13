@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.3.0](https://github.com/PrivateAIM/helm/compare/flame-node-1.2.0...flame-node-1.3.0) (2026-11-13)
+
+
+### Features
+
+* **falme-node:** bump PO image version ([a9a1fd9](https://github.com/PrivateAIM/helm/commit/a9a1fd963c8211ee21e0fa997e02aacb38225bff))
+* **flame-node:** bump HA image version ([fb446e4](https://github.com/PrivateAIM/helm/commit/fb446e48860ae726dbf28273d34eda6a6260872d))
+* **flame-node:** remove the bundled Keycloak ([#217](https://github.com/PrivateAIM/helm/issues/217)) ([7ce673c](https://github.com/PrivateAIM/helm/commit/7ce673c88b524c47d70cf1591514f23cddc31811))
+* **flame-node:** route analysis auth through the global Authup instance ([fa7eaa8](https://github.com/PrivateAIM/helm/commit/fa7eaa87251553f08197a3de8820ff16ff2fd1b1))
+* **flame-node:** route analysis auth through the global Authup instance ([fa7eaa8](https://github.com/PrivateAIM/helm/commit/fa7eaa87251553f08197a3de8820ff16ff2fd1b1))
+* **flame-node:** route analysis auth through the global Authup instance ([765f7a9](https://github.com/PrivateAIM/helm/commit/765f7a902406f79952dd0c84bb3985902e3fa496))
+* **flame-node:** route analysis auth through the global Authup instance ([765f7a9](https://github.com/PrivateAIM/helm/commit/765f7a902406f79952dd0c84bb3985902e3fa496))
+* **node:** bump pod orchestrator to v1.2.0 ([04da772](https://github.com/PrivateAIM/helm/commit/04da7729e5ff76831b4ffa0f4d2823d3c7df0f88))
+
+
+### Bug Fixes
+
+* **flame-node:** keep the SeaweedFS data PVCs on uninstall ([cdece58](https://github.com/PrivateAIM/helm/commit/cdece583566389499fc50d3cce420fe2bc32ad09))
+
 ## [1.2.0](https://github.com/PrivateAIM/helm/compare/flame-node-1.1.0...flame-node-1.2.0) (2026-10-30)
 
 
