@@ -24,6 +24,27 @@ true
 {{- end -}}
 
 {{/*
+Image reference, redirected to the mirror in global.imageRegistry when that is set. The mirror keeps the upstream path
+without the registry host and with Docker Hub's implicit "library/":
+ghcr.io/privateaim/node-ui:1.2.1 -> <registry>/privateaim/node-ui:1.2.1, busybox:1.37 -> <registry>/library/busybox:1.37
+Usage: {{ include "flame-node.image" (list $ "repository:tag") }}
+*/}}
+{{- define "flame-node.image" -}}
+{{- $image := index . 1 -}}
+{{- with (index . 0).Values.global.imageRegistry -}}
+{{- $path := splitList "/" $image -}}
+{{- if and (gt (len $path) 1) (regexMatch "[.:]|^localhost$" (first $path)) -}}
+{{- $path = rest $path -}}
+{{- end -}}
+{{- if eq (len $path) 1 -}}
+{{- $path = prepend $path "library" -}}
+{{- end -}}
+{{- $image = printf "%s/%s" (trimSuffix "/" .) (join "/" $path) -}}
+{{- end -}}
+{{- $image -}}
+{{- end -}}
+
+{{/*
 Return the URL scheme for components: "https" when a TLS secret is configured via expose.tls.secretName, otherwise "http".
 */}}
 {{- define "hostname.protocol" -}}
