@@ -62,8 +62,22 @@ Create the name of the service account to use
 {{- end }}
 
 
+{{/*
+Full image reference for the Hub services: [registry/]repository(:tag|@digest).
+global.imageRegistry overrides image.registry; image.digest takes precedence over image.tag.
+*/}}
 {{- define "flameHub.image" -}}
-{{ include "common.images.image" (dict "imageRoot" .Values.image "global" .Values.global) }}
+{{- $image := .Values.image -}}
+{{- $registry := default $image.registry (.Values.global).imageRegistry -}}
+{{- $reference := printf ":%s" ($image.tag | toString) -}}
+{{- if $image.digest -}}
+{{- $reference = printf "@%s" ($image.digest | toString) -}}
+{{- end -}}
+{{- if $registry -}}
+{{- printf "%s/%s%s" $registry $image.repository $reference -}}
+{{- else -}}
+{{- printf "%s%s" $image.repository $reference -}}
+{{- end -}}
 {{- end -}}
 
 {{- define "flameHub.effectiveSecretName" -}}
