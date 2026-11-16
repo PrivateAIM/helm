@@ -1,0 +1,61 @@
+# Pull every image of the chart and its sub-charts from the PrivateAIM Harbor instead of docker.io and ghcr.io.
+# Use it in addition to your own values:
+#   helm install flame-node flame/flame-node -f values_harbor.yaml -f my-values.yaml
+#
+# The Harbor project mirrors the images under their upstream path (ghcr.io/privateaim/node-ui -> node-images/privateaim/node-ui,
+# busybox -> node-images/library/busybox). For another mirror with the same layout, replace the registry everywhere in this file.
+
+global:
+  # FLAME services, their init containers, the per-analysis containers of the Pod Orchestrator, and SeaweedFS
+  imageRegistry: &registry harbor.hub.privateaim.de/node-images
+  image:
+    registry: *registry  # Victoria Logs
+
+kong:
+  image:
+    repository: harbor.hub.privateaim.de/node-images/library/kong
+  deployment:
+    # Helm replaces lists as a whole: this is the init container from values.yaml with only the image changed. Keep both in sync.
+    initContainers:
+      - name: wait-for-kong-postgresql
+        image: harbor.hub.privateaim.de/node-images/library/busybox:1.38
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 65534
+          runAsGroup: 65534
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop: ["ALL"]
+        command:
+          - sh
+          - -ec
+          - |
+            until nc -z -w 2 flame-node-kong-postgresql 5432; do
+              echo "Waiting for Kong PostgreSQL..."
+              sleep 2
+            done
+
+postgresql: &postgres
+  image:
+    registry: *registry
+    repository: library/postgres
+
+kong-postgresql: *postgres
+
+mongodb:
+  image:
+    registry: *registry
+    repository: library/mongo
+
+victorialogs:
+  vector:
+    image:
+      repository: harbor.hub.privateaim.de/node-images/timberio/vector
+
+# Only used with dataStore.enabled=true. The Blaze helm test and the optional data populator job have fixed images and are not covered.
+dataStore:
+  blaze:
+    image:
+      repository: harbor.hub.privateaim.de/node-images/samply/blaze
