@@ -106,19 +106,19 @@ spec:
           {{- end }}
           startupProbe:
               httpGet:
-                  path: "/"
+                  path: "/livez"
                   port: 3000
               periodSeconds: 5
               failureThreshold: 60
           readinessProbe:
               httpGet:
-                  path: "/"
+                  path: "/readyz"
                   port: 3000
               periodSeconds: 5
               timeoutSeconds: 10
           livenessProbe:
               httpGet:
-                  path: "/"
+                  path: "/livez"
                   port: 3000
               periodSeconds: 10
               timeoutSeconds: 10
