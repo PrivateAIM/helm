@@ -185,12 +185,14 @@ Set the API's root path. If expose is configured (not none), defaults to "/api" 
 
 {{/*
 Return the JWKS endpoint for user and client authentication which overrides what is fetched by the API.
+Defaults to Authup's flat /jwks: analysis containers call the hub adapter with tokens signed by their
+project's realm, which the IDP_URL realm's discovered JWKS does not contain.
 */}}
 {{- define "adapter.jwks.endpoint" -}}
 {{- if .Values.hubAdapter.idp.jwks -}}
     {{- print .Values.hubAdapter.idp.jwks -}}
 {{- else -}}
-    {{- print "" -}}
+    {{- include "hub.auth.jwksEndpoint" . -}}
 {{- end -}}
 {{- end -}}
 
