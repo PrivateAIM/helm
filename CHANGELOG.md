@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.1](https://github.com/PrivateAIM/helm/compare/root-1.4.0...root-1.4.1) (2026-11-19)
+
+
+### Bug Fixes
+
+* **flame-node:** verify hub adapter tokens against Authup's global JWKS ([163f3ff](https://github.com/PrivateAIM/helm/commit/163f3ffe09fe3f0a31607e439a4b753c581001c5))
+
 ## [1.4.0](https://github.com/PrivateAIM/helm/compare/root-1.3.0...root-1.4.0) (2026-11-19)
 
 
