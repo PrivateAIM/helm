@@ -33,10 +33,12 @@ Usage: {{ include "flame-node.image" (list $ "repository:tag") }}
 {{- $image := index . 1 -}}
 {{- with (index . 0).Values.global.imageRegistry -}}
 {{- $path := splitList "/" $image -}}
+{{- $dockerHub := true -}}
 {{- if and (gt (len $path) 1) (regexMatch "[.:]|^localhost$" (first $path)) -}}
+{{- $dockerHub = has (first $path) (list "docker.io" "index.docker.io" "registry-1.docker.io") -}}
 {{- $path = rest $path -}}
 {{- end -}}
-{{- if eq (len $path) 1 -}}
+{{- if and $dockerHub (eq (len $path) 1) -}}
 {{- $path = prepend $path "library" -}}
 {{- end -}}
 {{- $image = printf "%s/%s" (trimSuffix "/" .) (join "/" $path) -}}
