@@ -124,6 +124,16 @@ entries:
   blaze:
   - apiVersion: v2
     appVersion: 0.34.0
+    created: "2026-11-19T12:53:57.240695798Z"
+    description: A Helm chart for Kubernetes
+    digest: 1377180ce3704679486ceafa7b6720c039d7e15d361b048820b6b83639d95d43
+    name: blaze
+    type: application
+    urls:
+    - https://github.com/PrivateAIM/helm/releases/download/blaze-1.4.0/blaze-1.4.0.tgz
+    version: 1.4.0
+  - apiVersion: v2
+    appVersion: 0.34.0
     created: "2026-11-13T08:49:52.965848569Z"
     description: A Helm chart for Kubernetes
     digest: e43fc03261daea2f11416b3257b475807c9639464be3a8983bc99d470168115e
@@ -273,6 +283,36 @@ entries:
     - https://github.com/PrivateAIM/helm/releases/download/blaze-0.0.4/blaze-0.0.4.tgz
     version: 0.0.4
   flame-hub:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2026-11-19T12:53:57.470250755Z"
+    dependencies:
+    - name: seaweedfs
+      repository: https://seaweedfs.github.io/seaweedfs/helm
+      version: 4.48.0
+    - name: grafana
+      repository: https://grafana-community.github.io/helm-charts
+      version: 14.0.1
+    - name: victoria-logs-cluster
+      repository: https://victoriametrics.github.io/helm-charts/
+      version: 0.2.9
+    - name: prometheus
+      repository: oci://registry-1.docker.io/bitnamicharts
+      version: 2.1.23
+    - condition: harbor.enabled
+      name: harbor
+      repository: https://helm.goharbor.io
+      version: 1.19.4
+    - name: authup
+      repository: https://helm.authup.org
+      version: 0.5.4
+    description: A Helm chart for Kubernetes
+    digest: 7ed8417d37a8de701efffffc0db69ab398fdf2648ccf0b8813e716c25f1af2f4
+    name: flame-hub
+    type: application
+    urls:
+    - https://github.com/PrivateAIM/helm/releases/download/flame-hub-1.4.0/flame-hub-1.4.0.tgz
+    version: 1.4.0
   - apiVersion: v2
     appVersion: 0.1.0
     created: "2026-11-13T08:49:53.239959576Z"
@@ -1176,6 +1216,45 @@ entries:
   flame-node:
   - apiVersion: v2
     appVersion: 0.2.2
+    created: "2026-11-19T12:53:57.647710956Z"
+    dependencies:
+    - alias: dataStore
+      condition: dataStore.enabled
+      name: flame-node-data-store
+      repository: file://./flame-node-data-store
+      version: 1.4.0
+    - name: kong
+      repository: https://charts.konghq.com
+      version: 2.52.0
+    - alias: postgresql
+      name: postgres
+      repository: https://groundhog2k.github.io/helm-charts
+      version: 1.5.8
+    - alias: kong-postgresql
+      name: postgres
+      repository: https://groundhog2k.github.io/helm-charts
+      version: 1.5.8
+    - condition: seaweedfs.enabled
+      name: seaweedfs
+      repository: https://seaweedfs.github.io/seaweedfs/helm
+      version: 4.37.0
+    - name: mongodb
+      repository: https://groundhog2k.github.io/helm-charts
+      version: 0.7.1
+    - alias: victorialogs
+      condition: victorialogs.enabled
+      name: victoria-logs-single
+      repository: https://victoriametrics.github.io/helm-charts
+      version: 0.12.1
+    description: A Helm chart for deploying the Flame Node
+    digest: bf8da96dff977461472859d284795683d90ca183bdbece0dadacfc04e7914071
+    name: flame-node
+    type: application
+    urls:
+    - https://github.com/PrivateAIM/helm/releases/download/flame-node-1.4.0/flame-node-1.4.0.tgz
+    version: 1.4.0
+  - apiVersion: v2
+    appVersion: 0.2.2
     created: "2026-11-13T08:49:53.542534268Z"
     dependencies:
     - alias: dataStore
@@ -1827,6 +1906,24 @@ entries:
   flame-node-data-store:
   - apiVersion: v2
     appVersion: 0.9.0
+    created: "2026-11-19T12:53:57.841480393Z"
+    dependencies:
+    - name: blaze
+      repository: file://blaze
+      version: 1.4.0
+    - name: seaweedfs
+      repository: https://seaweedfs.github.io/seaweedfs/helm
+      version: 4.39.0
+    description: A Helm chart for deploying blaze (FHIR) and seaweedfs (S3) data stores
+      for testing the Flame Node
+    digest: e1a0f7b4799695cd71db1877f7497d256b60b8a36f69ad391ea35ed4a011bcae
+    name: flame-node-data-store
+    type: application
+    urls:
+    - https://github.com/PrivateAIM/helm/releases/download/flame-node-data-store-1.4.0/flame-node-data-store-1.4.0.tgz
+    version: 1.4.0
+  - apiVersion: v2
+    appVersion: 0.9.0
     created: "2026-11-13T08:49:53.774676369Z"
     dependencies:
     - name: blaze
@@ -2442,4 +2539,4 @@ entries:
     urls:
     - https://github.com/PrivateAIM/helm/releases/download/openebs-wrapper-0.0.11/openebs-wrapper-0.0.11.tgz
     version: 0.0.11
-generated: "2026-11-13T08:49:53.775011982Z"
+generated: "2026-11-19T12:53:57.841681615Z"
