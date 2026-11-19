@@ -81,6 +81,10 @@ You must give each release its own value for:
 | `harbor.secretName` | `flame-hub-harbor` | Harbor's own credentials Secret (admin password, core `secretKey`, connection string) |
 | `harbor.existingSecretAdminPassword` | `flame-hub-harbor` | goharbor reference — **must match** the effective Harbor secret (`harbor.existingSecret` when set, otherwise `harbor.secretName`) |
 | `harbor.existingSecretSecretKey` | `flame-hub-harbor` | goharbor reference — **must match** the effective Harbor secret (`harbor.existingSecret` when set, otherwise `harbor.secretName`) |
+| `harbor.core.secretName` | `flame-hub-harbor-token` | Harbor's token-signing certificate Secret (generated once by the chart) |
+| `harbor.expose.tls.secret.secretName` | `flame-hub-harbor-nginx-tls` | Harbor's nginx TLS Secret (generated once by the chart) |
+| `harbor.caSecretName` | `flame-hub-harbor-nginx-tls` | goharbor reference for the core's CA download — **must match** `harbor.expose.tls.secret.secretName` |
+| `harbor.registry.credentials.existingSecret` | `flame-hub-harbor-registry` | Harbor's registry credentials Secret (`REGISTRY_PASSWD`, `REGISTRY_HTPASSWD`; generated once by the chart) |
 
 If you bring your own Harbor Secret via `harbor.existingSecret`, the two `harbor.existingSecret*`
 references above must point at that supplied Secret.
