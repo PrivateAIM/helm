@@ -1,5 +1,57 @@
 # Changelog
 
+## [1.4.0](https://github.com/PrivateAIM/helm/compare/flame-node-1.3.0...flame-node-1.4.0) (2026-11-19)
+
+
+### Features
+
+* **flame-node:** global image registry setting ([1b57617](https://github.com/PrivateAIM/helm/commit/1b57617a351de46b0bd0d164be9f45d12112a3db))
+
+
+### Bug Fixes
+
+* **flame-node:** add the library/ prefix only to Docker Hub images when mirroring ([0d487cd](https://github.com/PrivateAIM/helm/commit/0d487cdddd4c08442701468dfef627f538291ec0))
+* **flame-node:** verify analysis tokens against Authup's global JWKS ([e215c2f](https://github.com/PrivateAIM/helm/commit/e215c2f32cef7c7304d7c88e1945d482e0e6df5a))
+
+## [1.3.0](https://github.com/PrivateAIM/helm/compare/flame-node-1.2.0...flame-node-1.3.0) (2026-11-13)
+
+
+### Features
+
+* **falme-node:** bump PO image version ([a9a1fd9](https://github.com/PrivateAIM/helm/commit/a9a1fd963c8211ee21e0fa997e02aacb38225bff))
+* **flame-node:** bump HA image version ([fb446e4](https://github.com/PrivateAIM/helm/commit/fb446e48860ae726dbf28273d34eda6a6260872d))
+* **flame-node:** remove the bundled Keycloak ([#217](https://github.com/PrivateAIM/helm/issues/217)) ([7ce673c](https://github.com/PrivateAIM/helm/commit/7ce673c88b524c47d70cf1591514f23cddc31811))
+* **flame-node:** route analysis auth through the global Authup instance ([fa7eaa8](https://github.com/PrivateAIM/helm/commit/fa7eaa87251553f08197a3de8820ff16ff2fd1b1))
+* **flame-node:** route analysis auth through the global Authup instance ([fa7eaa8](https://github.com/PrivateAIM/helm/commit/fa7eaa87251553f08197a3de8820ff16ff2fd1b1))
+* **flame-node:** route analysis auth through the global Authup instance ([765f7a9](https://github.com/PrivateAIM/helm/commit/765f7a902406f79952dd0c84bb3985902e3fa496))
+* **flame-node:** route analysis auth through the global Authup instance ([765f7a9](https://github.com/PrivateAIM/helm/commit/765f7a902406f79952dd0c84bb3985902e3fa496))
+* **node:** bump pod orchestrator to v1.2.0 ([04da772](https://github.com/PrivateAIM/helm/commit/04da7729e5ff76831b4ffa0f4d2823d3c7df0f88))
+
+
+### Bug Fixes
+
+* **flame-node:** keep the SeaweedFS data PVCs on uninstall ([cdece58](https://github.com/PrivateAIM/helm/commit/cdece583566389499fc50d3cce420fe2bc32ad09))
+
+## [1.2.0](https://github.com/PrivateAIM/helm/compare/flame-node-1.1.0...flame-node-1.2.0) (2026-10-30)
+
+
+### Features
+
+* **flame-node:** allow storage service to use other s3 instances ([55cadac](https://github.com/PrivateAIM/helm/commit/55cadacf9456727af6c3d43c15f563f6de96e6f0))
+* **flame-node:** allow storage service to use other s3 instances ([badcb73](https://github.com/PrivateAIM/helm/commit/badcb7341ea04e652bbbf6a978d6bba9dfac5cc5))
+* **node:** bump node pod orchestartor to v1.1.0 ([b027bf1](https://github.com/PrivateAIM/helm/commit/b027bf1c1ef907b33e1c6cde32e350224b8972db))
+* **node:** bump node services to latest version ([#212](https://github.com/PrivateAIM/helm/issues/212)) ([34e8767](https://github.com/PrivateAIM/helm/commit/34e8767e031ab000a4c68d6cd3abbba0dd8af0d8))
+* **node:** victorialogs.expose.enabled for Ingress and Gateway API ([a378637](https://github.com/PrivateAIM/helm/commit/a378637f4f5f3f660fcf32aa17ef3e4c86f98cd0))
+* version bump to v1.2.0 ([4d753a4](https://github.com/PrivateAIM/helm/commit/4d753a465d30c1c408745629e29416df1cf6b3c3))
+
+
+### Bug Fixes
+
+* **flame-node:** bump UI and HA versions ([e81b9c8](https://github.com/PrivateAIM/helm/commit/e81b9c852f9678673901135a1bdd2a830f5dbe09))
+* **flame-node:** guard against linking to vl when expose type is none ([950a361](https://github.com/PrivateAIM/helm/commit/950a36127bf1b164da32e06154304e7f93256c42))
+* **node:** bump storage service to v1.1.1 ([6038dfb](https://github.com/PrivateAIM/helm/commit/6038dfb76fcd0bc962cfdaa59d90196fea37e851))
+* **vector:** parse springboot 3.5+ logs properly ([2dea308](https://github.com/PrivateAIM/helm/commit/2dea30885ec9647524dac7bf6b2567230c971c92))
+
 ## [1.1.0](https://github.com/PrivateAIM/helm/compare/flame-node-1.0.0...flame-node-1.1.0) (2026-10-14)
 
 
