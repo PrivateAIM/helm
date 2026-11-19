@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.4.0](https://github.com/PrivateAIM/helm/compare/flame-node-1.3.0...flame-node-1.4.0) (2026-11-19)
+
+
+### Features
+
+* **flame-node:** global image registry setting ([1b57617](https://github.com/PrivateAIM/helm/commit/1b57617a351de46b0bd0d164be9f45d12112a3db))
+
+
+### Bug Fixes
+
+* **flame-node:** add the library/ prefix only to Docker Hub images when mirroring ([0d487cd](https://github.com/PrivateAIM/helm/commit/0d487cdddd4c08442701468dfef627f538291ec0))
+* **flame-node:** verify analysis tokens against Authup's global JWKS ([e215c2f](https://github.com/PrivateAIM/helm/commit/e215c2f32cef7c7304d7c88e1945d482e0e6df5a))
+
 ## [1.3.0](https://github.com/PrivateAIM/helm/compare/flame-node-1.2.0...flame-node-1.3.0) (2026-11-13)
 
 
