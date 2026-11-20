@@ -4,6 +4,37 @@
 #
 # The Harbor project mirrors the images under their upstream path (ghcr.io/privateaim/node-ui -> node-images/privateaim/node-ui,
 # busybox -> node-images/library/busybox). For another mirror with the same layout, replace the registry everywhere in this file.
+#
+# A private project needs a pull secret in the release namespace (not named flame-harbor-credentials, which the Pod Orchestrator manages):
+#   kubectl create secret docker-registry harbor-pull-secret --docker-server=harbor.hub.privateaim.de \
+#     --docker-username='robot$node-images+<name>' --docker-password='<secret>'
+# and these values in your own values file. The sub-charts do not read global.imagePullSecrets, except SeaweedFS and Victoria Logs,
+# and Kong expects plain names:
+#   global:
+#     imagePullSecrets:
+#       - name: harbor-pull-secret
+#   kong:
+#     image:
+#       pullSecrets:
+#         - harbor-pull-secret
+#   postgresql:
+#     imagePullSecrets:
+#       - name: harbor-pull-secret
+#   kong-postgresql:
+#     imagePullSecrets:
+#       - name: harbor-pull-secret
+#   mongodb:
+#     imagePullSecrets:
+#       - name: harbor-pull-secret
+#   victorialogs:
+#     vector:
+#       image:
+#         pullSecrets:
+#           - name: harbor-pull-secret
+#   dataStore:  # only with dataStore.enabled=true
+#     blaze:
+#       imagePullSecrets:
+#         - name: harbor-pull-secret
 
 global:
   # FLAME services, their init containers, the per-analysis containers of the Pod Orchestrator, and SeaweedFS
@@ -54,7 +85,8 @@ victorialogs:
     image:
       repository: harbor.hub.privateaim.de/node-images/timberio/vector
 
-# Only used with dataStore.enabled=true. The Blaze helm test and the optional data populator job have fixed images and are not covered.
+# Only used with dataStore.enabled=true. The Blaze helm test and the optional data populator job have fixed images and no pull secrets,
+# so they are not covered.
 dataStore:
   blaze:
     image:

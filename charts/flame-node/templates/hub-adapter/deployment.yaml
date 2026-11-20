@@ -37,9 +37,8 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
-      {{- with .Values.hubAdapter.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
+      {{- with include "flame-node.imagePullSecrets" (list $ .Values.hubAdapter.imagePullSecrets) }}
+      {{- . | nindent 6 }}
       {{- end }}
       securityContext:
         {{- toYaml .Values.hubAdapter.podSecurityContext | nindent 8 }}

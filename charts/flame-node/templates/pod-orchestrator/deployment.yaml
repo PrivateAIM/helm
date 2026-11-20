@@ -37,9 +37,8 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
-      {{- with .Values.podOrchestrator.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
+      {{- with include "flame-node.imagePullSecrets" (list $ .Values.podOrchestrator.imagePullSecrets) }}
+      {{- . | nindent 6 }}
       {{- end }}
       securityContext:
         {{- toYaml .Values.podOrchestrator.podSecurityContext | nindent 8 }}
@@ -116,6 +115,11 @@ spec:
             {{- with .Values.podOrchestrator.nginx.image }}
             - name: NGINX_IMAGE
               value: {{ include "flame-node.image" (list $ .) | quote }}
+            {{- end }}
+            {{- with include "flame-node.imagePullSecretNames" (list $ list) }}
+            # pull secrets for the nginx and net-stats images, which global.imageRegistry redirects like the images above
+            - name: EXTRA_IMAGE_PULL_SECRETS
+              value: {{ . | quote }}
             {{- end }}
             - name: HUB_URL_AUTH
               value: {{ .Values.hub.endpoints.auth | default "https://auth.privateaim.dev" | quote }}

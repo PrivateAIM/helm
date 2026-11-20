@@ -42,9 +42,8 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
-      {{- with .Values.storageService.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
+      {{- with include "flame-node.imagePullSecrets" (list $ .Values.storageService.imagePullSecrets) }}
+      {{- . | nindent 6 }}
       {{- end }}
       securityContext:
         {{- toYaml .Values.storageService.podSecurityContext | nindent 8 }}
