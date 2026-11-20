@@ -54,6 +54,15 @@ global:
   ## busybox -> <registry>/library/busybox. The SeaweedFS sub-charts honour this value too. The other sub-charts (Kong, PostgreSQL, MongoDB,
   ## Victoria Logs, Vector, Blaze) have their own image settings; values_harbor.yaml sets all of them for the PrivateAIM Harbor.
   imageRegistry: ""
+  ## @param global.imagePullSecrets Pull secrets for a private global.imageRegistry. The secrets have to exist in the release namespace.
+  ## Kong, PostgreSQL, MongoDB, Vector and Blaze do not read it; values_harbor.yaml provides example values.
+  ## Give every secret as a "name:" entry like the example below:
+  ## Create the secret with:
+  ##   kubectl create secret docker-registry harbor-pull-secret --docker-server=harbor.example.org \
+  ##     --docker-username='robot$...' --docker-password='...'
+  ## Do not name it flame-harbor-credentials: the Pod Orchestrator deletes and recreates that secret for the analysis images.
+  imagePullSecrets: []
+  # - name: harbor-pull-secret
 
 ## @param timezone Set the timezone for all components in the FLAME Node, use "TZ identifier" from https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
 timezone: Europe/Berlin
@@ -289,7 +298,9 @@ storageService:
     pullPolicy: IfNotPresent
 
   # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+  # Used in addition to global.imagePullSecrets.
   imagePullSecrets: []
+  # - name: my-secret
 
   # This is for setting Kubernetes Annotations to a Pod.
   # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
@@ -392,7 +403,9 @@ hubAdapter:
     pullPolicy: IfNotPresent
 
   # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+  # Used in addition to global.imagePullSecrets.
   imagePullSecrets: []
+  # - name: my-secret
 
   # This is for setting Kubernetes Annotations to a Pod.
   # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
@@ -505,7 +518,9 @@ podOrchestrator:
     pullPolicy: IfNotPresent
 
   # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+  # Used in addition to global.imagePullSecrets.
   imagePullSecrets: []
+  # - name: my-secret
 
   # This is for setting Kubernetes Annotations to a Pod.
   # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
@@ -621,7 +636,9 @@ messageBroker:
     pullPolicy: IfNotPresent
 
   # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+  # Used in addition to global.imagePullSecrets.
   imagePullSecrets: []
+  # - name: my-secret
 
   # This is for setting Kubernetes Annotations to a Pod.
   # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
@@ -710,7 +727,9 @@ ui:
     pullPolicy: IfNotPresent
 
   # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+  # Used in addition to global.imagePullSecrets.
   imagePullSecrets: []
+  # - name: my-secret
 
   # This is for setting Kubernetes Annotations to a Pod.
   # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/

@@ -47,6 +47,51 @@ Usage: {{ include "flame-node.image" (list $ "repository:tag") }}
 {{- end -}}
 
 {{/*
+Names of the image pull secrets of a pod as one comma-separated string, since include can only return strings (secret names
+cannot contain commas). Reads global.imagePullSecrets first, then the component's own list, and keeps the first occurrence
+of each name. An entry is a "name:" object or a plain name; a single string instead of a list counts as one name; empty
+entries and objects without a name are skipped. With
+  global:
+    imagePullSecrets:
+      - name: harbor-pull-secret
+  ui:
+    imagePullSecrets:
+      - name: harbor-pull-secret
+      - name: ui-secret
+it returns "harbor-pull-secret,ui-secret" for the UI, and "" when neither list has a name.
+Usage: {{ include "flame-node.imagePullSecretNames" (list $ .Values.ui.imagePullSecrets) }}
+*/}}
+{{- define "flame-node.imagePullSecretNames" -}}
+{{- $names := list -}}
+{{- range $secrets := list (index . 0).Values.global.imagePullSecrets (index . 1) -}}
+{{- range (kindIs "string" $secrets | ternary (list $secrets) ($secrets | default list)) -}}
+{{- if kindIs "map" . -}}
+{{- with .name -}}{{- $names = append $names . -}}{{- end -}}
+{{- else if . -}}
+{{- $names = append $names (toString .) -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+{{- uniq $names | join "," -}}
+{{- end -}}
+
+{{/*
+imagePullSecrets field of a pod spec, rendered from "flame-node.imagePullSecretNames"; empty when there are none.
+Usage:
+      {{- with include "flame-node.imagePullSecrets" (list $ .Values.ui.imagePullSecrets) }}
+      {{- . | nindent 6 }}
+      {{- end }}
+*/}}
+{{- define "flame-node.imagePullSecrets" -}}
+{{- with include "flame-node.imagePullSecretNames" . -}}
+imagePullSecrets:
+{{- range splitList "," . }}
+  - name: {{ . }}
+{{- end }}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Return the URL scheme for components: "https" when a TLS secret is configured via expose.tls.secretName, otherwise "http".
 */}}
 {{- define "hostname.protocol" -}}
