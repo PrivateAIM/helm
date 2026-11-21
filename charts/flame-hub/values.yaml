@@ -79,8 +79,17 @@ global:
 image:
     registry: ghcr.io
     repository: privateaim/hub
-    tag: 0.19.2
+    tag: 0.20.0
     pullPolicy: Always
+
+# TRUST_PROXY of serverCore, serverStorage, serverTelemetry and serverMessenger: which
+# X-Forwarded-For hops they trust when deriving the client address (audit trail,
+# rate-limit key). One hop is the ingress / gateway in front of them, the same as
+# authup's server.trustProxy. Hub's own default ("true", every hop) lets a client name
+# any address and keeps the per-address failed-credential limiter off. Accepts a hop
+# count, "false" (socket address), or a comma list of IPs / CIDRs / loopback /
+# linklocal / uniquelocal.
+trustProxy: 1
 
 # internal services
 clientUI:
@@ -140,6 +149,10 @@ clientUI:
 
 serverCore:
     publicHttps: false # global.flameHub.publicHttps also enables this
+    # SHUTDOWN_DELAY: seconds the service keeps serving after SIGTERM while /readyz
+    # already answers 503, so the pod leaves the Service endpoints before it stops
+    # (0-3600). terminationGracePeriodSeconds follows as shutdownDelay + 35.
+    shutdownDelay: 5
     ingress:
         enabled: false
         hostname: ""
@@ -156,6 +169,10 @@ serverCore:
 
 serverMessenger:
     publicHttps: false # global.flameHub.publicHttps also enables this
+    # SHUTDOWN_DELAY: seconds the service keeps serving after SIGTERM while /readyz
+    # already answers 503, so the pod leaves the Service endpoints before it stops
+    # (0-3600). terminationGracePeriodSeconds follows as shutdownDelay + 35.
+    shutdownDelay: 5
     ingress:
         enabled: false
         hostname: ""
@@ -170,6 +187,10 @@ serverMessenger:
 
 serverStorage:
     publicHttps: false # global.flameHub.publicHttps also enables this
+    # SHUTDOWN_DELAY: seconds the service keeps serving after SIGTERM while /readyz
+    # already answers 503, so the pod leaves the Service endpoints before it stops
+    # (0-3600). terminationGracePeriodSeconds follows as shutdownDelay + 35.
+    shutdownDelay: 5
     ingress:
         enabled: false
         hostname: ""
@@ -188,6 +209,10 @@ serverStorage:
 
 serverTelemetry:
     publicHttps: false # global.flameHub.publicHttps also enables this
+    # SHUTDOWN_DELAY: seconds the service keeps serving after SIGTERM while /readyz
+    # already answers 503, so the pod leaves the Service endpoints before it stops
+    # (0-3600). terminationGracePeriodSeconds follows as shutdownDelay + 35.
+    shutdownDelay: 5
     ingress:
         enabled: false
         hostname: ""
@@ -241,8 +266,12 @@ auth:
 # chart's own server.ingress / server.route rather than Hub-specific keys.
 # The image is no longer pinned here: the chart's appVersion tracks the authup
 # release, so bumping authup means bumping the dependency version in Chart.yaml.
-# Chart 0.5.4 ships authup 1.0.0-beta.72, which hub image >= 0.19.2 requires (and vice
-# versa: roll both out together, a mixed pair denies every request). After
+# Chart 0.5.6 ships authup 1.0.0-beta.76. Hub image >= 0.20.0 requires >= beta.75: the
+# analysis file pages exchange the login token for a storage capability token, which
+# needs the token-exchange grant and the "storage" capability on the system client
+# (provisioned by templates/authup/provisioning-configmap.yaml) and an RSA/EC signing
+# key in every realm (authup's default RS256 key qualifies). Roll out authup first,
+# then the Hub services. After
 # upgrading from beta.68 or older with this chart's Redis, flush the cached token
 # claims once, so tokens verified before beta.69 stop bypassing the realm binding:
 #   redis-cli --scan --pattern 'oauth2_token_claims*' | xargs -r redis-cli del
@@ -706,15 +735,24 @@ harbor:
         type: clusterIP
         tls:
             enabled: true
-            certSource: auto
+            # "secret", not "auto": auto mints a new CA on every render and restarts Harbor
+            # on every upgrade. templates/harbor/stable-secrets.yaml generates it once.
+            certSource: secret
+            secret:
+                secretName: "flame-hub-harbor-nginx-tls"
             auto:
-                commonName: harbor.local
+                commonName: harbor.local # CN of the generated cert
         clusterIP:
             # Literal service name (the subchart cannot template this).
             # Override to "<release>-harbor" per release.
             name: "harbor"
             ports:
                 httpsPort: 443
+    # CA for the core's ca-download endpoint; must equal expose.tls.secret.secretName.
+    caSecretName: "flame-hub-harbor-nginx-tls"
+    core:
+        # Token-signing cert, generated once by templates/harbor/stable-secrets.yaml.
+        secretName: "flame-hub-harbor-token"
     updateStrategy:
         type: Recreate
     persistence:
@@ -732,6 +770,10 @@ harbor:
                 existingClaim: ""
                 size: 5Gi
     registry:
+        # REGISTRY_PASSWD + REGISTRY_HTPASSWD, generated once by templates/harbor/stable-secrets.yaml
+        # (the subchart's htpasswd gets a new bcrypt salt on every render).
+        credentials:
+            existingSecret: "flame-hub-harbor-registry"
         relativeurls: true # Needed for server-core-worker because of TCP forwarding (see https://github.com/distribution/distribution/issues/970#issuecomment-284227065)
     # Use the shared cluster PostgreSQL, not Harbor's bundled database.
     database:

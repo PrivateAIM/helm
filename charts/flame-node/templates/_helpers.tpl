@@ -24,6 +24,29 @@ true
 {{- end -}}
 
 {{/*
+Image reference, redirected to the mirror in global.imageRegistry when that is set. The mirror keeps the upstream path
+without the registry host and with Docker Hub's implicit "library/":
+ghcr.io/privateaim/node-ui:1.2.1 -> <registry>/privateaim/node-ui:1.2.1, busybox:1.37 -> <registry>/library/busybox:1.37
+Usage: {{ include "flame-node.image" (list $ "repository:tag") }}
+*/}}
+{{- define "flame-node.image" -}}
+{{- $image := index . 1 -}}
+{{- with (index . 0).Values.global.imageRegistry -}}
+{{- $path := splitList "/" $image -}}
+{{- $dockerHub := true -}}
+{{- if and (gt (len $path) 1) (regexMatch "[.:]|^localhost$" (first $path)) -}}
+{{- $dockerHub = has (first $path) (list "docker.io" "index.docker.io" "registry-1.docker.io") -}}
+{{- $path = rest $path -}}
+{{- end -}}
+{{- if and $dockerHub (eq (len $path) 1) -}}
+{{- $path = prepend $path "library" -}}
+{{- end -}}
+{{- $image = printf "%s/%s" (trimSuffix "/" .) (join "/" $path) -}}
+{{- end -}}
+{{- $image -}}
+{{- end -}}
+
+{{/*
 Return the URL scheme for components: "https" when a TLS secret is configured via expose.tls.secretName, otherwise "http".
 */}}
 {{- define "hostname.protocol" -}}
@@ -71,19 +94,15 @@ Return the hub IDP issuer URL, combining hub.endpoints.auth with hub.auth.userRe
 {{- end -}}
 
 {{/*
-Return the Authup JWKS endpoint, scoped to hub.auth.userRealm, e.g.
-"https://auth.privateaim.dev/realms/master/jwks". Authup's /realms/<id-or-name>/jwks only
-publishes the signing keys of that one realm.
-Assumption: the Hub creates each analysis's Authup client in the analysis's realm (= its
-project's realm), and Authup signs the analysis token with that realm's key. Verifying against
-this endpoint is therefore only correct if every project whose analyses run on this node lives
-in hub.auth.userRealm. An analysis from a project in another realm would be rejected
-(unknown kid) by message-broker, storage-service and pod-orchestrator's /stream_logs.
-If analyses ever live in other realms, switch to Authup's flat <hub.endpoints.auth>/jwks,
-which publishes the signing keys of every realm.
+Return Authup's flat JWKS endpoint, e.g. "https://auth.privateaim.dev/jwks", which publishes
+the signing keys of every realm.
+The Hub creates each analysis's Authup client in the analysis's realm (= its project's realm),
+and Authup signs the analysis token with that realm's key. A realm-scoped
+/realms/<realm>/jwks would make message-broker, storage-service and pod-orchestrator reject
+(unknown kid) every analysis whose project lives outside hub.auth.userRealm.
 */}}
 {{- define "hub.auth.jwksEndpoint" -}}
-{{- printf "%s/jwks" (include "hub.auth.issuerUrl" .) -}}
+{{- printf "%s/jwks" (.Values.hub.endpoints.auth | trimSuffix "/") -}}
 {{- end -}}
 
 {{/*
@@ -166,12 +185,14 @@ Set the API's root path. If expose is configured (not none), defaults to "/api" 
 
 {{/*
 Return the JWKS endpoint for user and client authentication which overrides what is fetched by the API.
+Defaults to Authup's flat /jwks: analysis containers call the hub adapter with tokens signed by their
+project's realm, which the IDP_URL realm's discovered JWKS does not contain.
 */}}
 {{- define "adapter.jwks.endpoint" -}}
 {{- if .Values.hubAdapter.idp.jwks -}}
     {{- print .Values.hubAdapter.idp.jwks -}}
 {{- else -}}
-    {{- print "" -}}
+    {{- include "hub.auth.jwksEndpoint" . -}}
 {{- end -}}
 {{- end -}}
 

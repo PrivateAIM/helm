@@ -46,7 +46,7 @@ spec:
         - name: node-ui
           securityContext:
             {{- toYaml .Values.ui.securityContext | nindent 12 }}
-          image: "{{ .Values.ui.image.repository }}:{{ .Values.ui.image.tag | default "latest" }}"
+          image: {{ include "flame-node.image" (list $ (printf "%s:%v" .Values.ui.image.repository (.Values.ui.image.tag | default "latest"))) | quote }}
           imagePullPolicy: {{ .Values.ui.image.pullPolicy }}
           ports:
             - containerPort: 3000

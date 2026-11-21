@@ -62,8 +62,22 @@ Create the name of the service account to use
 {{- end }}
 
 
+{{/*
+Full image reference for the Hub services: [registry/]repository(:tag|@digest).
+global.imageRegistry overrides image.registry; image.digest takes precedence over image.tag.
+*/}}
 {{- define "flameHub.image" -}}
-{{ include "common.images.image" (dict "imageRoot" .Values.image "global" .Values.global) }}
+{{- $image := .Values.image -}}
+{{- $registry := default $image.registry (.Values.global).imageRegistry -}}
+{{- $reference := printf ":%s" ($image.tag | toString) -}}
+{{- if $image.digest -}}
+{{- $reference = printf "@%s" ($image.digest | toString) -}}
+{{- end -}}
+{{- if $registry -}}
+{{- printf "%s/%s%s" $registry $image.repository $reference -}}
+{{- else -}}
+{{- printf "%s%s" $image.repository $reference -}}
+{{- end -}}
 {{- end -}}
 
 {{- define "flameHub.effectiveSecretName" -}}
@@ -293,4 +307,32 @@ otherwise references the chart-managed Gateway.
 {{- else -}}
 - name: {{ .Release.Name }}-flame-hub-gateway
 {{- end -}}
+{{- end -}}
+
+{{/*
+Validated SHUTDOWN_DELAY (seconds) of a Hub API service: how long core, storage,
+telemetry and messenger keep serving after SIGTERM while /readyz already answers
+503, so the Service endpoints / load balancer stop routing to the pod first.
+Call with (dict "name" "serverCore" "value" .Values.serverCore.shutdownDelay).
+*/}}
+{{- define "flameHub.shutdownDelay" -}}
+{{- $v := .value | default 0 -}}
+{{- if not (or (kindIs "int" $v) (kindIs "int64" $v) (kindIs "float64" $v)) -}}
+{{- fail (printf "%s.shutdownDelay must be a number of seconds, got %q." .name ($v | toString)) -}}
+{{- end -}}
+{{- $n := $v | int -}}
+{{- if or (ne ($n | float64) ($v | float64)) (lt $n 0) (gt $n 3600) -}}
+{{- fail (printf "%s.shutdownDelay must be a whole number of seconds between 0 and 3600, got %v." .name $v) -}}
+{{- end -}}
+{{- $n -}}
+{{- end -}}
+
+{{/*
+terminationGracePeriodSeconds for a Hub API service. After SHUTDOWN_DELAY the
+service has a 30-second teardown deadline, so the grace period has to exceed
+SHUTDOWN_DELAY + 30 - five seconds of headroom on top.
+Same arguments as flameHub.shutdownDelay.
+*/}}
+{{- define "flameHub.terminationGracePeriodSeconds" -}}
+{{- add (include "flameHub.shutdownDelay" . | int) 35 -}}
 {{- end -}}

@@ -46,6 +46,15 @@ expose:
       ## An external Gateway has to set large_client_header_buffers itself, e.g. with its own SnippetsPolicy.
       snippets: true
 
+## Values shared with all sub-charts
+global:
+  ## @param global.imageRegistry Registry (including the project) that mirrors the images of this chart, e.g. harbor.example.org/node-images
+  ## When set, the images of the FLAME services, their init containers and the per-analysis containers started by the Pod Orchestrator are pulled
+  ## from there.
+  ## busybox -> <registry>/library/busybox. The SeaweedFS sub-charts honour this value too. The other sub-charts (Kong, PostgreSQL, MongoDB,
+  ## Victoria Logs, Vector, Blaze) have their own image settings; values_harbor.yaml sets all of them for the PrivateAIM Harbor.
+  imageRegistry: ""
+
 ## @param timezone Set the timezone for all components in the FLAME Node, use "TZ identifier" from https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
 timezone: Europe/Berlin
 
@@ -478,6 +487,11 @@ podOrchestrator:
     enabled: true
     ## @param netStats.image The image for the netstats sidecar container
     image: busybox:1.37
+
+  nginx:
+    ## @param podOrchestrator.nginx.image The image for the nginx proxy the Pod Orchestrator starts next to each analysis.
+    ## Leave empty to use the default built into the Pod Orchestrator.
+    image: nginxinc/nginx-unprivileged:1.31.7-alpine-slim
 
   # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
   replicaCount: 1

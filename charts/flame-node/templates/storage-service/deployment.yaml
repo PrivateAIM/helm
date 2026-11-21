@@ -51,7 +51,7 @@ spec:
       {{- if and .Values.storageService.bucketInit.enabled (not $s3External) }}
       initContainers:
         - name: ensure-bucket
-          image: {{ .Values.storageService.bucketInit.image | quote }}
+          image: {{ include "flame-node.image" (list $ .Values.storageService.bucketInit.image) | quote }}
           imagePullPolicy: {{ .Values.storageService.bucketInit.pullPolicy }}
           securityContext:
             {{- toYaml .Values.storageService.bucketInit.securityContext | nindent 12 }}
@@ -94,7 +94,7 @@ spec:
         - name: storage-service
           securityContext:
             {{- toYaml .Values.storageService.securityContext | nindent 12 }}
-          image: "{{ .Values.storageService.image.repository }}:{{ .Values.storageService.image.tag | default "latest" }}"
+          image: {{ include "flame-node.image" (list $ (printf "%s:%v" .Values.storageService.image.repository (.Values.storageService.image.tag | default "latest"))) | quote }}
           imagePullPolicy: {{ .Values.storageService.image.pullPolicy }}
           ports:
             - containerPort: 8080

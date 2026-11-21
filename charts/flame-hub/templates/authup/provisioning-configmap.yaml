@@ -150,6 +150,46 @@ data:
           name: master
         relations:
           clients:
+            # The system client every Hub service authenticates as (CLIENT_ID=system).
+            # server-core exchanges a caller's token for a storage capability token
+            # (RFC 8693) and server-storage only accepts those minted by this client
+            # (CAPABILITY_CLIENT_ID defaults to its own CLIENT_ID). The token-exchange
+            # grant is opt-in.
+            #
+            # authup's built-in source declares this client too, and a declared
+            # strategy REPLACES its strategy rather than extending it. Without one the
+            # built-in merge list applies, which omits grantTypes, so an existing
+            # system client would never receive the grant. The list below is therefore
+            # authup's own (builtIn, authMethod, tokenBindingMethod, active, plus the
+            # secret fields while auth.systemClientSecretReset is on) with grantTypes added.
+            - attributes:
+                name: system
+                grantTypes: client_credentials urn:ietf:params:oauth:grant-type:token-exchange
+              strategy:
+                type: merge
+                attributes:
+                  - builtIn
+                  - authMethod
+                  - tokenBindingMethod
+                  - active
+                  {{- if .Values.authup.auth.systemClientSecretReset }}
+                  - secret
+                  - secretHashed
+                  - secretEncrypted
+                  {{- end }}
+                  - grantTypes
+              relations:
+                tokenExchangeCapabilities:
+                  - strategy:
+                      type: merge
+                    attributes:
+                      audience: storage
+                      # storage's capability types; hub >= 0.20.0 mints bucketFile
+                      # (earlier pre-releases spelled it bucket-file).
+                      value: bucket bucketFile
+                      maxAge: 3600
+                      # Lets it act for users and node clients of every realm.
+                      realmScope: any
             - attributes:
                 name: registry
                 # public client (no secret at the token endpoint)

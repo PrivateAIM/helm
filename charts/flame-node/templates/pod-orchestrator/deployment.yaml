@@ -49,7 +49,7 @@ spec:
         - name: init-postgres
           securityContext:
             {{- toYaml .Values.podOrchestrator.waitForPostgres.securityContext | nindent 12 }}
-          image: "{{ .Values.podOrchestrator.waitForPostgres.image.repository }}:{{ .Values.podOrchestrator.waitForPostgres.image.tag | default "latest" }}"
+          image: {{ include "flame-node.image" (list $ (printf "%s:%v" .Values.podOrchestrator.waitForPostgres.image.repository (.Values.podOrchestrator.waitForPostgres.image.tag | default "latest"))) | quote }}
           imagePullPolicy: {{ .Values.podOrchestrator.waitForPostgres.image.pullPolicy }}
           command: ['sh', '-c', "until nc -vz {{ include "postgresql.endpoint" . }}.{{ .Release.Namespace }}.svc {{ .Values.postgresql.service.port }}; do echo waiting for postgres; sleep 2; done"]
           {{- with .Values.podOrchestrator.waitForPostgres.env }}
@@ -62,7 +62,7 @@ spec:
         - name: po
           securityContext:
             {{- toYaml .Values.podOrchestrator.securityContext | nindent 12 }}
-          image: "{{ .Values.podOrchestrator.image.repository }}:{{ .Values.podOrchestrator.image.tag | default .Chart.AppVersion }}"
+          image: {{ include "flame-node.image" (list $ (printf "%s:%v" .Values.podOrchestrator.image.repository (.Values.podOrchestrator.image.tag | default .Chart.AppVersion))) | quote }}
           imagePullPolicy: {{ .Values.podOrchestrator.image.pullPolicy }}
           #image: po:latest
           #imagePullPolicy: IfNotPresent
@@ -112,7 +112,11 @@ spec:
             - name: NET_STATS_ENABLED
               value: {{ .Values.podOrchestrator.netStats.enabled | default "true" | quote }}
             - name: NET_STATS_IMAGE
-              value: {{ .Values.podOrchestrator.netStats.image | default "busybox:1.37" | quote }}
+              value: {{ include "flame-node.image" (list $ (.Values.podOrchestrator.netStats.image | default "busybox:1.37")) | quote }}
+            {{- with .Values.podOrchestrator.nginx.image }}
+            - name: NGINX_IMAGE
+              value: {{ include "flame-node.image" (list $ .) | quote }}
+            {{- end }}
             - name: HUB_URL_AUTH
               value: {{ .Values.hub.endpoints.auth | default "https://auth.privateaim.dev" | quote }}
             - name: HUB_URL_CORE
