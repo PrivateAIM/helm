@@ -80,7 +80,7 @@ image:
     registry: ghcr.io
     repository: privateaim/hub
     tag: 0.20.0
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
 
 # TRUST_PROXY of serverCore, serverStorage, serverTelemetry and serverMessenger: which
 # X-Forwarded-For hops they trust when deriving the client address (audit trail,
@@ -347,10 +347,12 @@ authup:
         # in the authup subchart context).
         initContainers: &authupWaitForBackends
             -   name: wait-for-db
-                image: busybox
+                image: busybox:1.38
+                imagePullPolicy: IfNotPresent
                 command: ['sh', '-c', 'until nc -z -v -w30 {{ include "flameHub.postgresql.host" . }} 5432; do echo "Waiting for db..."; sleep 5; done']
             -   name: wait-for-redis
-                image: busybox
+                image: busybox:1.38
+                imagePullPolicy: IfNotPresent
                 command: ['sh', '-c', 'until nc -z -v -w30 {{ include "flameHub.redis.host" . }} {{ include "flameHub.redis.port" . }}; do echo "Waiting for redis..."; sleep 5; done']
         # Declaratively provision the FLAME permission taxonomy and the analyst/diz global
         # roles into authup at boot. The content is rendered by
