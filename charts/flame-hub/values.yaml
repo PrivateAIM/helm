@@ -538,6 +538,8 @@ seaweedfs:
         data:
             type: persistentVolumeClaim
             size: 10Gi
+            annotations:
+                helm.sh/resource-policy: keep
 
 postgresql:
     image:
@@ -582,6 +584,8 @@ grafana:
         passwordKey: "grafana-admin-password"
     persistence:
         enabled: true
+        annotations:
+            helm.sh/resource-policy: keep
     # The PVC is ReadWriteOnce: a rolling update starts the new pod before the old one releases
     # the volume, so on a different node it never attaches and the release stalls.
     #
